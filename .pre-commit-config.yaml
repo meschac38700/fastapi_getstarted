@@ -1,0 +1,50 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=100000']
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.0
+    hooks:
+      - id: pyupgrade
+        args: [--py310-plus]
+  # Issue on 1.7.5: https://github.com/PyCQA/docformatter/issues/293
+  # - repo: https://github.com/myint/docformatter
+  #   rev: v1.7.5
+  #   hooks:
+  #     - id: docformatter
+  #       name: docformatter
+  #       description: 'Formats docstrings to follow PEP 257.'
+  #       entry: docformatter
+  #       args: [ -i ]
+  #       language: python
+  #       types: [ python ]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.2
+    hooks:
+      - id: ruff-format
+        types_or: [ python, toml ]
+      - id: ruff
+        types_or: [ python, toml ]
+        args: [ --fix ]
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.4.0
+    hooks:
+      - id: pycln
+        args: [--config=pyproject.toml]
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        additional_dependencies: [pep8-naming]
