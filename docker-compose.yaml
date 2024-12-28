@@ -1,0 +1,15 @@
+services:
+  api:
+    container_name: api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
+    volumes:
+      - ./src:/home/appuser/app/www
+    ports:
+      - "8000:80"
+    environment:
+      - APP_PORT=8000
