@@ -1,13 +1,37 @@
 import secrets
+from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from fastapi import Depends, FastAPI
+from fastapi.params import Query
+from sqlmodel import Session, select
 
-from configs import engine
-from models.base import BaseAsyncModel
-from models.items import Item
+from configs import db_settings
+from models import Hero
 
-app = FastAPI()
+
+def create_db_and_tables():
+    """Script to be run after fastapi setup."""
+
+
+def delete_db_and_tables():
+    """Script to be run before fastapi shutdown."""
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    create_db_and_tables()
+    yield
+    delete_db_and_tables()
+
+
+app = FastAPI(lifespan=lifespan)
+engine = db_settings.get_engine()
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 
 @app.get("/", name="Generate secret key.")
@@ -16,19 +40,24 @@ def secret_key(length: int = 65):
     return {"secret": secret}
 
 
-async def get_items():
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
-    async with async_session.begin() as conn:
-        await conn.run_sync(BaseAsyncModel.metadata.create_all)
+SessionDep = Annotated[Session, Depends(get_session)]
 
-    async with async_session() as session:
-        async with session.begin():
-            session.add_all(
-                [
-                    Item(name="Item 1"),
-                    Item(name="Item 2"),
-                    Item(name="Item 3"),
-                ]
-            )
 
-    await engine.dispose()
+@app.post("/heroes", name="Init items")
+async def create_heros(session: SessionDep):
+    async with session.begin():
+        session.add_all(
+            [
+                Hero(name="Deadpond", secret_name="Dive Wilson"),
+                Hero(name="Spider-Boy", secret_name="Pedro Parqueador"),
+                Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48),
+            ]
+        )
+
+
+@app.get("/heroes", name="Get heroes")
+async def get_items(
+    session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
+):
+    heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
+    return heroes

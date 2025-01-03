@@ -1,5 +1,6 @@
-from .database import DatabaseSettings
+from .generic import BASE_DIR, DATABASE_ENV_FILE
 
 __all__ = [
-    "DatabaseSettings",
+    "BASE_DIR",
+    "DATABASE_ENV_FILE",
 ]
