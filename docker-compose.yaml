@@ -1,4 +1,19 @@
 services:
+  database:
+    image: postgres:14.8-alpine
+    container_name: database
+    restart: always
+    ports:
+      - 5432:5432
+    env_file:
+      - envs/.db.env
+    volumes:
+      - data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
   api:
     container_name: api
     restart: unless-stopped
@@ -10,6 +25,9 @@ services:
     volumes:
       - ./src:/home/appuser/app/www
     ports:
-      - "8000:80"
+      - "8000:8000"
     environment:
       - APP_PORT=8000
+
+volumes:
+  data: {}
