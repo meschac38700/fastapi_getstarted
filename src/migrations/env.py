@@ -1,11 +1,11 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
-from alembic import context
 from configs import db_settings
 
 # this is the Alembic Config object, which provides
@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = [SQLModel.metadata]
+target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -52,6 +52,7 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online() -> None:
     \"""Run migrations in 'online' mode.
 
@@ -73,6 +74,11 @@ def run_migrations_online() -> None:
         with context.begin_transaction():
             context.run_migrations()
 
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
 """
 
 
@@ -111,11 +117,5 @@ def run_migrations_online():
     else:
         do_run_migrations(connectable)
 
-
-"""
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-"""
 
 run_migrations_online()

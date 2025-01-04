@@ -1,15 +1,15 @@
-"""initial migration
+"""Added hero table
 
-Revision ID: 464fdae252ea
+Revision ID: cfd29d6602dc
 Revises:
-Create Date: 2025-01-03 18:51:20.014246
+Create Date: 2025-01-03 21:21:08.236870
 
 """
 
 from collections.abc import Sequence
 
 # revision identifiers, used by Alembic.
-revision: str = "464fdae252ea"
+revision: str = "cfd29d6602dc"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
