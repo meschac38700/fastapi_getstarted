@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from apps import hero
 from core.lifespan import setup, teardown
+from routers import app_routers
 from settings import db_settings
 
 _engine = db_settings.get_engine()
@@ -18,7 +18,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(hero.router, prefix="/heroes")
+
+for router_data in app_routers:
+    app.include_router(**router_data)
 
 
 @app.get("/", name="Generate secret key.")

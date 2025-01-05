@@ -8,10 +8,10 @@ from core.db import SessionDep
 
 from .models import Hero
 
-router = APIRouter(tags=["heroes"])
+routers = APIRouter(tags=["heroes"])
 
 
-@router.get("/", name="Get heroes")
+@routers.get("/", name="Get heroes")
 async def get_items(
     session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
 ):
