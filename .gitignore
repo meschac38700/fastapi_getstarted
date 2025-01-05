@@ -149,7 +149,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-!envs.example/*
+!envs.example
 
 # Spyder project settings
 .spyderproject
