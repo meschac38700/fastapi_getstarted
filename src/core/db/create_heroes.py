@@ -1,7 +1,7 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from configs import db_settings
 from models import Hero
+from settings import db_settings
 
 
 async def create_heroes():

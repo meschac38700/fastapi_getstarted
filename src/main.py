@@ -7,10 +7,10 @@ from fastapi.params import Query
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import select
 
-from configs import db_settings
 from core.db import SessionDep, create_heroes
 from core.db.handle import create_db_and_tables, delete_db_and_tables
 from models import Hero
+from settings import db_settings
 
 _engine = db_settings.get_engine()
 
