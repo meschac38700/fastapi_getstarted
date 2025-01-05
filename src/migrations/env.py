@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
-from settings import db_settings
+from settings import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -102,7 +102,7 @@ def run_migrations_online():
     connectable = context.config.attributes.get("connection", None)
     if connectable is None:
         ini_section = context.config.get_section(context.config.config_ini_section)
-        ini_section["sqlalchemy.url"] = db_settings.uri
+        ini_section["sqlalchemy.url"] = settings.uri
         connectable = AsyncEngine(
             engine_from_config(
                 ini_section,
