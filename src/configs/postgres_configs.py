@@ -5,7 +5,7 @@ from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from settings.generic import DATABASE_ENV_FILE
+from settings.settings import DATABASE_ENV_FILE
 
 
 class DatabaseSettings(BaseSettings):
