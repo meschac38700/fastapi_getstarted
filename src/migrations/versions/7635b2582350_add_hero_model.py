@@ -1,15 +1,15 @@
-"""Added hero table
+"""Add hero model
 
-Revision ID: cfd29d6602dc
+Revision ID: 7635b2582350
 Revises:
-Create Date: 2025-01-03 21:21:08.236870
+Create Date: 2025-01-05 21:06:00.805078
 
 """
 
 from collections.abc import Sequence
 
 # revision identifiers, used by Alembic.
-revision: str = "cfd29d6602dc"
+revision: str = "7635b2582350"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
