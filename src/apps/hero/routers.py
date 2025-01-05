@@ -2,9 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter
 from fastapi.params import Query
-from sqlmodel import select
 
-from core.db import SessionDep
+from services import db_service
 
 from .models import Hero
 
@@ -12,8 +11,5 @@ routers = APIRouter(tags=["heroes"], prefix="/heroes")
 
 
 @routers.get("/", name="Get heroes")
-async def get_items(
-    session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
-):
-    heroes = await session.exec(select(Hero).offset(offset).limit(limit))
-    return heroes.all()
+async def get_items(offset: int = 0, limit: Annotated[int, Query(le=100)] = 100):
+    return await db_service.all(Hero, offset=offset, limit=limit)
