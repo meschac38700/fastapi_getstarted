@@ -1,21 +1,39 @@
-from apps.hero import routers as hero_routers
+import glob
+import importlib
+import re
+from pathlib import Path
 
-"""
-the route data must respect the signature of the following function:
-def include_router(self,
-   router: APIRouter,
-   *,
-   prefix: str = "",
-   tags: list[str | Enum] | None = None,
-   dependencies: Sequence[Depends] | None = None,
-   responses: dict[int | str, dict[str, Any]] | None = None,
-   deprecated: bool | None = None,
-   include_in_schema: bool = True,
-   default_response_class: Type[Response] = Default(JSONResponse),
-   callbacks: list[BaseRoute] | None = None,
-   generate_unique_id_function: (APIRoute) -> str = Default(generate_unique_id)
-) -> None
-"""
-app_routers = [
-    {"router": hero_routers.routers, "prefix": "/heroes"},
-]
+from fastapi import FastAPI
+
+from settings import BASE_DIR
+
+
+def register_app_routers(app: FastAPI):
+    """Register all routers from apps folder."""
+    router_path = "routers"
+    app_folder = "apps/"
+    router_module = "routers"
+    for module_path_str in glob.glob(str(BASE_DIR / app_folder / "*")):
+        module_path = Path(module_path_str)
+        # check is valid package (contains routers module)
+        if not any(
+            [
+                (module_path / router_path).exists(),
+                (module_path / (router_path + ".py")).exists(),
+            ]
+        ):
+            continue
+
+        # extract module name as router prefix
+        prefix = f"/{module_path.stem}"
+        # prepare and import router
+        module_path = (
+            app_folder + f"{module_path}.{router_module}".split(app_folder)[-1]
+        )
+        module_path = re.sub("/", ".", module_path).strip(".")
+        router_module = importlib.import_module(module_path)
+
+        if router_module.routers.prefix:
+            prefix = ""
+
+        app.include_router(router_module.routers, prefix=prefix)

@@ -8,7 +8,7 @@ from core.db import SessionDep
 
 from .models import Hero
 
-routers = APIRouter(tags=["heroes"])
+routers = APIRouter(tags=["heroes"], prefix="/heroes")
 
 
 @routers.get("/", name="Get heroes")
