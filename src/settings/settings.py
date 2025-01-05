@@ -11,4 +11,4 @@ if env_name not in valid_environments:
         f"Invalid environment value: {env_name}! Expected: {valid_environments}"
     )
 
-DATABASE_ENV_FILE = DB_ENV_FILE = BASE_DIR.parent / "envs" / env_name / ".env"
+DATABASE_ENV_FILE = BASE_DIR.parent / "envs" / env_name / ".env"
