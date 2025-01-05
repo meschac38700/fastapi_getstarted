@@ -1,10 +1,11 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from models import Hero
 from settings import db_settings
 
+from .models import Hero
 
-async def create_heroes():
+
+async def fake_heroes():
     engine = db_settings.get_engine()
     async with AsyncSession(engine) as session:
         session.add_all(
