@@ -4,6 +4,10 @@ from .models import Hero
 
 
 async def fake_heroes():
+    """Initialize hero data.
+
+    Called by: core.lifespan.py
+    """
     heroes = [
         Hero(name="Spider-Boy", secret_name="Pedro Parqueador"),
         Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48),
