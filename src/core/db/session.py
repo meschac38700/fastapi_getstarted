@@ -4,11 +4,11 @@ from fastapi import Depends
 from sqlmodel import Session
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from settings import db_settings
+from settings import settings
 
 
 async def get_session():
-    engine = db_settings.get_engine()
+    engine = settings.get_engine()
     async with AsyncSession(engine) as session:
         yield session
 

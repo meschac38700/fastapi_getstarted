@@ -26,8 +26,8 @@ services:
       - ./src:/home/appuser/app/www
     ports:
       - "8001:8001"
-    environment:
-      - APP_PORT=8001
+    env_file:
+      - envs/prod/.env
 
 volumes:
   data: {}

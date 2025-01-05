@@ -1,22 +1,24 @@
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from settings.settings import DATABASE_ENV_FILE
+from .settings import DATABASE_ENV_FILE
 
 
-class DatabaseSettings(BaseSettings):
-    _env_file = DATABASE_ENV_FILE
-    _env_prefix = "db"
+class Settings(BaseSettings):
     postgres_user: str = "fastapi"
     postgres_password: str = "fastapi"
     postgres_db: str = "fastapi"
     host_db: str = "localhost"
     port_db: int = 5432
-    model_config = SettingsConfigDict(env_file=DATABASE_ENV_FILE)
+    app_environment: Literal["prod", "test", "dev"] = "dev"
+    app_port: int = 8000
+    model_config = SettingsConfigDict(
+        env_file=DATABASE_ENV_FILE, cli_ignore_unknown_args=True
+    )
 
     def get_engine(self):
         engine = create_async_engine(self.uri)
@@ -29,7 +31,7 @@ class DatabaseSettings(BaseSettings):
 
 @lru_cache
 def get_settings():
-    return DatabaseSettings()
+    return Settings()
 
 
-DBSettingsDep = Annotated[DatabaseSettings, Depends(get_settings)]
+SettingsDep = Annotated[Settings, Depends(get_settings)]

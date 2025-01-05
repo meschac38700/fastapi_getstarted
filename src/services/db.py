@@ -3,14 +3,14 @@ from functools import lru_cache
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, select
 
-from settings import db_settings
+from settings import settings
 
 
 class DBService:
     """Group some utility functions for queries."""
 
     def __init__(self):
-        self._engine = db_settings.get_engine()
+        self._engine = settings.get_engine()
 
     async def insert_batch(self, instances: list[SQLModel]):
         """Insert a batch of SQLModel instances."""

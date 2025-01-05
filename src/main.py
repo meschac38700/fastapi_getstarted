@@ -5,9 +5,9 @@ from fastapi import FastAPI
 
 from core.lifespan import setup, teardown
 from routers import register_app_routers
-from settings import db_settings
+from settings import settings
 
-_engine = db_settings.get_engine()
+_engine = settings.get_engine()
 
 
 @asynccontextmanager
