@@ -63,9 +63,6 @@ docker compose -f docker-compose.dev.yaml up -d database-dev && fastapi dev src/
 We use [alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html) to manage migrations.
 The following commands, as explained in the documentation, will allow you to create and run the migrations.
 
-> [!WARNING]
-> You need to go to the `src` folder before running still commands
-
 ```bash
 cd src
 alembic revision --autogenerate -m "message of commit"
