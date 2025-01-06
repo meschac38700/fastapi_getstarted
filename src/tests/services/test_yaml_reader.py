@@ -16,6 +16,5 @@ class TestYAMLReader(TestCase):
                 {"name": "Deadpool", "secret_name": "Ryan Reynolds"},
             ]
         }
-        actual = self.reader.to_dict()
 
-        self.assertDictEqual(expected, actual)
+        self.assertDictEqual(expected, self.reader.read())
