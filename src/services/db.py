@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel, select
 
 from settings import settings
@@ -24,9 +25,23 @@ class DBService:
 
         async with AsyncSession(self._engine) as session:
             # based on https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#dynamic-asyncio
-            heroes = await session.scalars(select(model).offset(offset).limit(limit))
+            data = await session.scalars(select(model).offset(offset).limit(limit))
 
-        return heroes.all()
+        return data.all()
+
+    async def filter(
+        self,
+        model: SQLModel,
+        filters: ColumnExpressionArgument[bool] | bool,
+        *,
+        offset: int = 0,
+        limit: int = 100,
+    ):
+        async with AsyncSession(self._engine) as session:
+            data_list = await session.scalars(
+                select(model).where(filters).offset(offset).limit(limit)
+            )
+        return data_list.all()
 
     # TODO(Complete with others functions)
 
