@@ -16,4 +16,9 @@ async def fake_heroes():
         Hero(name="Superman", secret_name="Henry Cavill", age=41),
         Hero(name="Deadpond", secret_name="Dive Wilson"),
     ]
+    filters = Hero.name in [h.name for h in heroes]
+    data = db_service.filter(Hero, filters)
+    if data:
+        return
+
     await db_service.insert_batch(heroes)
