@@ -7,7 +7,7 @@ from settings import settings
 
 
 class DBService:
-    """Group some utility functions for queries."""
+    """Group some utility functions for db queries."""
 
     def __init__(self):
         self._engine = settings.get_engine()
