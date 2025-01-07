@@ -15,18 +15,21 @@ services:
       timeout: 3s
       retries: 5
   api:
-    container_name: api
+    container_name: api-dev
     restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
-    network_mode: host
+    depends_on:
+      database-dev:
+        condition: service_healthy
+        restart: true
     volumes:
       - ./src:/home/appuser/app/www
     env_file:
       - envs/dev/.env
-
+    command: ["bash", "./scripts/entrypoint.dev.sh"]
 volumes:
   dev_data: {}
