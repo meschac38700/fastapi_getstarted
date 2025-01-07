@@ -22,12 +22,16 @@ services:
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
     volumes:
       - ./src:/home/appuser/app/www
     ports:
       - "8001:8001"
     env_file:
       - envs/prod/.env
-
+    command: ["bash", "./scripts/entrypoint.sh"]
 volumes:
   data: {}

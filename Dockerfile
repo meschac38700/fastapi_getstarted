@@ -62,7 +62,7 @@ WORKDIR ${APP_DIR}
 USER ${USER}
 
 COPY --chown=${USER}:${USER} ./src .
+# util to run test inside container
+COPY --chown=${USER}:${USER} ./tox.ini .
 
-RUN chmod +x ./scripts/entrypoint.sh
-
-ENTRYPOINT ["bash", "./scripts/entrypoint.sh"]
+RUN chmod +x ./scripts/entrypoint.sh ./scripts/entrypoint.dev.sh

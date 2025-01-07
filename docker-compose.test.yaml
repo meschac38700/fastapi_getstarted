@@ -1,32 +1,37 @@
 services:
-  database-dev:
+  database-test:
     image: postgres:14.8-alpine
-    container_name: database-dev
+    container_name: database-test
     restart: always
     ports:
-      - 5433:5432
+      - "5434:5432"
     env_file:
-      - envs/dev/.env
+      - envs/test/.env
     volumes:
-      - dev_data:/var/lib/postgresql/data
+      - test_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 3s
       timeout: 3s
       retries: 5
-  api:
-    container_name: api
+  api-test:
+    container_name: api-test
     restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
+    depends_on:
+      database-test:
+        condition: service_healthy
+        restart: true
     network_mode: host
     volumes:
       - ./src:/home/appuser/app/www
     env_file:
-      - envs/dev/.env
+      - envs/test/.env
+    command: ["bash", "./scripts/entrypoint.dev.sh"]
 
 volumes:
-  dev_data: {}
+  test_data: {}
