@@ -19,6 +19,7 @@ media
 static
 !**/static
 src/static
+src/tox.ini
 
 node_modules
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
