@@ -37,3 +37,14 @@ class TestHeroCRUD(AsyncTestCase):
 
         hero = await self.db_service.refresh(hero)
         self.assertIsNotNone(hero.id)
+
+    async def test_delete_hero(self):
+        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
+        await self.db_service.insert(hero)
+        self.assertIsNotNone(hero.id)
+
+        response = await self.client.delete("/heroes/", params={"id": hero.id})
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
+
+        hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        self.assertIsNone(hero)
