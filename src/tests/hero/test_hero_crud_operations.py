@@ -53,7 +53,7 @@ class TestHeroCRUD(AsyncTestCase):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
         await self.db_service.insert(hero)
         data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
-        response = await self.client.put("/heroes/", data=data)
+        response = await self.client.put(f"/heroes/{hero.id}", data=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
@@ -65,14 +65,14 @@ class TestHeroCRUD(AsyncTestCase):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
         await self.db_service.insert(hero)
         data = {"name": "Test man"}
-        response = await self.client.put("/heroes/", data=data)
+        response = await self.client.put(f"/heroes/{hero.id}", data=data)
         self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
 
     async def test_patch_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
         await self.db_service.insert(hero)
         data = {"name": "Test man"}
-        response = await self.client.patch("/heroes/", data=data)
+        response = await self.client.patch(f"/heroes/{hero.id}", data=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
@@ -86,7 +86,7 @@ class TestHeroCRUD(AsyncTestCase):
             "secret_name": "Pytest Asyncio",
             "age": 1977,
         }
-        response = await self.client.patch("/heroes/", data=data)
+        response = await self.client.patch(f"/heroes/{hero.id}", data=data)
         self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
 
     async def test_delete_hero(self):
@@ -94,7 +94,9 @@ class TestHeroCRUD(AsyncTestCase):
         await self.db_service.insert(hero)
         self.assertIsNotNone(hero.id)
 
-        response = await self.client.delete("/heroes/", params={"id": hero.id})
+        response = await self.client.delete(
+            f"/heroes/{hero.id}", params={"id": hero.id}
+        )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 
         hero = await self.db_service.get(Hero, Hero.id == hero.id)
