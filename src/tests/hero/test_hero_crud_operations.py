@@ -35,7 +35,7 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.post("/heroes/", data=hero)
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
-        hero = await self.db_service.refresh(hero)
+        hero = await self.db_service.get(Hero, Hero.id == hero.id)
         self.assertIsNotNone(hero.id)
 
     async def test_delete_hero(self):
