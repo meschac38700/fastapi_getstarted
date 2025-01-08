@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Any
 
 from httpx import ASGITransport, AsyncClient
 
@@ -41,13 +42,17 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertIn("secret_name", hero)
         self.assertIn("age", hero)
 
-    async def test_create_heroes(self):
+    async def test_create_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        response = await self.client.post("/heroes/", data=hero)
+        response = await self.client.post("/heroes/", json=hero.model_dump())
+
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
-        hero = await self.db_service.get(Hero, Hero.id == hero.id)
-        self.assertIsNotNone(hero.id)
+        hero_created: dict[str, Any] = response.json()
+        self.assertIsNotNone(hero_created["id"])
+        self.assertEqual(hero.name, hero_created["name"])
+        self.assertEqual(hero.secret_name, hero_created["secret_name"])
+        self.assertEqual(hero.age, hero_created["age"])
 
     async def test_put_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
