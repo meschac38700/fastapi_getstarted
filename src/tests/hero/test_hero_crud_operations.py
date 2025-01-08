@@ -30,6 +30,17 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
         self.assertGreaterEqual(len(response.json()), 1)
 
+    async def test_get_hero(self):
+        await fake_heroes(self.db_service)
+        response = await self.client.get("/heroes/1")
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+        hero = response.json()
+        self.assertIsInstance(hero, dict)
+        self.assertIn("id", hero)
+        self.assertIn("name", hero)
+        self.assertIn("secret_name", hero)
+        self.assertIn("age", hero)
+
     async def test_create_heroes(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
         response = await self.client.post("/heroes/", data=hero)
