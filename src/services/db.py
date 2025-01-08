@@ -88,6 +88,10 @@ class DBService:
         data_list = await session.scalars(select(model).where(filters))
         return data_list.first() is not None
 
+    @session_decorator
+    async def refresh(self, instance: SQLModel, session: AsyncSession, *args, **kwargs):
+        return await session.refresh(instance, *args, **kwargs)
+
     # TODO(Complete with others functions)
 
 
