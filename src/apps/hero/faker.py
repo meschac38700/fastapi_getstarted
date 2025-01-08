@@ -21,13 +21,7 @@ async def fake_heroes(db_service: DBService):
     """
 
     filters = Hero.name in [hero.name for hero in hero_list()]
-    print("-----------------------++++++++++++++++++++++---------------------------")
-    print(f"{filters=}, {Hero.name=}")
-    data = await db_service.all(Hero)
-    print(f"{data=}")
     already_exist = await db_service.exists(Hero, filters=filters)
-    print(already_exist)
-    print("-----------------------++++++++++++++++++++++---------------------------")
     if already_exist:
         return
 
