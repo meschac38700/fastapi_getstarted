@@ -1,7 +1,8 @@
 from collections.abc import Callable
-from functools import lru_cache, wraps
-from typing import Any, TypeVar
+from functools import wraps
+from typing import Annotated, Any, TypeVar
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel, select
@@ -114,6 +115,9 @@ class DBService:
     # TODO(Complete with others functions)
 
 
-@lru_cache
-def get_db_service():
-    return DBService()
+async def get_db_service():
+    async with DBService() as db:
+        yield db
+
+
+DBServiceDep = Annotated[DBService, Depends(get_db_service)]
