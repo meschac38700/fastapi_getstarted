@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import lru_cache, wraps
-from typing import Any
+from typing import Any, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
@@ -9,6 +9,7 @@ from sqlmodel import SQLModel, select
 from settings import settings
 
 Fn = Callable[..., Any]
+T = TypeVar("T", bound=SQLModel)
 
 
 def session_decorator(func: Fn) -> Fn:
@@ -39,12 +40,29 @@ class DBService:
         await self.engine.dispose()
 
     @session_decorator
+    async def insert(self, item: T, *, session: AsyncSession):
+        session.add(item)
+        await session.commit()
+        await session.refresh(item)
+
+    @session_decorator
     async def insert_batch(
         self, instances: list[SQLModel], *, session: AsyncSession = None
     ):
         """Insert a batch of SQLModel instances."""
         session.add_all(instances)
         await session.commit()
+
+    @session_decorator
+    async def get(
+        self,
+        model: SQLModel,
+        filter_by: ColumnExpressionArgument[bool] | bool,
+        *,
+        session: AsyncSession,
+    ):
+        res = await session.execute(select(model).where(filter_by))
+        return res.first()
 
     @session_decorator
     async def all(
@@ -89,7 +107,7 @@ class DBService:
         return data_list.first() is not None
 
     @session_decorator
-    async def refresh(self, instance: SQLModel, session: AsyncSession, *args, **kwargs):
+    async def refresh(self, instance: SQLModel, *args, session: AsyncSession, **kwargs):
         return await session.refresh(instance, *args, **kwargs)
 
     # TODO(Complete with others functions)
