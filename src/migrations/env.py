@@ -2,10 +2,11 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import AsyncEngine, async_engine_from_config
 from sqlmodel import SQLModel
 
+from apps import *  # noqa: F403, F401
 from settings import settings
 
 # this is the Alembic Config object, which provides
@@ -99,18 +100,13 @@ def do_run_migrations(connection):
 
 
 def run_migrations_online():
-    connectable = context.config.attributes.get("connection", None)
-    if connectable is None:
-        ini_section = context.config.get_section(context.config.config_ini_section)
-        ini_section["sqlalchemy.url"] = settings.uri
-        connectable = AsyncEngine(
-            engine_from_config(
-                ini_section,
-                prefix="sqlalchemy.",
-                poolclass=pool.NullPool,
-                future=True,
-            )
-        )
+    ini_section = context.config.get_section(config.config_ini_section)
+    ini_section["sqlalchemy.url"] = settings.uri
+    connectable = async_engine_from_config(
+        ini_section,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
 
     if isinstance(connectable, AsyncEngine):
         asyncio.run(run_async_migrations(connectable))
