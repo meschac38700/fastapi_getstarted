@@ -62,7 +62,7 @@ class DBService:
         *,
         session: AsyncSession,
     ):
-        res = await session.execute(select(model).where(filter_by))
+        res = await session.scalars(select(model).where(filter_by))
         return res.first()
 
     @session_decorator
