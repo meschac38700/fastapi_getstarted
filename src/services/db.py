@@ -108,7 +108,8 @@ class DBService:
 
     @session_decorator
     async def refresh(self, instance: SQLModel, *args, session: AsyncSession, **kwargs):
-        return await session.refresh(instance, *args, **kwargs)
+        await session.refresh(instance, *args, **kwargs)
+        return instance
 
     # TODO(Complete with others functions)
 
