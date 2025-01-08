@@ -38,6 +38,46 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await self.db_service.get(Hero, Hero.id == hero.id)
         self.assertIsNotNone(hero.id)
 
+    async def test_put_hero(self):
+        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
+        await self.db_service.insert(hero)
+        data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
+        response = await self.client.put("/heroes/", data=data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        self.assertEqual(data["name"], new_hero.name)
+        self.assertEqual(data["secret_name"], new_hero.secret_name)
+        self.assertEqual(data["age"], new_hero.age)
+
+    async def test_put_partial_hero_should_not_be_possible(self):
+        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
+        await self.db_service.insert(hero)
+        data = {"name": "Test man"}
+        response = await self.client.put("/heroes/", data=data)
+        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+
+    async def test_patch_hero(self):
+        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
+        await self.db_service.insert(hero)
+        data = {"name": "Test man"}
+        response = await self.client.patch("/heroes/", data=data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        self.assertEqual(data["name"], new_hero.name)
+
+    async def test_patch_entire_hero_should_not_be_possible(self):
+        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
+        await self.db_service.insert(hero)
+        data = {
+            "name": "Test man",
+            "secret_name": "Pytest Asyncio",
+            "age": 1977,
+        }
+        response = await self.client.patch("/heroes/", data=data)
+        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+
     async def test_delete_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
         await self.db_service.insert(hero)
