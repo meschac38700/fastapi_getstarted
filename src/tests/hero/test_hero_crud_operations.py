@@ -3,8 +3,8 @@ from typing import Any
 
 from httpx import ASGITransport, AsyncClient
 
-from apps.hero import Hero
 from apps.hero.faker import fake_heroes
+from apps.hero.models import Hero
 from main import app
 from tests.base import AsyncTestCase
 
