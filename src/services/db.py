@@ -113,6 +113,11 @@ class DBService:
         await session.refresh(instance, *args, **kwargs)
         return instance
 
+    @session_decorator
+    async def delete(self, instance: SQLTable, *, session: AsyncSession):
+        await session.delete(instance)
+        await session.commit()
+
     # TODO(Complete with others functions)
 
 
