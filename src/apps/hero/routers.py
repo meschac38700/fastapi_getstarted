@@ -7,7 +7,7 @@ from fastapi.params import Query
 from services import DBServiceDep
 
 from .models import Hero
-from .models.validation_types import HeroCreate
+from .models.validation_types import HeroCreate, HeroUpdate
 
 routers = APIRouter(tags=["heroes"], prefix="/heroes")
 
@@ -38,7 +38,7 @@ async def create_hero(hero: HeroCreate, db_service: DBServiceDep):
 @routers.put(
     "/{pk}", name="Update hero", response_model=Hero, status_code=HTTPStatus.OK
 )
-async def update_hero(pk: int, hero: HeroCreate, db_service: DBServiceDep):
+async def update_hero(pk: int, hero: HeroUpdate, db_service: DBServiceDep):
     stored_hero: Hero = await db_service.get(Hero, Hero.id == pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
