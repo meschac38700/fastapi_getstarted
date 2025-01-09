@@ -62,10 +62,6 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
-        print("--------------------------------------")
-        print(new_hero)
-        print(response.json())
-        print("--------------------------------------")
         self.assertEqual(data["name"], new_hero.name)
         self.assertEqual(data["secret_name"], new_hero.secret_name)
         self.assertEqual(data["age"], new_hero.age)
@@ -73,9 +69,20 @@ class TestHeroCRUD(AsyncTestCase):
     async def test_put_partial_hero_should_not_be_possible(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
         await self.db_service.insert(hero)
-        data = {"name": "Test man"}
+        data = {"name": "Test man", "secret_name": "Pytest"}
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
-        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(HTTPStatus.UNPROCESSABLE_CONTENT, response.status_code)
+        expected_json = {
+            "detail": [
+                {
+                    "type": "missing",
+                    "loc": ["body", "age"],
+                    "msg": "Field required",
+                    "input": {"name": "Test man", "secret_name": "Pytest"},
+                }
+            ]
+        }
+        self.assertDictEqual(expected_json, response.json())
 
     async def test_patch_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
@@ -97,6 +104,10 @@ class TestHeroCRUD(AsyncTestCase):
         }
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+        expected_json = {
+            "detail": "Cannot use PATCH to update entire registry, use PUT instead."
+        }
+        self.assertEqual(expected_json, response.json())
 
     async def test_delete_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
