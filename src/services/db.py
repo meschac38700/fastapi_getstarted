@@ -5,12 +5,13 @@ from typing import Annotated, Any, TypeVar
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
-from sqlmodel import SQLModel, select
+from sqlmodel import select
 
+from core.db import SQLTable
 from settings import settings
 
 Fn = Callable[..., Any]
-T = TypeVar("T", bound=SQLModel)
+T = TypeVar("T", bound=SQLTable)
 
 
 def session_decorator(func: Fn) -> Fn:
@@ -48,16 +49,16 @@ class DBService:
 
     @session_decorator
     async def insert_batch(
-        self, instances: list[SQLModel], *, session: AsyncSession = None
+        self, instances: list[SQLTable], *, session: AsyncSession = None
     ):
-        """Insert a batch of SQLModel instances."""
+        """Insert a batch of SQLTable instances."""
         session.add_all(instances)
         await session.commit()
 
     @session_decorator
     async def get(
         self,
-        model: SQLModel,
+        model: SQLTable,
         filter_by: ColumnExpressionArgument[bool] | bool,
         *,
         session: AsyncSession,
@@ -68,7 +69,7 @@ class DBService:
     @session_decorator
     async def all(
         self,
-        model: SQLModel,
+        model: SQLTable,
         *,
         session: AsyncSession = None,
         offset: int = 0,
@@ -84,7 +85,7 @@ class DBService:
     @session_decorator
     async def filter(
         self,
-        model: SQLModel,
+        model: SQLTable,
         filters: ColumnExpressionArgument[bool] | bool,
         *,
         session: AsyncSession = None,
@@ -99,7 +100,7 @@ class DBService:
     @session_decorator
     async def exists(
         self,
-        model: SQLModel,
+        model: SQLTable,
         *,
         session: AsyncSession = None,
         filters: ColumnExpressionArgument[bool] | bool,
@@ -108,7 +109,7 @@ class DBService:
         return data_list.first() is not None
 
     @session_decorator
-    async def refresh(self, instance: SQLModel, *args, session: AsyncSession, **kwargs):
+    async def refresh(self, instance: SQLTable, *args, session: AsyncSession, **kwargs):
         await session.refresh(instance, *args, **kwargs)
         return instance
 

@@ -1,7 +1,9 @@
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from core.db import SQLTable
 
 
-class HeroBase(SQLModel):
+class HeroBase(SQLTable):
     name: str = Field(index=True)
     secret_name: str
     age: int | None = None
