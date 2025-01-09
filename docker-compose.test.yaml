@@ -1,21 +1,21 @@
 services:
-  database:
+  database-test:
     image: postgres:14.8-alpine
-    container_name: database
+    container_name: database-test
     restart: always
     ports:
-      - 5432:5432
+      - "5434:5432"
     env_file:
-      - envs/prod/.env
+      - envs/test/.env
     volumes:
-      - data:/var/lib/postgresql/data
+      - test_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 3s
       timeout: 3s
       retries: 5
-  api:
-    container_name: api
+  api-test:
+    container_name: api-test
     restart: unless-stopped
     build:
       context: .
@@ -23,15 +23,15 @@ services:
       args:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
     depends_on:
-      database:
+      database-test:
         condition: service_healthy
         restart: true
+    network_mode: host
     volumes:
       - ./src:/home/appuser/app/www
-    ports:
-      - "8001:8001"
     env_file:
-      - envs/prod/.env
-    command: ["bash", "./scripts/entrypoint.sh"]
+      - envs/test/.env
+    command: ["bash", "./scripts/entrypoint.dev.sh"]
+
 volumes:
-  data: {}
+  test_data: {}

@@ -1,10 +1,13 @@
+import asyncio
 import secrets
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from apps.fakers import callbacks
 from core.lifespan import setup, teardown
 from routers import register_app_routers
+from services import DBServiceDep
 from settings import settings
 
 _engine = settings.get_engine()
@@ -25,3 +28,9 @@ register_app_routers(app)
 def secret_key(length: int = 65):
     secret = secrets.token_urlsafe(length)
     return {"secret": secret}
+
+
+@app.get("/load_fake_data", name="Load some fake data.")
+async def load_fake_data(db_service: DBServiceDep):
+    await asyncio.gather(*[c(db_service) for c in callbacks])
+    return {"Loaded": True}

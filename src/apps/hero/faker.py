@@ -1,14 +1,10 @@
-from services import db_service
+from services.db import DBService
 
 from .models import Hero
 
 
-async def fake_heroes():
-    """Initialize hero data.
-
-    Called by: core.lifespan.py
-    """
-    heroes = [
+def hero_list():
+    return [
         Hero(name="Spider-Boy", secret_name="Pedro Parqueador"),
         Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48),
         Hero(name="Iron man", secret_name="Robert Downey Jr", age=59),
@@ -16,4 +12,17 @@ async def fake_heroes():
         Hero(name="Superman", secret_name="Henry Cavill", age=41),
         Hero(name="Deadpond", secret_name="Dive Wilson"),
     ]
-    await db_service.insert_batch(heroes)
+
+
+async def fake_heroes(db_service: DBService):
+    """Initialize fake hero data if not already exist.
+
+    Called by: core.lifespan.py
+    """
+
+    filters = Hero.name in [hero.name for hero in hero_list()]
+    already_exist = await db_service.exists(Hero, filters=filters)
+    if already_exist:
+        return
+
+    await db_service.insert_batch(hero_list())

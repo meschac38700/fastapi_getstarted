@@ -1,5 +1,3 @@
-from .db import get_db_service
+from .db import DBServiceDep, get_db_service
 
-db_service = get_db_service()
-
-__all__ = ["db_service"]
+__all__ = ["get_db_service", "DBServiceDep"]
