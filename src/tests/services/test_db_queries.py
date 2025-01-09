@@ -1,7 +1,7 @@
 import pytest
 
-from apps.hero import Hero
 from apps.hero.faker import fake_heroes, hero_list
+from apps.hero.models import Hero
 from tests.base import AsyncTestCase
 
 BASE_URL = "http://test"
