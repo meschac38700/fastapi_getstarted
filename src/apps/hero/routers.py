@@ -63,3 +63,12 @@ async def patch_hero(pk: int, hero: HeroPatch, db_service: DBServiceDep):
     stored_hero.update_from_dict(hero.model_dump(exclude_unset=True))
     await db_service.insert(stored_hero)
     return stored_hero
+
+
+@routers.delete("/{pk}", name="Delete hero", status_code=HTTPStatus.NO_CONTENT)
+async def delete_hero(pk: int, db_service: DBServiceDep):
+    stored_hero: Hero = await db_service.get(Hero, Hero.id == pk)
+    if stored_hero is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
+
+    await db_service.delete(stored_hero)
