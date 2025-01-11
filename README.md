@@ -72,4 +72,4 @@ alembic upgrade head
 > [!WARNING]
 > After adding a new application in the `apps/` module,
 > you must fill the import list `apps_target_metadata` in `apps.models_metadata.py` module with the new model metadata that you have just added
-> This will allow the still script to take the new model into account during its migration creation process.
+> This will permit alembic to consider the new model during its migration process.
