@@ -1,4 +1,4 @@
-from services.db import DBService
+from core.db.dependency import DBService
 
 from .models import Hero
 
