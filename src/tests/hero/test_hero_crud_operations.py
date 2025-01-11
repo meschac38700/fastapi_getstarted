@@ -3,7 +3,6 @@ from typing import Any
 
 from httpx import ASGITransport, AsyncClient
 
-from apps.hero.faker import fake_heroes
 from apps.hero.models import Hero
 from main import app
 from tests.base import AsyncTestCase
@@ -12,6 +11,10 @@ BASE_URL = "http://test"
 
 
 class TestHeroCRUD(AsyncTestCase):
+    fixtures = [
+        "initial-heroes",
+    ]
+
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.client = AsyncClient(transport=ASGITransport(app=app), base_url=BASE_URL)
@@ -22,17 +25,10 @@ class TestHeroCRUD(AsyncTestCase):
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
-        assert HTTPStatus.OK == response.status_code
-        data = response.json()
-        assert len(data) == 0
-
-        await fake_heroes(self.db_service)
-        response = await self.client.get("/heroes/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
         self.assertGreaterEqual(len(response.json()), 1)
 
     async def test_get_hero(self):
-        await fake_heroes(self.db_service)
         response = await self.client.get("/heroes/1")
         self.assertEqual(HTTPStatus.OK, response.status_code)
         hero = response.json()
