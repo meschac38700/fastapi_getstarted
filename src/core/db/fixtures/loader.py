@@ -1,6 +1,6 @@
 import glob
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from importlib import import_module
 from pathlib import Path
 from typing import Any
@@ -69,15 +69,29 @@ class LoadFixtures:
             await SQLTable.objects().insert_batch(models)
             self.count_created += len(models)
 
-    async def load_fixtures(
-        self,
-    ) -> int:
+    async def load_fixtures(self, fixture_names: Sequence[str] | None = None) -> int:
         for app in glob.glob(str(self.app_dir / "*")):
             fixture_folder = Path(app) / "fixtures"
             if not fixture_folder.is_dir():
                 continue
 
-            fixture_files = glob.glob(str(fixture_folder / "*"))
-            await self._load_fixtures(fixture_files)
+            await self._load_fixtures(
+                self._filter_fixture_files(
+                    glob.glob(str(fixture_folder / "*")), fixture_names
+                )
+            )
 
         return self.count_created
+
+    def _filter_fixture_files(
+        self, fixture_files: Sequence[str], desired_fixture_names: Sequence[str]
+    ) -> Iterable[str]:
+        if not desired_fixture_names or not isinstance(desired_fixture_names, Iterable):
+            return fixture_files
+
+        return (
+            fixture_file
+            for fixture_file in fixture_files
+            if Path(fixture_file).stem in desired_fixture_names
+            or Path(fixture_file).name in desired_fixture_names
+        )
