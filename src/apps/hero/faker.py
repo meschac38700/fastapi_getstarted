@@ -1,4 +1,4 @@
-from services.db import DBService
+from core.db.dependency import DBService
 
 from .models import Hero
 
@@ -21,8 +21,8 @@ async def fake_heroes(db_service: DBService):
     """
 
     filters = Hero.name in [hero.name for hero in hero_list()]
-    already_exist = await db_service.exists(Hero, filters=filters)
-    if already_exist:
+    already_exists = await Hero.get(filters)
+    if already_exists is not None:
         return
 
-    await db_service.insert_batch(hero_list())
+    await Hero.batch_create(hero_list())

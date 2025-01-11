@@ -48,6 +48,8 @@ class TestHeroCRUD(AsyncTestCase):
 
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
+        stored_hero = await Hero.get(Hero.name == "Super Test Man")
+        self.assertIsInstance(stored_hero, Hero)
         hero_created: dict[str, Any] = response.json()
         self.assertIsNotNone(hero_created["id"])
         self.assertEqual(hero.name, hero_created["name"])
@@ -55,8 +57,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(hero.age, hero_created["age"])
 
     async def test_put_hero(self):
-        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        await self.db_service.insert(hero)
+        hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -67,8 +68,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(data["age"], new_hero.age)
 
     async def test_put_partial_hero_should_not_be_possible(self):
-        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        await self.db_service.insert(hero)
+        hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man", "secret_name": "Pytest"}
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.UNPROCESSABLE_CONTENT, response.status_code)
@@ -85,8 +85,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertDictEqual(expected_json, response.json())
 
     async def test_patch_hero(self):
-        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        await self.db_service.insert(hero)
+        hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man"}
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -95,8 +94,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(data["name"], new_hero.name)
 
     async def test_patch_entire_hero_should_not_be_possible(self):
-        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        await self.db_service.insert(hero)
+        hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {
             "name": "Test man",
             "secret_name": "Pytest Asyncio",
@@ -110,8 +108,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(expected_json, response.json())
 
     async def test_delete_hero(self):
-        hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        await self.db_service.insert(hero)
+        hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         self.assertIsNotNone(hero.id)
 
         response = await self.client.delete(
