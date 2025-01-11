@@ -29,8 +29,9 @@ class TestDBService(AsyncTestCase):
 
     @pytest.mark.anyio
     async def test_insert_batch_prevent_duplication(self):
-        await self.db_service.all(Hero)
+        self.assertEqual(0, len(await self.db_service.all(Hero)))
         # load data twice
+        await self.db_service.insert_batch(self.hero_list())
         await self.db_service.insert_batch(self.hero_list())
         data = await self.db_service.all(Hero)
         self.assertGreaterEqual(len(data), len(self.hero_list()))
