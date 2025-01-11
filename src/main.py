@@ -5,9 +5,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from apps.fakers import callbacks
+from core.db import DBServiceDep
 from core.lifespan import setup, teardown
 from routers import register_app_routers
-from services import DBServiceDep
 from settings import settings
 
 _engine = settings.get_engine()

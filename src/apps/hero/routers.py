@@ -3,7 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
-from services import DBServiceDep
+
+from core.db import DBServiceDep
 
 from .models import Hero
 from .models.validation_types import HeroCreate, HeroPatch, HeroUpdate
