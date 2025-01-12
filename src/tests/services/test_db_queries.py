@@ -1,12 +1,9 @@
-import pytest
-
 from apps.hero.models import Hero
 from tests.base import AsyncTestCase
 
 BASE_URL = "http://test"
 
 
-@pytest.mark.anyio
 class TestDBService(AsyncTestCase):
     def hero_list(self):
         return [
@@ -18,7 +15,6 @@ class TestDBService(AsyncTestCase):
             Hero(name="Deadpond", secret_name="Dive Wilson"),
         ]
 
-    @pytest.mark.anyio
     async def test_insert_batch(self):
         data = await self.db_service.all(Hero)
         self.assertEqual(0, len(data))
@@ -27,7 +23,6 @@ class TestDBService(AsyncTestCase):
         data = await self.db_service.all(Hero)
         self.assertGreaterEqual(len(data), len(self.hero_list()))
 
-    @pytest.mark.anyio
     async def test_insert_batch_prevent_duplication(self):
         self.assertEqual(0, len(await self.db_service.all(Hero)))
         # load data twice
