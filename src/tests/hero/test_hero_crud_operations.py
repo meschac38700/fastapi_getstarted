@@ -4,8 +4,8 @@ from typing import Any
 from httpx import ASGITransport, AsyncClient
 
 from apps.hero.models import Hero
+from core.test.async_case import AsyncTestCase
 from main import app
-from tests.base import AsyncTestCase
 
 BASE_URL = "http://test"
 
