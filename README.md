@@ -46,6 +46,12 @@ cd getstarted
 direnv allow .
 ```
 
+if you don't want to configure `direnv`, you need to export `APP_ENVIRONMENT` every time you move to the project directory:
+
+```bash
+export APP_ENVIRONMENT=dev
+```
+
 ## Run the application
 
 Run prod server

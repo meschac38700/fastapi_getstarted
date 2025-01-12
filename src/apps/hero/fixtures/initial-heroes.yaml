@@ -1,0 +1,27 @@
+- model: hero.Hero
+  properties:
+    name: "Spider-Boy"
+    secret_name: "Pedro Parqueador"
+- model: hero.Hero
+  properties:
+    name: "Superman"
+    secret_name: "Clark Kent"
+- model: hero.Hero
+  properties:
+    name: "Deadpond"
+    secret_name: "Dive Wilson"
+- model: hero.Hero
+  properties:
+    name: "Iron man"
+    secret_name: "Tony Stark"
+    age: 55
+- model: hero.Hero
+  properties:
+    name: "Captain America"
+    secret_name: "Steve Rogers"
+    age: 107
+- model: hero.Hero
+  properties:
+    name: "Rusty-Man"
+    secret_name: "Tommy Sharp"
+    age: 48
