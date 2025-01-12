@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 from core.db.fixtures import LoadFixtures
 from core.lifespan import setup, teardown
-from routers import register_app_routers
+from core.routers.register import AppRouter
 from settings import settings
 
 _engine = settings.get_engine()
@@ -19,7 +19,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-register_app_routers(app)
+AppRouter().register_all(app)
 
 
 @app.get("/", name="Generate secret key.")
