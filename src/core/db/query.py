@@ -31,7 +31,7 @@ class ModelQuery:
         return await cls.objects().all(offset=offset, limit=limit)
 
     async def save(self) -> Self:
-        return await self.objects().insert(self.model_dump())
+        return await self.objects().insert(self)
 
     async def delete(self) -> None:
         return await self.objects().delete(self)

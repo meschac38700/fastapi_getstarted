@@ -1,3 +1,4 @@
+import itertools
 from collections.abc import Callable
 from functools import wraps
 from typing import Annotated, Any, TypeVar
@@ -5,13 +6,12 @@ from typing import Annotated, Any, TypeVar
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
-from sqlmodel import select
+from sqlmodel import SQLModel, select
 
-from core.db import SQLTable
 from settings import settings
 
 Fn = Callable[..., Any]
-T = TypeVar("T", bound=SQLTable)
+T = TypeVar("T", bound=SQLModel)
 
 
 def session_decorator(func: Fn) -> Fn:
@@ -46,19 +46,26 @@ class DBService:
         session.add(item)
         await session.commit()
         await session.refresh(item)
+        return item
 
     @session_decorator
     async def insert_batch(
-        self, instances: list[SQLTable], *, session: AsyncSession = None
+        self,
+        instances: list[SQLModel],
+        *,
+        batch_size: int = 50,
+        session: AsyncSession = None,
     ):
-        """Insert a batch of SQLTable instances."""
-        session.add_all(instances)
-        await session.commit()
+        """Insert a batch of SQLModel instances."""
+        batches = itertools.batched(instances, batch_size)
+        for batch in batches:
+            session.add_all(batch)
+            await session.commit()
 
     @session_decorator
     async def get(
         self,
-        model: SQLTable,
+        model: SQLModel,
         filter_by: ColumnExpressionArgument[bool] | bool,
         *,
         session: AsyncSession,
@@ -69,7 +76,7 @@ class DBService:
     @session_decorator
     async def all(
         self,
-        model: SQLTable,
+        model: SQLModel,
         *,
         session: AsyncSession = None,
         offset: int = 0,
@@ -85,7 +92,7 @@ class DBService:
     @session_decorator
     async def filter(
         self,
-        model: SQLTable,
+        model: SQLModel,
         filters: ColumnExpressionArgument[bool] | bool,
         *,
         session: AsyncSession = None,
@@ -100,7 +107,7 @@ class DBService:
     @session_decorator
     async def exists(
         self,
-        model: SQLTable,
+        model: SQLModel,
         *,
         session: AsyncSession = None,
         filters: ColumnExpressionArgument[bool] | bool,
@@ -109,12 +116,12 @@ class DBService:
         return data_list.first() is not None
 
     @session_decorator
-    async def refresh(self, instance: SQLTable, *args, session: AsyncSession, **kwargs):
+    async def refresh(self, instance: SQLModel, *args, session: AsyncSession, **kwargs):
         await session.refresh(instance, *args, **kwargs)
         return instance
 
     @session_decorator
-    async def delete(self, instance: SQLTable, *, session: AsyncSession):
+    async def delete(self, instance: SQLModel, *, session: AsyncSession):
         await session.delete(instance)
         await session.commit()
 
