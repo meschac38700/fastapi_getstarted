@@ -12,12 +12,13 @@ class AppRouter:
     """Register all routers found in the apps/ directory, respecting the correct structure of the applications.
 
     correct app structure:
-        apps
-            {app_name}
-                routers.py
-                    or
-                routers
-                    __init__.py (include __all__ = [routers]
+    apps
+        └── hero
+            ├── fixtures
+            │   └── initial-heroes.yaml
+            ├── models
+            │   └── __init__.py
+            └── routers.py (OR module and routers variable should be named/export as 'routers')
     """
 
     def __init__(self):
