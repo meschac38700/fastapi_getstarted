@@ -7,7 +7,7 @@ from fastapi.params import Query
 from core.db import DBServiceDep
 
 from .models import Hero
-from .models.validation_types import HeroCreate, HeroPatch, HeroUpdate
+from .models.pydantic_models import HeroCreate, HeroPatch, HeroUpdate
 
 routers = APIRouter(tags=["heroes"], prefix="/heroes")
 
