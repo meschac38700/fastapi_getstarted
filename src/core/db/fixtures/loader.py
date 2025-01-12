@@ -1,4 +1,5 @@
 import glob
+import logging
 import re
 from collections.abc import Iterable, Sequence
 from importlib import import_module
@@ -13,13 +14,17 @@ from core.db import SQLTable
 from settings import BASE_DIR
 
 _APP_DIR = BASE_DIR / "apps"
+_logger = logging.getLogger(__name__)
 
 
 class LoadFixtures:
     _ALLOWED_FILES = [".yaml"]
 
-    def __init__(self, app_dir: str | Path = _APP_DIR):
+    def __init__(
+        self, app_dir: str | Path = _APP_DIR, *, logger: logging.Logger | None = None
+    ):
         self.app_dir: Path = Path(app_dir)
+        self.logger = logger or _logger
         self.count_created = 0
 
     def _get_model_data(self, model_str: str):
@@ -44,7 +49,13 @@ class LoadFixtures:
         model_module, model_name = self._get_model_data(model_data["model"])
         kwargs = model_data["properties"]
         if (pk := model_data.get("id")) is not None:
-            kwargs["id"] = pk
+            """
+            There is a problem inserting data with primary key
+            Work around by omitting the id field
+            Open discussion: https://github.com/fastapi/sqlmodel/discussions/1267
+            """
+            self.logger.info(f"ID temporarily not supported: '{pk=}'.")
+            # kwargs["id"] = pk
 
         model_class: type[SQLModel] = getattr(model_module, model_name)
         if model_class is None:
