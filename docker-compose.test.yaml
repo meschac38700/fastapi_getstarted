@@ -6,7 +6,7 @@ services:
     ports:
       - "5434:5432"
     env_file:
-      - envs/test/.env
+      - envs.example/test/.env
     volumes:
       - test_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,7 +30,7 @@ services:
     volumes:
       - ./src:/home/appuser/app/www
     env_file:
-      - envs/test/.env
+      - envs.example/test/.env
     command: ["bash", "./scripts/entrypoint.dev.sh"]
 
 volumes:
