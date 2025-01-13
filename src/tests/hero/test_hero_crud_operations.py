@@ -65,18 +65,11 @@ class TestHeroCRUD(AsyncTestCase):
 
     async def test_put_partial_hero_should_not_be_possible(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
-        data = {"name": "Test man", "secret_name": "Pytest"}
+        data = {"name": "Test man", "secret_name": "Pytest"}  # only name was updated
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
-        self.assertEqual(HTTPStatus.UNPROCESSABLE_CONTENT, response.status_code)
+        self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
         expected_json = {
-            "detail": [
-                {
-                    "type": "missing",
-                    "loc": ["body", "age"],
-                    "msg": "Field required",
-                    "input": {"name": "Test man", "secret_name": "Pytest"},
-                }
-            ]
+            "detail": "Cannot use PUT to partially update registry, use PATCH instead."
         }
         self.assertDictEqual(expected_json, response.json())
 
@@ -97,7 +90,7 @@ class TestHeroCRUD(AsyncTestCase):
             "age": 1977,
         }
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
-        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
         expected_json = {
             "detail": "Cannot use PATCH to update entire registry, use PUT instead."
         }
