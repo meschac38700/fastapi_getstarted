@@ -35,7 +35,7 @@ repos:
         types_or: [ python, toml ]
         args: [ --fix ]
   - repo: https://github.com/hadialqattan/pycln
-    rev: v2.4.0
+    rev: v2.4.0 # Possible releases: https://github.com/hadialqattan/pycln/releases
     hooks:
       - id: pycln
         args: [--config=pyproject.toml]

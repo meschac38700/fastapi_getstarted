@@ -32,8 +32,8 @@ jobs:
     - name: Prepare test environment
       run: |
         export PYTHON_VERSION=${{ matrix.python-version }}
-        docker compose -f docker-compose.test.yaml up -d
+        docker compose -f docker-compose.test.yaml up -d --build
 
     - name: Run Tests
       run: |
-        docker exec -t app-test pytest .
+        docker exec -t api-test pytest .
