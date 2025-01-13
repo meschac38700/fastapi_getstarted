@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-22.04
+    env:
+      # Since we are running Django with the host network,
+      # we need to change the default exposure port from 80 to 8000.
+      APP_PORT: 8000
+
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.12", "3.13"]
+        docker-version: ["27.2"]
+        docker-channel: ["stable"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: docker-practice/actions-setup-docker@master
+      with:
+        docker_version: ${{ matrix.docker-version }}
+        docker_channel: ${{ matrix.docker-channel }}
+
+    - name: Prepare test environment
+      run: |
+        export PYTHON_VERSION=${{ matrix.python-version }}
+        docker compose -f docker-compose.test.yaml up -d
+
+    - name: Run Tests
+      run: |
+        docker exec -t app-test pytest .
