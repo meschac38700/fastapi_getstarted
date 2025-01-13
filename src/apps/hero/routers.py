@@ -55,9 +55,7 @@ async def patch_hero(pk: int, hero: HeroPatch):
     stored_hero: Hero = await Hero.get(Hero.id == pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
-    print("----------------------------------------------------+++++++")
-    print(hero.check_all_field_updated(stored_hero.model_dump()))
-    print("----------------------------------------------------+++++++")
+
     if hero.check_all_field_updated(stored_hero.model_dump()):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
