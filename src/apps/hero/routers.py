@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
 
 from .models import Hero
-from .models.pydantic_models import HeroCreate, HeroPatch, HeroUpdate
+from .models.pydantic_models import HeroCreate, HeroPatch
 
 routers = APIRouter(tags=["heroes"], prefix="/heroes")
 
@@ -34,10 +34,14 @@ async def create_hero(hero: HeroCreate):
 @routers.put(
     "/{pk}", name="Update hero", response_model=Hero, status_code=HTTPStatus.OK
 )
-async def update_hero(pk: int, hero: HeroUpdate):
+async def update_hero(pk: int, hero: HeroCreate):
     stored_hero: Hero = await Hero.get(Hero.id == pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
+
+    if not hero.check_all_required_fields_updated(stored_hero.model_dump()):
+        detail = "Cannot use PUT to partially update registry, use PATCH instead."
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
 
     stored_hero.update_from_dict(hero.model_dump(exclude_unset=True))
     return await stored_hero.save()
@@ -50,10 +54,12 @@ async def patch_hero(pk: int, hero: HeroPatch):
     stored_hero: Hero = await Hero.get(Hero.id == pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
-
+    print("----------------------------------------------------+++++++")
+    print(hero.check_all_field_updated(stored_hero.model_dump()))
+    print("----------------------------------------------------+++++++")
     if hero.check_all_field_updated(stored_hero.model_dump()):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
-        raise HTTPException(status_code=HTTPStatus.METHOD_NOT_ALLOWED, detail=detail)
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
 
     stored_hero.update_from_dict(hero.model_dump(exclude_unset=True))
     return await stored_hero.save()
