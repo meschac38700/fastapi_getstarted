@@ -5,7 +5,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Query
 
 from .models import Hero
-from .models.pydantic_models import HeroCreate, HeroPatch
+from .models.pydantic.create import HeroCreate
+from .models.pydantic.patch import HeroPatch
 
 routers = APIRouter(tags=["heroes"], prefix="/heroes")
 
