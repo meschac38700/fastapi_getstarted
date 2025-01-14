@@ -32,4 +32,4 @@ services:
         restart: true
     env_file:
       - envs.example/test/.env
-    command: ["bash", "./scripts/entrypoint.dev.sh"]
+    command: ["bash", "./scripts/entrypoint.sh"]

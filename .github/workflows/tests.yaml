@@ -31,4 +31,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        docker exec -t api_test pytest .
+        docker exec -t api_test pytest

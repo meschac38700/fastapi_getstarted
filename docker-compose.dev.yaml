@@ -36,6 +36,6 @@ services:
       - ./src:/home/appuser/app/www
     env_file:
       - envs/dev/.env
-    command: ["bash", "./scripts/entrypoint.dev.sh"]
+    command: ["bash", "./scripts/entrypoint.sh"]
 volumes:
   dev_data: {}

@@ -65,4 +65,4 @@ COPY --chown=${USER}:${USER} ./src .
 # util to run test inside container
 COPY --chown=${USER}:${USER} ./tox.ini .
 
-RUN chmod +x ./scripts/entrypoint.sh ./scripts/entrypoint.dev.sh
+RUN chmod +x ./scripts/entrypoint.sh
