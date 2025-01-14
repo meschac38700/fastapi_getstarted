@@ -15,4 +15,5 @@ jobs:
       - name: Run pre-commit
         run: |
           echo $PWD
+          ls -alh
           pre-commit run --all-files
