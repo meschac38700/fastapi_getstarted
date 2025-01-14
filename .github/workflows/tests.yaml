@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "*" ]
+    branches: ["*"]
 
 jobs:
   tests:
@@ -17,18 +17,18 @@ jobs:
         docker-channel: ["stable"]
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: docker-practice/actions-setup-docker@master
-      with:
-        docker_version: ${{ matrix.docker-version }}
-        docker_channel: ${{ matrix.docker-channel }}
+      - uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: ${{ matrix.docker-version }}
+          docker_channel: ${{ matrix.docker-channel }}
 
-    - name: Prepare test environment
-      run: |
-        export PYTHON_VERSION=${{ matrix.python-version }}
-        docker compose -f docker-compose.test.yaml up -d
+      - name: Prepare test environment
+        run: |
+          export PYTHON_VERSION=${{ matrix.python-version }}
+          docker compose -f docker-compose.test.yaml up -d
 
-    - name: Run Tests
-      run: |
-        docker exec -t api_test pytest
+      - name: Run Tests
+        run: |
+          docker exec -t api_test pytest

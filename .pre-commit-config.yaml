@@ -1,50 +1,78 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+exclude: "vendor/"
+
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.5.0 # Possible releases: https://github.com/hadialqattan/pycln/releases
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
+      - id: pycln
+        args: [--config=pyproject.toml]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-toml
       - id: check-yaml
+      - id: check-json
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        files: "\\.(py|txt|yaml|json|md|toml|lock|cfg|html|sh|js|yml)$"
+      - id: trailing-whitespace
+        files: "\\.(py|txt|yaml|json|md|toml|lock|cfg|html|sh|js|yml)$"
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-byte-order-marker
       - id: check-added-large-files
-        args: ['--maxkb=100000']
+      - id: check-executables-have-shebangs
+
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
-        args: [--py310-plus]
-  # Issue on 1.7.5: https://github.com/PyCQA/docformatter/issues/293
+        args: [--py38-plus]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        files: "\\.(py)$"
+        args: [--settings-path=pyproject.toml]
+
   # - repo: https://github.com/myint/docformatter
-  #   rev: v1.7.5
+  #   rev: v1.4
   #   hooks:
   #     - id: docformatter
-  #       name: docformatter
-  #       description: 'Formats docstrings to follow PEP 257.'
-  #       entry: docformatter
-  #       args: [ -i ]
-  #       language: python
-  #       types: [ python ]
+  #       args: [--in-place]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: "7.1.1"
+    hooks:
+      - id: flake8
+        additional_dependencies: [pep8-naming]
+
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.14.1
+  #   hooks:
+  #     - id: mypy
+  #       additional_dependencies:
+  #         - types-requests==2.32.0.20241016
+  #         - types-PyYAML==6.0.12.20241230
+  #       exclude: tests/data/
+  #       args: [--config-file=pyproject.toml]
+
+  - repo: https://github.com/pre-commit/mirrors-pylint
+    rev: v3.0.0a5
+    hooks:
+      - id: pylint
+        args: [--rcfile=.pylintrc]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.2
     hooks:
       - id: ruff-format
-        types_or: [ python, toml ]
+        types_or: [python, toml]
       - id: ruff
-        types_or: [ python, toml ]
-        args: [ --fix ]
-  - repo: https://github.com/hadialqattan/pycln
-    rev: v2.4.0 # Possible releases: https://github.com/hadialqattan/pycln/releases
-    hooks:
-      - id: pycln
-        args: [--config=pyproject.toml]
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        additional_dependencies: [pep8-naming]
+        types_or: [python, toml]
+        args: [--fix]
