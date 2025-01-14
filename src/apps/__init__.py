@@ -8,5 +8,5 @@ app_metadata = [
 ]
 
 __all__ = [
-    app_metadata,
+    "app_metadata",
 ]
