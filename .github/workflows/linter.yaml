@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - uses: pre-commit/action@v3.0.1
 
       - name: Run pre-commit
         run: |
-          echo $PWD
-          ls -alh
           pre-commit run --all-files
