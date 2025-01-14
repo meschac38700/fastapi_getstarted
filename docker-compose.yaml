@@ -22,6 +22,12 @@ services:
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
+    healthcheck:
+      test: curl --fail http://localhost:$$APP_PORT/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
     depends_on:
       database:
         condition: service_healthy

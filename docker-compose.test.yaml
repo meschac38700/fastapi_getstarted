@@ -1,7 +1,7 @@
 services:
-  database-test:
+  database_test:
     image: postgres:14.8-alpine
-    container_name: database-test
+    container_name: database_test
     restart: always
     ports:
       - "5434:5432"
@@ -12,16 +12,22 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
-  api-test:
-    container_name: api-test
+  api_test:
+    container_name: api_test
     restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
+        PYTHON_VERSION: "${PYTHON_VERSION:-3.13}"
+    healthcheck:
+      test: curl --fail http://localhost:$$APP_PORT/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
     depends_on:
-      database-test:
+      database_test:
         condition: service_healthy
         restart: true
     env_file:
