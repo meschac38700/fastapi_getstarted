@@ -33,7 +33,7 @@ class SQLTable(SQLModel, ModelQuery):
 
         # check_fields = list()
         all_field_filled = len(_old_data.keys()) == len(current_attrs)
-        if required:
+        if required:  # TODO(Eliam): Only check that all required fields have been filled in, even if they have not been updated.
             required_fields = list(self.required_fields)
             all_field_filled = all(k in current_attrs for k in required_fields)
             current_attrs = list(required_fields)
