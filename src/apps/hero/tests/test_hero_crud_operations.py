@@ -1,27 +1,14 @@
 from http import HTTPStatus
 from typing import Any
 
-from httpx import ASGITransport, AsyncClient
-
 from apps.hero.models import Hero
 from core.test.async_case import AsyncTestCase
-from main import app
-
-BASE_URL = "http://test"
 
 
 class TestHeroCRUD(AsyncTestCase):
     fixtures = [
         "initial-heroes",
     ]
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        self.client = AsyncClient(transport=ASGITransport(app=app), base_url=BASE_URL)
-
-    async def asyncTearDown(self):
-        await super().asyncTearDown()
-        await self.client.aclose()
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
