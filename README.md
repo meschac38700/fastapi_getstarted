@@ -2,11 +2,11 @@
 
 #### Python Version:
 
-_3.12.0 <= python <= 3.13.X_
+###### *_python >= 3.13.X_*
 
 # Get started
 
-Rename the folder **envs.example** to **envs** Then specify the correct private
+Rename the folder **envs.example** to **envs** Then change the environment
 information
 
 # Build Application environment
