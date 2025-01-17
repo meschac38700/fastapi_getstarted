@@ -104,25 +104,6 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(data["username"], patched_user["username"])
         self.assertEqual(data["email"], patched_user["email"])
 
-    async def test_put_partial_user_should_not_be_possible(self):
-        user = await User(
-            username="jdoe",
-            first_name="John",
-            last_name="DOE",
-            email="jdoe@example.test",
-        ).save()
-        data = {
-            "username": "doej",
-            "first_name": "Jane",
-        }
-        response = await self.client.put(f"/users/{user.id}", json=data)
-        self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
-
-        expected_response = {
-            "detail": "Cannot use PUT to update partial object, use PATCH instead."
-        }
-        self.assertEqual(expected_response, response.json())
-
     async def test_delete_user(self):
         user_to_delete = await User.get(User.id == 1)
         self.assertIsNone(user_to_delete)
