@@ -1,0 +1,13 @@
+- model: user.User
+  properties:
+    username: fastapi
+    first_name: FastAPI
+    last_name: Python
+    email: fastapi@example.com
+
+- model: user.User
+  properties:
+    username: test
+    first_name: Pytest
+    last_name: FastAPI
+    email: pytest@example.com
