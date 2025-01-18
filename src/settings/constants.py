@@ -16,5 +16,5 @@ DATABASE_ENV_FILE = BASE_DIR.parent / "envs" / env_name / ".env"
 PASSWORD_HASHERS = [
     "core.auth.hashers.bcrypt.BCryptPasswordHasher",
 ]
-PASSWORD_HASHER_INDEX = os.getenv("PASSWORD_HASHER_INDEX") or 0
+PASSWORD_HASHER_INDEX = int(os.getenv("PASSWORD_HASHER_INDEX") or 0)
 PASSWORD_HASHER = PASSWORD_HASHERS[PASSWORD_HASHER_INDEX]
