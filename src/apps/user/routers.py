@@ -48,3 +48,17 @@ async def patch_user(pk: int, user: UserPatch):
 
     stored_user.update_from_dict(user.model_dump(exclude_unset=True))
     return await stored_user.save()
+
+
+@routers.post("/", status_code=HTTPStatus.CREATED)
+async def post_user(user: UserCreate):
+    return await User(**user.model_dump(exclude_unset=True)).save()
+
+
+@routers.delete("/{pk}", status_code=HTTPStatus.NO_CONTENT)
+async def delete_user(pk: int):
+    stored_user = await User.get(User.id == pk)
+    if stored_user is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    return await stored_user.delete()
