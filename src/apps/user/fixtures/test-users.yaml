@@ -3,6 +3,7 @@
     username: fastapi
     first_name: FastAPI
     last_name: Python
+    password: fastapi
     email: fastapi@example.com
 
 - model: user.User
@@ -10,4 +11,5 @@
     username: test
     first_name: Pytest
     last_name: FastAPI
+    password: test
     email: pytest@example.com

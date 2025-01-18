@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=DATABASE_ENV_FILE, cli_ignore_unknown_args=True
     )
+    password_hasher_index: int = 0
 
     def get_engine(self):
         engine = create_async_engine(self.uri)
