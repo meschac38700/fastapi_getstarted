@@ -6,4 +6,4 @@ from ._base import HeroBaseModel
 @optional_fields
 class HeroPatch(HeroBaseModel):
     class ConfigDict:
-        orm_mode = False
+        from_attributes = True
