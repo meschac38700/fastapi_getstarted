@@ -106,7 +106,7 @@ class TestUserCRUD(AsyncTestCase):
 
     async def test_delete_user(self):
         user_to_delete = await User.get(User.id == 1)
-        self.assertIsNone(user_to_delete)
+        self.assertIsNotNone(user_to_delete)
 
         response = await self.client.delete(f"/users/{user_to_delete.id}")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
