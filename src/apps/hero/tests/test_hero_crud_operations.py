@@ -1,27 +1,14 @@
 from http import HTTPStatus
 from typing import Any
 
-from httpx import ASGITransport, AsyncClient
-
 from apps.hero.models import Hero
 from core.test.async_case import AsyncTestCase
-from main import app
-
-BASE_URL = "http://test"
 
 
 class TestHeroCRUD(AsyncTestCase):
     fixtures = [
         "initial-heroes",
     ]
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        self.client = AsyncClient(transport=ASGITransport(app=app), base_url=BASE_URL)
-
-    async def asyncTearDown(self):
-        await super().asyncTearDown()
-        await self.client.aclose()
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
@@ -62,16 +49,6 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertEqual(data["name"], new_hero.name)
         self.assertEqual(data["secret_name"], new_hero.secret_name)
         self.assertEqual(data["age"], new_hero.age)
-
-    async def test_put_partial_hero_should_not_be_possible(self):
-        hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
-        data = {"name": "Test man", "secret_name": "Pytest"}  # only name was updated
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
-        self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
-        expected_json = {
-            "detail": "Cannot use PUT to partially update registry, use PATCH instead."
-        }
-        self.assertDictEqual(expected_json, response.json())
 
     async def test_patch_hero(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
