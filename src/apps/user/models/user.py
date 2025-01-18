@@ -43,5 +43,4 @@ class User(UserBase, table=True):
             self.password = self._password_hasher.hash(self.password)
 
     def check_password(self, password_plain: str):
-        print(f"Verify: {password_plain=}, {self.password=}")
         return self._password_hasher.verify(password_plain, self.password)
