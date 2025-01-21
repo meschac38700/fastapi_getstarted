@@ -55,7 +55,7 @@ class LoadFixtures:
             Open discussion: https://github.com/fastapi/sqlmodel/discussions/1267
             """
             self.logger.info(f"ID temporarily not supported: '{pk=}'.")
-            # kwargs["id"] = pk
+            kwargs["id"] = pk
 
         model_class: type[SQLModel] = getattr(model_module, model_name)
         if model_class is None:
