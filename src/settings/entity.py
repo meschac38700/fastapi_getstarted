@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import create_engine
 
 from .constants import DATABASE_ENV_FILE
 
@@ -22,12 +22,13 @@ class Settings(BaseSettings):
     password_hasher_index: int = 0
 
     def get_engine(self):
-        engine = create_async_engine(self.uri)
+        engine = create_engine(self.uri)
         return engine
 
     @property
     def uri(self):
-        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.host_db}:{self.port_db}/{self.postgres_db}"
+        # return f"mysql+pymysql://{self.postgres_user}:{self.postgres_password}@{self.host_db}:{self.port_db}/{self.postgres_db}"
+        return f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}@{self.host_db}:{self.port_db}/{self.postgres_db}"
 
 
 @lru_cache
