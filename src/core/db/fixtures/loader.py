@@ -27,6 +27,18 @@ class LoadFixtures:
         self.logger = logger or _logger
         self.count_created = 0
 
+    def _fill_primary_key(self, model_data: dict[str, Any], data: dict[str, Any]):
+        _data = data.copy()
+        if (pk := model_data.get("id")) is not None:
+            """
+            There is a problem inserting data with primary key
+            Work around by omitting the id field
+            Open discussion: https://github.com/fastapi/sqlmodel/discussions/1267
+            """
+            self.logger.info(f"ID temporarily not supported: '{pk=}'.")
+            _data["id"] = pk
+        return _data
+
     def _get_model_data(self, model_str: str):
         """Return model module and model name."""
         pkg_name, _, model_name = model_str.partition(".")
@@ -47,15 +59,8 @@ class LoadFixtures:
                 secret_name: "Pedro Parqueador"
         """
         model_module, model_name = self._get_model_data(model_data["model"])
-        kwargs = model_data["properties"]
-        if (pk := model_data.get("id")) is not None:
-            """
-            There is a problem inserting data with primary key
-            Work around by omitting the id field
-            Open discussion: https://github.com/fastapi/sqlmodel/discussions/1267
-            """
-            self.logger.info(f"ID temporarily not supported: '{pk=}'.")
-            # kwargs["id"] = pk
+        kwargs: dict[str, Any] = model_data["properties"]
+        kwargs = self._fill_primary_key(model_data, kwargs)
 
         model_class: type[SQLModel] = getattr(model_module, model_name)
         if model_class is None:
