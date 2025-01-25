@@ -2,8 +2,10 @@ import re
 from importlib import import_module
 from typing import Any
 
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 
+from apps.authorization.mixins import PermissionMixin
+from apps.authorization.models.permission import Permission
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
 
@@ -12,8 +14,11 @@ from ._base import UserSQLBaseModel
 _EMPTY = type("Empty", (), {})
 
 
-class User(UserSQLBaseModel, table=True):
+class User(PermissionMixin, UserSQLBaseModel, table=True):
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
+    permissions: list[Permission] = Relationship(
+        sa_relationship_kwargs={"lazy": "joined"}
+    )
 
     def model_post_init(self, __context: Any) -> None:
         self._hash_password()
