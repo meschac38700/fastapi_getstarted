@@ -7,7 +7,7 @@ from core.test.async_case import AsyncTestCase
 
 class TestUserCRUD(AsyncTestCase):
     fixtures = [
-        "test-users",
+        "users",
     ]
 
     async def test_get_users(self):
