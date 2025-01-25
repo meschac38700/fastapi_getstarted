@@ -12,6 +12,6 @@ class TestLoadFixture(AsyncTestCase):
         stored_heroes = await Hero.all()
         self.assertEqual(0, len(stored_heroes))
 
-        await self.loader.load_fixtures()
+        await self.loader.load_fixtures(["users", "heroes"])
 
         self.assertGreaterEqual(self.loader.count_created, 1)

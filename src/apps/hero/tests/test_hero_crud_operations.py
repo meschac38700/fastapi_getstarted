@@ -7,7 +7,8 @@ from core.test.async_case import AsyncTestCase
 
 class TestHeroCRUD(AsyncTestCase):
     fixtures = [
-        "initial-heroes",
+        "users",
+        "heroes",
     ]
 
     async def test_get_heroes(self):
@@ -65,6 +66,7 @@ class TestHeroCRUD(AsyncTestCase):
             "name": "Test man",
             "secret_name": "Pytest Asyncio",
             "age": 1977,
+            "user_id": 1,
         }
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
