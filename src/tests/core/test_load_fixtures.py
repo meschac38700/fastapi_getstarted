@@ -8,10 +8,26 @@ class TestLoadFixture(AsyncTestCase):
         await super().asyncSetUp()
         self.loader = LoadFixtures()
 
-    async def test_load_hero_fixtures(self):
+    async def test_load_hero_fixtures_single_file(self):
+        stored_heroes = await Hero.all()
+        self.assertEqual(0, len(stored_heroes))
+
+        await self.loader.load_fixtures(["users"])
+
+        self.assertGreaterEqual(self.loader.count_created, 1)
+
+    async def test_load_hero_fixtures_multiple_files(self):
         stored_heroes = await Hero.all()
         self.assertEqual(0, len(stored_heroes))
 
         await self.loader.load_fixtures(["users", "heroes"])
+
+        self.assertGreaterEqual(self.loader.count_created, 1)
+
+    async def test_load_hero_fixtures_with_extension(self):
+        stored_heroes = await Hero.all()
+        self.assertEqual(0, len(stored_heroes))
+
+        await self.loader.load_fixtures(["users.yaml"])
 
         self.assertGreaterEqual(self.loader.count_created, 1)

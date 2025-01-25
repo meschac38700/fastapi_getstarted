@@ -79,9 +79,6 @@ class LoadFixtures:
         count = 0
         for fixture_file in fixture_files:
             fixture_file_path = Path(fixture_file)
-            if fixture_file_path.suffix not in self._ALLOWED_FILES:
-                self.logger.info(f"Skip file {fixture_file}. Extension not valid.")
-                continue
 
             models = await self._yaml_to_models(fixture_file_path)
             await SQLTable.objects().insert_batch(models)
@@ -105,7 +102,8 @@ class LoadFixtures:
         paths = list(app_paths)
         for fixture_name in fixture_names:
             for path in paths:
-                fixtures_path = str(Path(path) / "**" / f"{fixture_name}.y*ml")
+                fixture_name = f"{Path(fixture_name).stem}.y*ml"
+                fixtures_path = str(Path(path) / "**" / fixture_name)
                 fixtures = glob.glob(fixtures_path, recursive=True)
                 if fixtures:
                     yield path
