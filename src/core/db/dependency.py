@@ -87,7 +87,7 @@ class DBService:
         # based on https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#dynamic-asyncio
         data = await session.scalars(select(model).offset(offset).limit(limit))
 
-        return data.all()
+        return data.unique().all()
 
     @session_decorator
     async def filter(
