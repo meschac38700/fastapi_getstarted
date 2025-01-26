@@ -1,11 +1,14 @@
 import asyncio
+import re
 from logging.config import fileConfig
 
+import sqlalchemy as sa
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncEngine, async_engine_from_config
 
 from apps import app_metadata
+from apps.authorization.models.permission import Permission
 from settings import settings
 
 # this is the Alembic Config object, which provides
@@ -45,6 +48,30 @@ def do_run_migrations(connection):
         context.run_migrations()
 
 
+def _extract_table_name(statement: str) -> str | None:
+    pattern = r'CREATE\s+TABLE\s+"?(?P<table_name>\w+)"?'
+    res = re.search(pattern, statement, re.IGNORECASE)
+    return res.group("table_name")
+
+
+def before_cursor_execute(conn, _, statement, parameters, __, ___):
+    _statement = statement
+    if "CREATE TABLE" not in statement:
+        return _statement, parameters
+
+    table_name = _extract_table_name(statement)
+
+    permission_table_not_exists = conn.engine.dialect.has_table(conn, "permission")
+    if not permission_table_not_exists or table_name is None:
+        return _statement, parameters
+
+    # Auto generate crud permission for the creating model table
+    perms_sql = Permission.get_model_crud_permissions(table_name, raw_sql=True)
+    _statement += perms_sql
+
+    return _statement, parameters
+
+
 def run_migrations_online():
     ini_section = context.config.get_section(config.config_ini_section)
     ini_section["sqlalchemy.url"] = settings.uri
@@ -52,6 +79,9 @@ def run_migrations_online():
         ini_section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+    )
+    sa.event.listens_for(connectable.sync_engine, "before_cursor_execute", retval=True)(
+        before_cursor_execute
     )
 
     if isinstance(connectable, AsyncEngine):
