@@ -54,22 +54,19 @@ def _extract_table_name(statement: str) -> str | None:
     return res.group("table_name")
 
 
-def before_cursor_execute(conn, _, statement, parameters, __, ___):
-    _statement = statement
+def after_cursor_execute(conn, cursor, statement, _, __, ___):
     if "CREATE TABLE" not in statement:
-        return _statement, parameters
+        return
 
     table_name = _extract_table_name(statement)
 
     permission_table_not_exists = conn.engine.dialect.has_table(conn, "permission")
     if not permission_table_not_exists or table_name is None:
-        return _statement, parameters
+        return
 
-    # Auto generate crud permission for the creating model table
+    # Auto generate crud permission for the created model table
     perms_sql = Permission.get_model_crud_permissions(table_name, raw_sql=True)
-    _statement += perms_sql
-
-    return _statement, parameters
+    cursor.execute(perms_sql)
 
 
 def run_migrations_online():
@@ -80,8 +77,9 @@ def run_migrations_online():
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-    sa.event.listens_for(connectable.sync_engine, "before_cursor_execute", retval=True)(
-        before_cursor_execute
+
+    sa.event.listens_for(connectable.sync_engine, "after_cursor_execute")(
+        after_cursor_execute
     )
 
     if isinstance(connectable, AsyncEngine):

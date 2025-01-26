@@ -7,16 +7,19 @@ from ._base import PermissionBase
 
 class Permission(PermissionBase, table=True):
     id: int = Field(primary_key=True, allow_mutation=False)
-    _EXCEPT_TABLES = ["group", "permission"]
 
     @classmethod
     def _insert_permissions_sql(cls, data_list: list[dict[str, Any]]) -> str:
         sql = ""
-        for data in data_list:
+        for i, data in enumerate(data_list):
             cols = f'{", ".join(data.keys())}'
             vals = tuple(data.values())
-            sql += f"""INSERT INTO {cls.table_name()}({cols}) VALUES{vals};\n"""
-        return sql
+            if i > 0:
+                sql += f""",\n {vals}"""
+                continue
+
+            sql += f"""INSERT INTO {cls.table_name()}({cols}) VALUES{vals}"""
+        return sql + ";"
 
     @classmethod
     def get_model_crud_permissions(
@@ -28,7 +31,7 @@ class Permission(PermissionBase, table=True):
         kwargs_list = [
             {
                 "name": f"read_{plural_table or table}",
-                "description": description.format("read", table.title),
+                "description": description.format("read", table.title()),
                 "display_name": f"Read {table}",
             }
         ]
@@ -36,8 +39,8 @@ class Permission(PermissionBase, table=True):
             kwargs_list.append(
                 {
                     "name": f"{crud_method}_{table}",
-                    "description": description.format(crud_methods, table.title),
-                    "display_name": f"{crud_method.title} {table}",
+                    "description": description.format(crud_method, table.title()),
+                    "display_name": f"{crud_method.title()} {table}",
                 }
             )
         if raw_sql:
@@ -51,12 +54,11 @@ class Permission(PermissionBase, table=True):
     ):
         """Create crud permissions for the given table."""
         crud_permissions = [f"read_{plural_table or table}", f"update_{table}"]
-        if await Permission.exists(Permission.name in crud_permissions):
+        if await Permission.get(Permission.name in crud_permissions):
             return
 
         permissions = [
             cls(**data)
             for data in cls.get_model_crud_permissions(table, plural_table=plural_table)
         ]
-
         return await Permission.batch_create(permissions)

@@ -8,7 +8,7 @@ from apps.authorization.mixins import PermissionMixin
 from apps.authorization.models.permission import Permission
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
-
+from apps.authorization.models.relation_links import PermissionUserLink
 from ._base import UserSQLBaseModel
 
 _EMPTY = type("Empty", (), {})
@@ -17,7 +17,7 @@ _EMPTY = type("Empty", (), {})
 class User(PermissionMixin, UserSQLBaseModel, table=True):
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
     permissions: list[Permission] = Relationship(
-        sa_relationship_kwargs={"lazy": "joined"}
+        sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionUserLink
     )
 
     def model_post_init(self, __context: Any) -> None:
