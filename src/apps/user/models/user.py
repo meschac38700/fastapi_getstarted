@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship
 
 from apps.authorization.mixins import PermissionMixin
 from apps.authorization.models.permission import Permission
+from apps.authorization.models.relation_links import PermissionUserLink
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
 from apps.authorization.models.relation_links import PermissionUserLink

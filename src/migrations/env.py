@@ -82,7 +82,7 @@ def after_cursor_execute(conn, cursor, statement, _, __, ___):
     if not permission_table_not_exists or table_name is None:
         return
 
-    # Auto generate crud permission for previously the created model table
+    # Auto generate crud permission for previously created model table
     perms_sql = Permission.get_model_crud_permissions(table_name, raw_sql=True)
     cursor.execute(perms_sql)
 
