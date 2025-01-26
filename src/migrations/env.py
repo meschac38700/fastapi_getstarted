@@ -1,6 +1,7 @@
 import asyncio
 import re
 from logging.config import fileConfig
+from typing import Any
 
 import sqlalchemy as sa
 from alembic import context
@@ -32,9 +33,26 @@ target_metadata = app_metadata
 # ... etc.
 
 
+async def generate_old_models_crud_permissions(engine: Any):
+    """Generate CRUD permissions for all created models before permission model.
+
+    (User/Hero models)
+    """
+
+    def has_permission_table(conn):
+        return conn.engine.dialect.has_table(conn, "permission")
+
+    if not await engine.run_sync(has_permission_table):
+        return
+
+    await Permission.generate_crud_permissions("hero", plural_table="heroes")
+    await Permission.generate_crud_permissions("user", plural_table="users")
+
+
 async def run_async_migrations(connectable):
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
+        await generate_old_models_crud_permissions(connection)
     await connectable.dispose()
 
 
@@ -64,7 +82,7 @@ def after_cursor_execute(conn, cursor, statement, _, __, ___):
     if not permission_table_not_exists or table_name is None:
         return
 
-    # Auto generate crud permission for the created model table
+    # Auto generate crud permission for previously the created model table
     perms_sql = Permission.get_model_crud_permissions(table_name, raw_sql=True)
     cursor.execute(perms_sql)
 
