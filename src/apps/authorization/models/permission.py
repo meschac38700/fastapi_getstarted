@@ -9,7 +9,7 @@ class Permission(PermissionBase, table=True):
     id: int = Field(primary_key=True, allow_mutation=False)
 
     @classmethod
-    def _insert_permissions_sql(cls, data_list: list[dict[str, Any]]) -> str:
+    def _crud_permissions_sql(cls, data_list: list[dict[str, Any]]) -> str:
         sql = ""
         for i, data in enumerate(data_list):
             cols = f'{", ".join(data.keys())}'
@@ -44,7 +44,7 @@ class Permission(PermissionBase, table=True):
                 }
             )
         if raw_sql:
-            return cls._insert_permissions_sql(kwargs_list)
+            return cls._crud_permissions_sql(kwargs_list)
 
         return kwargs_list
 

@@ -39,10 +39,10 @@ async def generate_old_models_crud_permissions(engine: Any):
     (User/Hero models)
     """
 
-    def has_permission_table(conn):
+    def permission_table_exists(conn):
         return conn.engine.dialect.has_table(conn, "permission")
 
-    if not await engine.run_sync(has_permission_table):
+    if not await engine.run_sync(permission_table_exists):
         return
 
     await Permission.generate_crud_permissions("hero", plural_table="heroes")
@@ -78,8 +78,8 @@ def after_cursor_execute(conn, cursor, statement, _, __, ___):
 
     table_name = _extract_table_name(statement)
 
-    permission_table_not_exists = conn.engine.dialect.has_table(conn, "permission")
-    if not permission_table_not_exists or table_name is None:
+    permission_table_exists = conn.engine.dialect.has_table(conn, "permission")
+    if not permission_table_exists or table_name is None:
         return
 
     # Auto generate crud permission for previously created model table
