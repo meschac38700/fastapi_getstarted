@@ -7,10 +7,9 @@ from core.test.async_case import AsyncTestCase
 
 class TestPermissionGeneration(AsyncTestCase):
     async def test_generate_hero_permissions(self):
-        self.assertEqual(
-            0,
-            len(await Permission.filter(Permission.target_table == Hero.table_name())),
-        )
+        # TODO(Eliam): The following line of code is needed just when we run the tests outside the Docker container
+        #  Alembic migration should automatically generate all permissions
+        #  but as we are manually initializing the database, the alembic code is not executed
         await Permission.generate_crud_permissions(Hero.table_name())
 
         hero_crud_perms = await Permission.filter(
