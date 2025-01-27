@@ -46,8 +46,8 @@ async def generate_old_models_crud_permissions(engine: Any):
     if not await engine.run_sync(permission_table_exists):
         return
 
-    await Permission.generate_crud_permissions("hero", plural_table="heroes")
-    await Permission.generate_crud_permissions("user", plural_table="users")
+    await Permission.generate_crud_permissions("hero")
+    await Permission.generate_crud_permissions("user")
 
 
 async def run_async_migrations(connectable):

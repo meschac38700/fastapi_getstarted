@@ -11,17 +11,15 @@ class TestPermissionGeneration(AsyncTestCase):
             0,
             len(await Permission.filter(Permission.target_table == Hero.table_name())),
         )
-        await Permission.generate_crud_permissions(
-            Hero.table_name(), plural_table="heroes"
-        )
+        await Permission.generate_crud_permissions(Hero.table_name())
 
         hero_crud_perms = await Permission.filter(
             Permission.target_table == Hero.table_name()
         )
         self.assertEqual(4, len(hero_crud_perms))
         expected_perm_names = [
-            "read_heroes",
             "create_hero",
+            "read_hero",
             "update_hero",
             "delete_hero",
         ]
@@ -36,8 +34,8 @@ class TestPermissionGeneration(AsyncTestCase):
             Hero.table_name(), raw_sql=True
         )
         expected_sql = """INSERT INTO permission(name, description, display_name, target_table)
-            VALUES('read_hero', 'This permission allows user to read any Hero instance.', 'Read hero', 'hero'),
-            ('create_hero', 'This permission allows user to create any Hero instance.', 'Create hero', 'hero'),
+            VALUES('create_hero', 'This permission allows user to create any Hero instance.', 'Create hero', 'hero'),
+            ('read_hero', 'This permission allows user to read any Hero instance.', 'Read hero', 'hero'),
             ('update_hero', 'This permission allows user to update any Hero instance.', 'Update hero', 'hero'),
             ('delete_hero', 'This permission allows user to delete any Hero instance.', 'Delete hero', 'hero');
         """
