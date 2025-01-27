@@ -1,8 +1,8 @@
-"""Add permission table
+"""Add permission,group tables
 
-Revision ID: d1bbed8aba56
+Revision ID: 6605b66204c3
 Revises: 94549f3a62d0
-Create Date: 2025-01-26 19:32:49.155477
+Create Date: 2025-01-27 09:31:56.109669
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "d1bbed8aba56"
+revision: str = "6605b66204c3"
 down_revision: Union[str, None] = "94549f3a62d0"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,6 +33,7 @@ def upgrade() -> None:
     op.create_table(
         "permission",
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("target_table", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("display_name", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("id", sa.Integer(), nullable=False),
@@ -42,44 +43,48 @@ def upgrade() -> None:
     op.create_table(
         "groupuserlink",
         sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("group_id", sa.Integer(), nullable=False),
+        sa.Column("group_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["group_id"],
-            ["group.id"],
+            ["group_name"],
+            ["group.name"],
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["user.id"],
         ),
-        sa.PrimaryKeyConstraint("user_id", "group_id"),
+        sa.PrimaryKeyConstraint("user_id", "group_name"),
     )
     op.create_table(
         "permissiongrouplink",
-        sa.Column("group_id", sa.Integer(), nullable=False),
-        sa.Column("permission_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["group_id"],
-            ["group.id"],
+        sa.Column("group_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "permission_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["permission_id"],
-            ["permission.id"],
+            ["group_name"],
+            ["group.name"],
         ),
-        sa.PrimaryKeyConstraint("group_id", "permission_id"),
+        sa.ForeignKeyConstraint(
+            ["permission_name"],
+            ["permission.name"],
+        ),
+        sa.PrimaryKeyConstraint("group_name", "permission_name"),
     )
     op.create_table(
         "permissionuserlink",
         sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("permission_id", sa.Integer(), nullable=False),
+        sa.Column(
+            "permission_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.ForeignKeyConstraint(
-            ["permission_id"],
-            ["permission.id"],
+            ["permission_name"],
+            ["permission.name"],
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["user.id"],
         ),
-        sa.PrimaryKeyConstraint("user_id", "permission_id"),
+        sa.PrimaryKeyConstraint("user_id", "permission_name"),
     )
     # ### end Alembic commands ###
 

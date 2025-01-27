@@ -6,6 +6,7 @@ from typing import Any
 import sqlalchemy as sa
 from alembic import context
 from sqlalchemy import pool
+from sqlalchemy.dialects.postgresql.asyncpg import PGExecutionContext_asyncpg
 from sqlalchemy.ext.asyncio import AsyncEngine, async_engine_from_config
 
 from apps import app_metadata
@@ -69,11 +70,17 @@ def do_run_migrations(connection):
 def _extract_table_name(statement: str) -> str | None:
     pattern = r'CREATE\s+TABLE\s+"?(?P<table_name>\w+)"?'
     res = re.search(pattern, statement, re.IGNORECASE)
+
+    if res is None:
+        return None
+
     return res.group("table_name")
 
 
-def after_cursor_execute(conn, cursor, statement, _, __, ___):
-    if "CREATE TABLE" not in statement:
+def after_cursor_execute(
+    conn, cursor, statement, _, context: PGExecutionContext_asyncpg, ___
+):
+    if not context.isddl:
         return
 
     table_name = _extract_table_name(statement)

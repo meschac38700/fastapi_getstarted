@@ -33,6 +33,7 @@ class Permission(PermissionBase, table=True):
                 "name": f"read_{plural_table or table}",
                 "description": description.format("read", table.title()),
                 "display_name": f"Read {table}",
+                "target_table": table,
             }
         ]
         for crud_method in crud_methods:
@@ -41,6 +42,7 @@ class Permission(PermissionBase, table=True):
                     "name": f"{crud_method}_{table}",
                     "description": description.format(crud_method, table.title()),
                     "display_name": f"{crud_method.title()} {table}",
+                    "target_table": table,
                 }
             )
         if raw_sql:
