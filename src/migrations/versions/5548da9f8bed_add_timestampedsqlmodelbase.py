@@ -1,8 +1,8 @@
-"""Add created_at field
+"""Add TimestampedSQLModelBase
 
-Revision ID: 965f2d37c355
+Revision ID: 5548da9f8bed
 Revises: 94549f3a62d0
-Create Date: 2025-01-28 03:52:12.854736
+Create Date: 2025-01-28 20:17:57.628653
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "965f2d37c355"
+revision: str = "5548da9f8bed"
 down_revision: Union[str, None] = "94549f3a62d0"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
