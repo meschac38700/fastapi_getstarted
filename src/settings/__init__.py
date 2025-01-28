@@ -1,6 +1,7 @@
 from settings.entity import SettingsDep, get_settings
 
 from .constants import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
     BASE_DIR,
     DATABASE_ENV_FILE,
     PASSWORD_HASHER,
@@ -16,4 +17,5 @@ __all__ = [
     "SettingsDep",
     "PASSWORD_HASHER",
     "initial_fixtures",
+    "ACCESS_TOKEN_EXPIRE_MINUTES",
 ]

@@ -20,6 +20,8 @@ class Settings(BaseSettings):
         env_file=DATABASE_ENV_FILE, cli_ignore_unknown_args=True
     )
     password_hasher_index: int = 0
+    secret_key: str = None
+    algorithm: str = "HS256"
 
     def get_engine(self):
         engine = create_async_engine(self.uri)
