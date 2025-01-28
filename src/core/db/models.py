@@ -2,6 +2,7 @@ import datetime
 from collections.abc import Iterator
 from typing import Any
 
+from sqlalchemy import text
 from sqlmodel import Field, SQLModel
 
 from core.db.query import ModelQuery
@@ -11,10 +12,11 @@ _EMPTY = type("Empty", (), {})
 
 class SQLTable(SQLModel, ModelQuery):
     _updated: bool = False
-    created_at: datetime.datetime | None = Field(default=None)
-
-    def model_post_init(self, __context: Any) -> None:
-        self.created_at = datetime.datetime.now(datetime.timezone.utc)
+    created_at: datetime.datetime | None = Field(
+        sa_column_kwargs={
+            "server_default": text("CURRENT_TIMESTAMP"),
+        }
+    )
 
     @classmethod
     def table_name(cls):
