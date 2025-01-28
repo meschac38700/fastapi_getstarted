@@ -23,7 +23,7 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
         actual_user = response.json()
 
-        self.assertDictEqual(expected_user.model_dump(), actual_user)
+        self.assertDictEqual(expected_user.model_dump(mode="json"), actual_user)
 
     async def test_post_user(self):
         data = {

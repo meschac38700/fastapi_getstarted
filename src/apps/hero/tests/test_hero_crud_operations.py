@@ -28,7 +28,7 @@ class TestHeroCRUD(AsyncTestCase):
 
     async def test_create_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        response = await self.client.post("/heroes/", json=hero.model_dump())
+        response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
 
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
