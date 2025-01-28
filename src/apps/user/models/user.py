@@ -7,12 +7,12 @@ from sqlmodel import Field
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
 
-from ._base import UserBase
+from ._base import UserSQLBaseModel
 
 _EMPTY = type("Empty", (), {})
 
 
-class User(UserBase, table=True):
+class User(UserSQLBaseModel, table=True):
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
 
     def model_post_init(self, __context: Any) -> None:
