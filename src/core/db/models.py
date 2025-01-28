@@ -1,7 +1,8 @@
+import datetime
 from collections.abc import Iterator
 from typing import Any
 
-from sqlmodel import SQLModel
+from sqlmodel import Field, SQLModel
 
 from core.db.query import ModelQuery
 
@@ -10,6 +11,10 @@ _EMPTY = type("Empty", (), {})
 
 class SQLTable(SQLModel, ModelQuery):
     _updated: bool = False
+    created_at: datetime.datetime | None = Field(default=None)
+
+    def model_post_init(self, __context: Any) -> None:
+        self.created_at = datetime.datetime.now(datetime.timezone.utc)
 
     @classmethod
     def table_name(cls):
