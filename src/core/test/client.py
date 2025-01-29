@@ -20,4 +20,5 @@ class AsyncClientTest(AsyncClient):
             return
 
         await self._token.delete()
+        self.headers.pop("Authorization", None)
         self._token = None
