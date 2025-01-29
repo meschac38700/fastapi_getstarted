@@ -34,8 +34,12 @@ class TestUserCRUD(AsyncTestCase):
         }
         self.assertIsNone(await User.get(User.username == data["username"]))
         response = await self.client.post("/users/", json=data)
-        self.assertEqual(HTTPStatus.CREATED, response.status_code)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
+        await self.client.login("fastapi")
+
+        response = await self.client.post("/users/", json=data)
+        self.assertEqual(HTTPStatus.CREATED, response.status_code)
         actual_user = response.json()
         created_user = await User.get(User.username == data["username"])
         self.assertIsNotNone(created_user)
@@ -56,6 +60,9 @@ class TestUserCRUD(AsyncTestCase):
             "username": "doej",
             "email": "john.doe@example.com",
         }
+
+        await self.client.login("fastapi")
+
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -81,6 +88,9 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
         }
+
+        await self.client.login("fastapi")
+
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
@@ -104,6 +114,9 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
             "password": "jdoe",
         }
+
+        await self.client.login("fastapi")
+
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -116,6 +129,8 @@ class TestUserCRUD(AsyncTestCase):
     async def test_delete_user(self):
         user_to_delete = await User.get(User.id == 1)
         self.assertIsNotNone(user_to_delete)
+
+        await self.client.login("fastapi")
 
         response = await self.client.delete(f"/users/{user_to_delete.id}")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)

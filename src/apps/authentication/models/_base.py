@@ -6,7 +6,7 @@ from core.db.models import TimestampedSQLBaseModel
 
 class JWTTokenBase(SQLTable):
     access_token: str
-    token_type: str = Field(default="bearer")
+    token_type: str = Field(default="Bearer")
 
 
 class JWTTokenSQLBaseModel(JWTTokenBase, TimestampedSQLBaseModel):
