@@ -1,7 +1,8 @@
 import secrets
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
+from core.auth.dependencies import oauth2_scheme
 from core.db.fixtures import LoadFixtures
 
 
@@ -23,6 +24,7 @@ def register_default_endpoints(app: FastAPI):
             "endpoint": load_fake_data,
             "methods": ["POST"],
             "name": "fixtures",
+            "dependencies": [Depends(oauth2_scheme())],
         },
     ]
     for endpoint in default_endpoints:

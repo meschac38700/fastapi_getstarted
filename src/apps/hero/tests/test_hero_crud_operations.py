@@ -19,6 +19,7 @@ class TestHeroCRUD(AsyncTestCase):
     async def test_get_hero(self):
         response = await self.client.get("/heroes/1")
         self.assertEqual(HTTPStatus.OK, response.status_code)
+
         hero = response.json()
         self.assertIsInstance(hero, dict)
         self.assertIn("id", hero)
@@ -28,12 +29,17 @@ class TestHeroCRUD(AsyncTestCase):
 
     async def test_create_hero(self):
         hero = Hero(name="Super Test Man", secret_name="Pytest", age=1970)
-        response = await self.client.post("/heroes/", json=hero.model_dump())
+        response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
+        await self.client.login("fastapi")
+
+        response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
         stored_hero = await Hero.get(Hero.name == "Super Test Man")
         self.assertIsInstance(stored_hero, Hero)
+
         hero_created: dict[str, Any] = response.json()
         self.assertIsNotNone(hero_created["id"])
         self.assertEqual(hero.name, hero_created["name"])
@@ -43,6 +49,9 @@ class TestHeroCRUD(AsyncTestCase):
     async def test_put_hero(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
+
+        await self.client.login("fastapi")
+
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -54,6 +63,9 @@ class TestHeroCRUD(AsyncTestCase):
     async def test_patch_hero(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man"}
+
+        await self.client.login("fastapi")
+
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -68,8 +80,12 @@ class TestHeroCRUD(AsyncTestCase):
             "age": 1977,
             "user_id": 1,
         }
+
+        await self.client.login("fastapi")
+
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
+
         expected_json = {
             "detail": "Cannot use PATCH to update entire registry, use PUT instead."
         }
@@ -78,6 +94,8 @@ class TestHeroCRUD(AsyncTestCase):
     async def test_delete_hero(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         self.assertIsNotNone(hero.id)
+
+        await self.client.login("fastapi")
 
         response = await self.client.delete(
             f"/heroes/{hero.id}", params={"id": hero.id}

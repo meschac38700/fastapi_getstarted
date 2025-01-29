@@ -1,10 +1,11 @@
 from unittest.async_case import IsolatedAsyncioTestCase
 
-from httpx import ASGITransport, AsyncClient
+from httpx import ASGITransport
 
 from core.db import create_db_and_tables, delete_db_and_tables
 from core.db.dependency import DBService
 from core.db.fixtures import LoadFixtures
+from core.test.client import AsyncClientTest
 from main import app
 from settings import settings
 
@@ -20,7 +21,9 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
         await create_db_and_tables(_engine)
         self.db_service = DBService()
         await self._load_fixtures()
-        self.client = AsyncClient(transport=ASGITransport(app=app), base_url=BASE_URL)
+        self.client = AsyncClientTest(
+            transport=ASGITransport(app=app), base_url=BASE_URL
+        )
 
     async def asyncTearDown(self):
         await super().asyncTearDown()

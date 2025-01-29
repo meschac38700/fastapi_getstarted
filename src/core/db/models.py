@@ -1,7 +1,9 @@
+import datetime
 from collections.abc import Iterator
 from typing import Any
 
-from sqlmodel import SQLModel
+from sqlalchemy import text
+from sqlmodel import Field, SQLModel
 
 from core.db.query import ModelQuery
 
@@ -38,8 +40,7 @@ class SQLTable(SQLModel, ModelQuery):
         _old_data = old_data.copy()
         _old_data.pop("id", None)
         current_attrs = self.model_dump(exclude_unset=True).keys()
-
-        all_field_filled = len(_old_data.keys()) == len(current_attrs)
+        all_field_filled = len(self.model_fields) == len(current_attrs)
         if required:
             required_fields = list(self.required_fields)
             all_field_filled = all(k in current_attrs for k in required_fields)
@@ -54,3 +55,11 @@ class SQLTable(SQLModel, ModelQuery):
     ):
         """Check all required fields are updated."""
         return self.check_all_fields_updated(old_data, required=True)
+
+
+class TimestampedSQLBaseModel:
+    created_at: datetime.datetime | None = Field(
+        sa_column_kwargs={
+            "server_default": text("CURRENT_TIMESTAMP"),
+        }
+    )

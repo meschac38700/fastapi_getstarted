@@ -1,6 +1,8 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from core.auth.dependencies import oauth2_scheme
 
 from .models import User
 from .models.pydantic.create import UserCreate
@@ -19,7 +21,9 @@ async def get_user(pk: int):
     return await User.get(User.id == pk)
 
 
-@routers.put("/{pk}", status_code=HTTPStatus.OK)
+@routers.put(
+    "/{pk}", status_code=HTTPStatus.OK, dependencies=[Depends(oauth2_scheme())]
+)
 async def update_user(pk: int, user: UserCreate):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
@@ -33,7 +37,9 @@ async def update_user(pk: int, user: UserCreate):
     return await stored_user.save()
 
 
-@routers.patch("/{pk}", status_code=HTTPStatus.OK)
+@routers.patch(
+    "/{pk}", status_code=HTTPStatus.OK, dependencies=[Depends(oauth2_scheme())]
+)
 async def patch_user(pk: int, user: UserPatch):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
@@ -50,12 +56,16 @@ async def patch_user(pk: int, user: UserPatch):
     return await stored_user.save()
 
 
-@routers.post("/", status_code=HTTPStatus.CREATED)
+@routers.post(
+    "/", status_code=HTTPStatus.CREATED, dependencies=[Depends(oauth2_scheme())]
+)
 async def post_user(user: UserCreate):
     return await User(**user.model_dump(exclude_unset=True)).save()
 
 
-@routers.delete("/{pk}", status_code=HTTPStatus.NO_CONTENT)
+@routers.delete(
+    "/{pk}", status_code=HTTPStatus.NO_CONTENT, dependencies=[Depends(oauth2_scheme())]
+)
 async def delete_user(pk: int):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:

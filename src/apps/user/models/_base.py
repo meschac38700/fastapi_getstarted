@@ -1,6 +1,7 @@
 from sqlmodel import Field
 
 from core.db import SQLTable
+from core.db.models import TimestampedSQLBaseModel
 
 
 class UserBase(SQLTable):
@@ -11,3 +12,7 @@ class UserBase(SQLTable):
     email: str | None = Field(default=None, unique=True)
     address: str | None = None
     age: int | None = None
+
+
+class UserSQLBaseModel(UserBase, TimestampedSQLBaseModel):
+    pass
