@@ -7,6 +7,7 @@ from .constants import (
     BASE_DIR,
     DATABASE_ENV_FILE,
     PASSWORD_HASHER,
+    TOKEN_REFRESH_DELAY_MINUTES,
     initial_fixtures,
 )
 
@@ -21,5 +22,6 @@ __all__ = [
     "initial_fixtures",
     "ACCESS_TOKEN_EXPIRE_MINUTES",
     "AUTH_PREFIX_URL",
+    "TOKEN_REFRESH_DELAY_MINUTES",
     "AUTH_URL",
 ]
