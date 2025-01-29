@@ -26,7 +26,25 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
         safety_now_time = datetime.datetime.now(
             datetime.timezone.utc
         ) + datetime.timedelta(minutes=token_refresh_safety_minutes)
-        return expiration_time < safety_now_time.replace(tzinfo=None)
+        return expiration_time < safety_now_time
+
+    @property
+    def is_valid(self):
+        return not self.is_expired
+
+    @property
+    def can_be_refreshed(self):
+        if self.is_valid:
+            return True
+
+        expired_dt = utils.token_expire_datetime(self.created_at)
+        now = datetime.datetime.now(datetime.timezone.utc)
+        delta = now - expired_dt
+        return (delta.seconds / 60) <= settings.TOKEN_REFRESH_DELAY_MINUTES
+
+    @classmethod
+    async def _create(cls, user: User):
+        return await cls(access_token=cls._generate_jwt_token(user), user=user).save()
 
     @classmethod
     async def get_or_create(cls, user: User) -> Self:
@@ -34,21 +52,23 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
         if token is not None and not token.is_expired:
             return token
 
-        return await cls(access_token=cls._generate_jwt_token(user), user=user).save()
+        return await cls._create(user)
+
+    async def refresh(self):
+        dt = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        data = {
+            "access_token": JWTToken._generate_jwt_token(self.user),
+            "created_at": dt,
+        }
+        self.update_from_dict(data)
+        await self.save()
 
     @classmethod
-    async def refresh_token(cls, user: User):
-        token = await cls.get(cls.user_id == user.id)
-        if token is not None:
-            await token.delete()
-
-        return cls.get_or_create(user)
-
-    @classmethod
-    def _generate_jwt_token(cls, user: User):
+    def _generate_jwt_token(cls, user: User, exp: datetime.datetime | None = None):
+        exp = exp or utils.token_expire_datetime()
         to_encode = {
             "sub": user.username,
-            "expire": utils.token_expire_datetime().isoformat(),
+            "exp": exp.isoformat(),
         }
         _settings = settings.get_settings()
         return jwt.encode(

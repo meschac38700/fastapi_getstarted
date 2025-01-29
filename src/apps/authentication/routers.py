@@ -27,3 +27,20 @@ async def login(
         )
     token = await JWTToken.get_or_create(user)
     return JWTTokenRead.model_validate(token)
+
+
+@routers.post("/token/refresh")
+async def refresh(user_id: int):
+    token = await JWTToken.get(JWTToken.user_id == user_id)
+
+    if token is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="You need to log in first."
+        )
+
+    if not token.can_be_refreshed:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED, detail="Your session has expired."
+        )
+
+    return JWTTokenRead.model_validate(await token.refresh())
