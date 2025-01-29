@@ -35,7 +35,7 @@ async def refresh(user_id: int):
 
     if token is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="You need to log in first."
+            status_code=HTTPStatus.NOT_FOUND, detail="Login session not found."
         )
 
     if not token.can_be_refreshed:
