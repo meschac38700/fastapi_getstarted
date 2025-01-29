@@ -4,11 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
+import settings
 from apps.authentication.models import JWTToken
 from apps.authentication.models.pydantic import JWTTokenRead
 from apps.user.models import User
 
-routers = APIRouter(tags=["authentication"], prefix="/auth")
+routers = APIRouter(tags=["authentication"], prefix=settings.AUTH_PREFIX_URL)
 
 
 @routers.post("/token")

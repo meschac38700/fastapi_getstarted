@@ -2,6 +2,8 @@ from settings.entity import SettingsDep, get_settings
 
 from .constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    AUTH_PREFIX_URL,
+    AUTH_URL,
     BASE_DIR,
     DATABASE_ENV_FILE,
     PASSWORD_HASHER,
@@ -18,4 +20,6 @@ __all__ = [
     "PASSWORD_HASHER",
     "initial_fixtures",
     "ACCESS_TOKEN_EXPIRE_MINUTES",
+    "AUTH_PREFIX_URL",
+    "AUTH_URL",
 ]

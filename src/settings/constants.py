@@ -23,3 +23,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 initial_fixtures = [
     "initial-heroes",
 ]
+
+# Authentication
+AUTH_PREFIX_URL = "/auth"
+AUTH_URL = f"{AUTH_PREFIX_URL}/token"
