@@ -19,6 +19,7 @@ class TestHeroCRUD(AsyncTestCase):
     async def test_get_hero(self):
         response = await self.client.get("/heroes/1")
         self.assertEqual(HTTPStatus.OK, response.status_code)
+
         hero = response.json()
         self.assertIsInstance(hero, dict)
         self.assertIn("id", hero)
@@ -38,6 +39,7 @@ class TestHeroCRUD(AsyncTestCase):
 
         stored_hero = await Hero.get(Hero.name == "Super Test Man")
         self.assertIsInstance(stored_hero, Hero)
+
         hero_created: dict[str, Any] = response.json()
         self.assertIsNotNone(hero_created["id"])
         self.assertEqual(hero.name, hero_created["name"])
@@ -83,6 +85,7 @@ class TestHeroCRUD(AsyncTestCase):
 
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
+
         expected_json = {
             "detail": "Cannot use PATCH to update entire registry, use PUT instead."
         }

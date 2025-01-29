@@ -10,7 +10,9 @@ class AsyncClientTest(AsyncClient):
     async def login(self, username: str) -> User:
         user = await User.get(User.username == username)
         self._token = await JWTToken.get_or_create(user)
-        self.headers.update({"Authorization": f"Bearer {self._token.access_token}"})
+        self.headers.update(
+            {"Authorization": f"{self._token.token_type} {self._token.access_token}"}
+        )
         return user
 
     async def logout(self) -> None:

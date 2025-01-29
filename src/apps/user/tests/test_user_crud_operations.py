@@ -21,8 +21,8 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.get(f"/users/{expected_user.id}")
 
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        actual_user = response.json()
 
+        actual_user = response.json()
         self.assertDictEqual(expected_user.model_dump(mode="json"), actual_user)
 
     async def test_post_user(self):
@@ -67,7 +67,6 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         patched_user = response.json()
-
         self.assertEqual(data["username"], patched_user["username"])
         self.assertEqual(data["email"], patched_user["email"])
 
@@ -121,7 +120,6 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         user = await User.get(User.id == user.id)
-
         self.assertEqual(data["username"], user.username)
         self.assertEqual(data["email"], user.email)
         self.assertTrue(user.check_password(data["password"]))
@@ -134,5 +132,4 @@ class TestUserCRUD(AsyncTestCase):
 
         response = await self.client.delete(f"/users/{user_to_delete.id}")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-
         self.assertIsNone(await User.get(User.id == user_to_delete.id))
