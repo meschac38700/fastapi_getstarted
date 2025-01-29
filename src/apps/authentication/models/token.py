@@ -20,12 +20,8 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
 
     @property
     def is_expired(self) -> bool:
-        token_refresh_safety_minutes = 5
         expiration_time = utils.token_expire_datetime(self.created_at)
-        # we refresh token 5minutes before the real expiration time.
-        safety_now_time = datetime.datetime.now(
-            datetime.timezone.utc
-        ) + datetime.timedelta(minutes=token_refresh_safety_minutes)
+        safety_now_time = datetime.datetime.now(datetime.timezone.utc)
         return expiration_time < safety_now_time
 
     @property
