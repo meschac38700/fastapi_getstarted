@@ -64,7 +64,7 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
         exp = exp or utils.token_expire_datetime()
         to_encode = {
             "sub": user.username,
-            "exp": exp.isoformat(),
+            "exp": exp,
         }
         _settings = settings.get_settings()
         return jwt.encode(
