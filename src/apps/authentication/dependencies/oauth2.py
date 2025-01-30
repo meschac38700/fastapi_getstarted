@@ -5,12 +5,11 @@ from fastapi.security import OAuth2PasswordBearer
 
 import settings
 from apps.authentication.models import JWTToken
-from core.auth import utils as auth_utils
 
 
 def oauth2_scheme():
-    async def wrapper(request: Request):
-        _, token = auth_utils.jwt_token_from_request(request)
+    async def wrapper(request: Request) -> JWTToken:
+        token = await OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)(request)
         stored_token = await JWTToken.get(JWTToken.access_token == token)
 
         if stored_token is None:
@@ -19,6 +18,6 @@ def oauth2_scheme():
                 detail="Invalid authentication token.",
             )
 
-        return await OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)(request)
+        return stored_token
 
     return wrapper
