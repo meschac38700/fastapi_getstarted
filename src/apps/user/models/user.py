@@ -9,7 +9,7 @@ from apps.authorization.models.permission import Permission
 from apps.authorization.models.relation_links import PermissionUserLink
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
-from apps.authorization.models.relation_links import PermissionUserLink
+
 from ._base import UserSQLBaseModel
 
 _EMPTY = type("Empty", (), {})

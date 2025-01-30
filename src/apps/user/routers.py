@@ -3,9 +3,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.auth.dependencies import oauth2_scheme
 from apps.authorization.decorators import permission_required
 from apps.authorization.dependencies import permission_required_depends
+from core.auth.dependencies import oauth2_scheme
+
 from .models import User
 from .models.pydantic.create import UserCreate
 from .models.pydantic.patch import UserPatch
