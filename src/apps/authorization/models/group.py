@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from sqlmodel import Field, Relationship
 
 from apps.authorization.mixins import PermissionMixin
@@ -16,3 +18,15 @@ class Group(PermissionMixin, GroupBase, table=True):
     users: list[User] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=GroupUserLink
     )
+
+    async def add_user(self, user: User):
+        self.users.append(user)
+        await self.save()
+
+    async def extend_users(self, users: Iterable[User]):
+        self.users.extend(users)
+        await self.save()
+
+    async def remove_users(self, users: Iterable[User]):
+        self.users = [u for u in self.users if u not in users]
+        await self.save()
