@@ -82,7 +82,7 @@ create and run the migrations.
 ```bash
 cd src
 alembic revision --autogenerate -m "message of commit"
-alembic upgrade head
+alembic upgrade heads
 ```
 
 > [!WARNING]
