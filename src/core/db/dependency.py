@@ -102,7 +102,7 @@ class DBService:
         data_list = await session.scalars(
             select(model).where(filters).offset(offset).limit(limit)
         )
-        return data_list.all()
+        return data_list.unique().all()
 
     @session_decorator
     async def exists(
