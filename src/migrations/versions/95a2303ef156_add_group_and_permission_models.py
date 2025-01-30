@@ -1,8 +1,8 @@
-"""Add permission,group tables
+"""Add group and permission models
 
-Revision ID: 6605b66204c3
-Revises: 94549f3a62d0
-Create Date: 2025-01-27 09:31:56.109669
+Revision ID: 95a2303ef156
+Revises: bfb7afe74a8e
+Create Date: 2025-01-30 17:54:01.527350
 
 """
 
@@ -13,8 +13,8 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "6605b66204c3"
-down_revision: Union[str, None] = "94549f3a62d0"
+revision: str = "95a2303ef156"
+down_revision: Union[str, None] = "bfb7afe74a8e"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
