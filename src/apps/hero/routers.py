@@ -4,8 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Query
 
-from core.auth.dependencies import oauth2_scheme
-
+from ..authorization.dependencies import permission_required
 from .models import Hero
 from .models.pydantic.create import HeroCreate
 from .models.pydantic.patch import HeroPatch
@@ -31,7 +30,9 @@ async def get_heroes(
     name="Create hero",
     response_model=Hero,
     status_code=HTTPStatus.CREATED,
-    dependencies=[Depends(oauth2_scheme())],
+    dependencies=[
+        Depends(permission_required(["create_hero"], groups=["create_hero"]))
+    ],
 )
 async def create_hero(hero: HeroCreate):
     _hero = await Hero(**hero.model_dump()).save()
@@ -43,7 +44,9 @@ async def create_hero(hero: HeroCreate):
     name="Update hero",
     response_model=Hero,
     status_code=HTTPStatus.OK,
-    dependencies=[Depends(oauth2_scheme())],
+    dependencies=[
+        Depends(permission_required(["update_hero"], groups=["update_hero"]))
+    ],
 )
 async def update_hero(pk: int, hero: HeroCreate):
     stored_hero: Hero = await Hero.get(Hero.id == pk)
@@ -63,10 +66,12 @@ async def update_hero(pk: int, hero: HeroCreate):
 
 @routers.patch(
     "/{pk}",
-    name="Update hero",
+    name="Patch hero",
     response_model=Hero,
     status_code=HTTPStatus.OK,
-    dependencies=[Depends(oauth2_scheme())],
+    dependencies=[
+        Depends(permission_required(["update_hero"], groups=["update_hero"]))
+    ],
 )
 async def patch_hero(pk: int, hero: HeroPatch):
     stored_hero: Hero = await Hero.get(Hero.id == pk)
@@ -88,7 +93,9 @@ async def patch_hero(pk: int, hero: HeroPatch):
     "/{pk}",
     name="Delete hero",
     status_code=HTTPStatus.NO_CONTENT,
-    dependencies=[Depends(oauth2_scheme())],
+    dependencies=[
+        Depends(permission_required(["delete_hero"], groups=["delete_hero"]))
+    ],
 )
 async def delete_hero(pk: int):
     stored_hero: Hero = await Hero.get(Hero.id == pk)

@@ -1,11 +1,8 @@
 from http import HTTPStatus
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from apps.authorization.decorators import permission_required
-from apps.authorization.dependencies import permission_required_depends
-from core.auth.dependencies import oauth2_scheme
+from apps.authorization.dependencies import permission_required
 
 from .models import User
 from .models.pydantic.create import UserCreate
@@ -13,22 +10,24 @@ from .models.pydantic.patch import UserPatch
 
 routers = APIRouter(tags=["users"], prefix="/users")
 
-read_user = permission_required_depends(["read_user"])
 
-
-@routers.get("/", status_code=HTTPStatus.OK)
-async def get_users(_: Annotated[bool, Depends(read_user)], offset: int = 0, limit=100):
+@routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
+async def get_users(offset: int = 0, limit=100):
     return await User.all(offset=offset, limit=limit)
 
 
-@routers.get("/{pk}", status_code=HTTPStatus.OK)
-@permission_required(["read_user"])
+@routers.get("/{pk}", name="Get single user", status_code=HTTPStatus.OK)
 async def get_user(pk: int):
     return await User.get(User.id == pk)
 
 
 @routers.put(
-    "/{pk}", status_code=HTTPStatus.OK, dependencies=[Depends(oauth2_scheme())]
+    "/{pk}",
+    name="Update user",
+    status_code=HTTPStatus.OK,
+    dependencies=[
+        Depends(permission_required(["update_user"], groups=["update_user"]))
+    ],
 )
 async def update_user(pk: int, user: UserCreate):
     stored_user = await User.get(User.id == pk)
@@ -44,9 +43,13 @@ async def update_user(pk: int, user: UserCreate):
 
 
 @routers.patch(
-    "/{pk}", status_code=HTTPStatus.OK, dependencies=[Depends(oauth2_scheme())]
+    "/{pk}",
+    status_code=HTTPStatus.OK,
+    name="Patch user",
+    dependencies=[
+        Depends(permission_required(["update_user"], groups=["update_user"]))
+    ],
 )
-@permission_required(["update_user"])
 async def patch_user(pk: int, user: UserPatch):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
@@ -64,17 +67,23 @@ async def patch_user(pk: int, user: UserPatch):
 
 
 @routers.post(
-    "/", status_code=HTTPStatus.CREATED, dependencies=[Depends(oauth2_scheme())]
+    "/",
+    status_code=HTTPStatus.CREATED,
+    dependencies=[
+        Depends(permission_required(["create_user"], groups=["create_user"]))
+    ],
 )
-@permission_required(["create_user"])
 async def post_user(user: UserCreate):
     return await User(**user.model_dump(exclude_unset=True)).save()
 
 
 @routers.delete(
-    "/{pk}", status_code=HTTPStatus.NO_CONTENT, dependencies=[Depends(oauth2_scheme())]
+    "/{pk}",
+    status_code=HTTPStatus.NO_CONTENT,
+    dependencies=[
+        Depends(permission_required(["delete_user"], groups=["delete_user"]))
+    ],
 )
-@permission_required(["delete_user"])
 async def delete_user(pk: int):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
