@@ -28,7 +28,8 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.patch(f"/heroes/{hero_id}", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            response.json()["detail"], "You do not have rights to edit this resource."
+            response.json()["detail"],
+            "You do not have sufficient rights to this resource.",
         )
 
     async def test_user_has_rights_to_edit_resource(self):

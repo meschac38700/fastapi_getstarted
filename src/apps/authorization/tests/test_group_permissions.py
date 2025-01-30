@@ -34,12 +34,13 @@ class TestGroupPermissions(AsyncTestCase):
         response = await self.client.patch("/heroes/1", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            response.json()["detail"], "You do not have rights to edit this resource."
+            response.json()["detail"],
+            "You do not have sufficient rights to this resource.",
         )
 
     async def test_group_permission_to_edit_resource(self):
         self.edit_group = await Group(
-            name="edit_hero", display_name="Update hero resources."
+            name="update_hero", display_name="Update hero resources."
         ).save()
         await self.edit_group.add_permission(
             await Permission.get(Permission.name == "update_hero")
