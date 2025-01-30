@@ -1,16 +1,17 @@
-from typing import Iterable
+from typing import Iterable, Literal
 
 from apps.authorization.models.permission import Permission
 
 
 class PermissionMixin:
-    def has_permission(self, permissions: Iterable[Permission]) -> bool:
-        """any listed permissions == one or more listed permissions"""
-        return any(perm in self.get_permissions() for perm in permissions)
-
-    def has_permissions(self, permission: Iterable[Permission]) -> bool:
+    def has_permissions(
+        self, permissions: Iterable[Permission], operator: Literal["AND", "OR"] = "AND"
+    ) -> bool:
         """all listed permissions"""
-        return all(perm in self.get_permissions() for perm in permission)
+        if operator == "OR":
+            return any(perm in self.get_permissions() for perm in permissions)
+
+        return all(perm in self.get_permissions() for perm in permissions)
 
     def get_permissions(self) -> set[Permission]:
         """Get all permissions linked to the current user/group"""

@@ -16,7 +16,9 @@ class Group(PermissionMixin, GroupBase, table=True):
         sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionGroupLink
     )
     users: list[User] = Relationship(
-        sa_relationship_kwargs={"lazy": "joined"}, link_model=GroupUserLink
+        back_populates="groups",
+        sa_relationship_kwargs={"lazy": "joined"},
+        link_model=GroupUserLink,
     )
 
     async def add_user(self, user: User):
