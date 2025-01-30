@@ -1,5 +1,5 @@
-from .permission import permission_required_depends
+from .permission import permission_required
 
 __all__ = [
-    "permission_required_depends",
+    "permission_required",
 ]

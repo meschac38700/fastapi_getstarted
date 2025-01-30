@@ -1,17 +1,28 @@
-from typing import Any, Callable, Literal
+from typing import Literal
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 
-Fn = Callable[..., Any]
+from .group_permission import group_permission_required
+from .user_permission import user_permission_required
 
 
-def permission_required_depends(
-    permissions: list[str], *, operator: Literal["AND", "OR"] = "AND"
-) -> Fn:
+def permission_required(
+    permissions: list[str],
+    *,
+    groups: list[str] = None,
+    operator: Literal["AND", "OR"] = "AND",
+):
     async def dependency(request: Request):
-        # TODO(Eliam): Implement permission logics
-        print("----------------------------------------")
-        print(f"{permissions=}, {operator=}, {request=}")
-        print("----------------------------------------")
+        try:
+            return await user_permission_required(permissions, operator=operator)(
+                request
+            )
+        except HTTPException as e:
+            if groups is None:
+                raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+
+            return await group_permission_required(
+                groups, permissions=permissions, operator=operator
+            )(request)
 
     return dependency
