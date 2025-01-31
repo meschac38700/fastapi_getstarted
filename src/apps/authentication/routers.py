@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
 import settings
+from apps.authentication.dependencies import oauth2_scheme
 from apps.authentication.models import JWTToken
 from apps.authentication.models.pydantic import JWTTokenRead
 from apps.user.models import User
@@ -12,7 +13,7 @@ from apps.user.models import User
 routers = APIRouter(tags=["authentication"], prefix=settings.AUTH_PREFIX_URL)
 
 
-@routers.post("/token")
+@routers.post("/token", name="Generate JWT Token")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> JWTTokenRead:
@@ -29,7 +30,9 @@ async def login(
     return JWTTokenRead.model_validate(token)
 
 
-@routers.post("/token/refresh")
+@routers.post(
+    "/token/refresh", name="Refresh JWT token", dependencies=[Depends(oauth2_scheme())]
+)
 async def refresh(user_id: int):
     token = await JWTToken.get(JWTToken.user_id == user_id)
 

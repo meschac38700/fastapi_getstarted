@@ -1,19 +1,21 @@
 from http import HTTPStatus
 from typing import Any, Callable, Literal
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 
-from apps.authentication.dependencies import oauth2_scheme
+from apps.authentication.models import JWTToken
 from apps.authorization.models.permission import Permission
 
 Fn = Callable[..., Any]
 
 
 def user_permission_required(
-    permissions: list[str], *, operator: Literal["AND", "OR"] = "AND"
+    permissions: list[str],
+    *,
+    token: JWTToken,
+    operator: Literal["AND", "OR"] = "AND",
 ) -> Fn:
-    async def dependency(request: Request):
-        token = await oauth2_scheme()(request)
+    async def dependency():
         check_perm = token.user.has_permissions
         if operator.upper() == "OR":
             check_perm = token.user.has_permission

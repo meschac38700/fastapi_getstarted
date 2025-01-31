@@ -1,9 +1,9 @@
 from http import HTTPStatus
 from typing import Any, Callable, Literal
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 
-from apps.authentication.dependencies import oauth2_scheme
+from apps.authentication.models import JWTToken
 from apps.authorization.models.group import Group
 from apps.authorization.models.permission import Permission
 
@@ -13,11 +13,11 @@ Fn = Callable[..., Any]
 def group_permission_required(
     groups: list[str],
     *,
+    token: JWTToken,
     permissions: list[str] | None = None,
     operator: Literal["AND", "OR"] = "AND",
 ) -> Fn:
-    async def dependency(request: Request):
-        token = await oauth2_scheme()(request)
+    async def dependency():
         user = token.user
         user_belongs_to_grp = user.belongs_to_all_groups
         if operator.upper() == "OR":
