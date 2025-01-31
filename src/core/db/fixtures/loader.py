@@ -10,10 +10,10 @@ import aiofiles
 import yaml
 from sqlmodel import SQLModel
 
+import settings
 from core.db import SQLTable
-from settings import BASE_DIR, initial_fixtures
 
-_APP_DIR = BASE_DIR / "apps"
+_APP_DIR = settings.BASE_DIR / "apps"
 _logger = logging.getLogger(__name__)
 
 
@@ -43,7 +43,7 @@ class LoadFixtures:
         """Return model module and model name."""
         pkg_name, _, model_name = model_str.partition(".")
         package_path = self.app_dir / pkg_name
-        module_path = str(package_path / "models").replace(str(BASE_DIR), "")
+        module_path = str(package_path / "models").replace(str(settings.BASE_DIR), "")
         module_import_path = re.sub("/", ".", module_path).strip(".")
 
         model_module = import_module(module_import_path)
@@ -118,8 +118,9 @@ class LoadFixtures:
         return fixture_files
 
     async def load_fixtures(self, fixture_names: Sequence[str] | None = None) -> int:
+        _fixture_names = fixture_names or settings.initial_fixtures
         for app in self._order_by_desired_fixtures(
-            self._get_app_paths(), fixture_names
+            self._get_app_paths(), _fixture_names
         ):
             _app = Path(app)
             fixtures_files = self._scan_fixture_files(_app)
@@ -127,7 +128,7 @@ class LoadFixtures:
             app_name = _app.stem.title()
             self.logger.info(f"Loading {app_name} fixtures.")
             count = await self._load_fixtures(
-                self._filter_fixture_files(fixtures_files, fixture_names)
+                self._filter_fixture_files(fixtures_files, _fixture_names)
             )
             self.logger.info(f"Loaded a total of {count} {app_name} elements.")
             self.count_created += count
@@ -139,7 +140,7 @@ class LoadFixtures:
         self, fixture_files: Sequence[str], desired_fixture_names: Sequence[str]
     ) -> Iterable[str]:
         if not desired_fixture_names or not isinstance(desired_fixture_names, Iterable):
-            desired_fixture_names = initial_fixtures
+            desired_fixture_names = settings.initial_fixtures
 
         self.logger.info(f"Processing {len(desired_fixture_names)} fixture files.")
         return (

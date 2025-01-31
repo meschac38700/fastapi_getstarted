@@ -1,0 +1,8 @@
+- model: user.User
+  properties:
+    username: admin
+    first_name: Eliam
+    last_name: LOTONGA
+    password: admin
+    email: contact@eliam-lotonga.fr
+    address: Seyssinet-Pariset

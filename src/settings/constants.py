@@ -20,6 +20,7 @@ PASSWORD_HASHER_INDEX = int(os.getenv("PASSWORD_HASHER_INDEX") or 0)
 PASSWORD_HASHER = PASSWORD_HASHERS[PASSWORD_HASHER_INDEX]
 
 initial_fixtures = [
+    "initial-users",
     "initial-heroes",
 ]
 
