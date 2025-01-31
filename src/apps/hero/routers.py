@@ -4,7 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Query
 
-from ..authorization.dependencies import permission_required
+from apps.authorization.dependencies import permission_required
+
 from .models import Hero
 from .models.pydantic.create import HeroCreate
 from .models.pydantic.patch import HeroPatch

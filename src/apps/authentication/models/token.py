@@ -40,7 +40,10 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
 
     @classmethod
     async def _create(cls, user: User):
-        return await cls(access_token=cls._generate_jwt_token(user), user=user).save()
+        dt = utils.token_expire_datetime()
+        return await cls(
+            access_token=cls._generate_jwt_token(user, dt), user=user
+        ).save()
 
     @classmethod
     async def get_or_create(cls, user: User) -> Self:
@@ -51,7 +54,10 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
         return await cls._create(user)
 
     async def refresh(self):
-        dt = utils.token_expire_datetime()
+        refresh_delta = datetime.datetime.now(
+            datetime.timezone.utc
+        ) + datetime.timedelta(seconds=1)
+        dt = utils.token_expire_datetime(refresh_delta)
         data = {
             "access_token": JWTToken._generate_jwt_token(self.user, dt),
             "created_at": dt.replace(tzinfo=None),
@@ -60,7 +66,7 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
         await self.save()
 
     @classmethod
-    def _generate_jwt_token(cls, user: User, exp: datetime.datetime | None = None):
+    def _generate_jwt_token(cls, user: User, exp: datetime.datetime):
         to_encode = {
             "sub": user.username,
             "exp": exp,

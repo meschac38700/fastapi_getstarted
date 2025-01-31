@@ -70,7 +70,7 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
 
         return groups_belong_to
 
-    def belongs_to_any_groups(
+    def _belongs_to_any_groups(
         self, groups: list["Group"]
     ) -> tuple[bool, list["Group"]]:
         if not self.groups:
@@ -79,11 +79,14 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
         belong_groups = self._intersection_groups(groups)
         return len(belong_groups) > 1, belong_groups
 
-    def belongs_to_all_groups(
-        self, groups: list["Group"]
+    def belongs_to_groups(
+        self, groups: list["Group"], *, any_match: bool = False
     ) -> tuple[bool, list["Group"]]:
         if not self.groups:
             return False, groups
+
+        if any_match:
+            return self._belongs_to_any_groups(groups)
 
         belong_groups = self._intersection_groups(groups)
         return len(belong_groups) == len(groups), belong_groups

@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, Literal
+from typing import Any, Callable
 
 from fastapi import HTTPException
 
@@ -13,15 +13,13 @@ def user_permission_required(
     permissions: list[str],
     *,
     token: JWTToken,
-    operator: Literal["AND", "OR"] = "AND",
+    any_match: bool = False,
 ) -> Fn:
     async def dependency():
-        check_perm = token.user.has_permissions
-        if operator.upper() == "OR":
-            check_perm = token.user.has_permission
-
         permission_list = await Permission.filter(Permission.name.in_(permissions))
-        user_has_permission = check_perm(permission_list)
+        user_has_permission = token.user.has_permissions(
+            permission_list, any_match=any_match
+        )
         if not user_has_permission:
             detail = "You do not have sufficient rights to this resource."
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
