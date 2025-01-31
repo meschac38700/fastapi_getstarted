@@ -45,5 +45,5 @@ async def refresh(user_id: int):
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED, detail="Your session has expired."
         )
-
-    return JWTTokenRead.model_validate(await token.refresh())
+    await token.refresh()
+    return JWTTokenRead.model_validate(token)
