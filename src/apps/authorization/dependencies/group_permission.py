@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from typing import Any, Callable
 
@@ -8,6 +9,7 @@ from apps.authorization.models.group import Group
 from apps.authorization.models.permission import Permission
 
 Fn = Callable[..., Any]
+_logger = logging.getLogger(__name__)
 
 
 def group_permission_required(
@@ -16,7 +18,10 @@ def group_permission_required(
     token: JWTToken,
     permissions: list[str] | None = None,
     any_match: bool = False,
+    logger: logging.Logger | None = None,
 ) -> Fn:
+    log = logger or _logger
+
     async def dependency():
         user = token.user
         group_list = await Group.filter(Group.name.in_(groups))
@@ -25,9 +30,12 @@ def group_permission_required(
         )
         detail = "You do not have sufficient rights to this resource."
         if not user_belongs_groups:
+            log.debug(
+                f"Permission denied: user({user.username}) does not belong to groups: {groups}"
+            )
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
 
-        # scenario: that we just check that the user belongs to certain groups
+        # scenario: We just need to check that the user belongs to certain groups
         if not permissions:
             return user
 
@@ -37,6 +45,9 @@ def group_permission_required(
             for grp in group_list
         )
         if not at_least_one_group_has_permission:
+            any_all = {"Any" if any_match else "All"}
+            msg = f"{any_all} of Permission(s)({permission_list}) denied on groups: {group_list}"
+            log.debug(msg)
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
 
         return user

@@ -1,6 +1,6 @@
 import re
 from importlib import import_module
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 from sqlmodel import Field, Relationship
 
@@ -80,7 +80,7 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
         return len(belong_groups) > 1, belong_groups
 
     def belongs_to_groups(
-        self, groups: list["Group"], *, any_match: bool = False
+        self, groups: list["Group"] | Sequence["Group"], *, any_match: bool = False
     ) -> tuple[bool, list["Group"]]:
         if not self.groups:
             return False, groups
