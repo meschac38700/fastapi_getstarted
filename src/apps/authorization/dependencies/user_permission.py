@@ -25,6 +25,10 @@ def user_permission_required(
         detail = "You do not have sufficient rights to this resource."
         permission_list = await Permission.filter(Permission.name.in_(permissions))
 
+        if not permission_list:
+            log.debug(f"Permission denied: permissions not found: {permissions}.")
+            raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
+
         user_has_permission = token.user.has_permissions(
             permission_list, any_match=any_match
         )

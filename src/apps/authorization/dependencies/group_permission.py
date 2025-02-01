@@ -23,12 +23,17 @@ def group_permission_required(
     log = logger or _logger
 
     async def dependency():
+        detail = "You do not have sufficient rights to this resource."
         user = token.user
+
         group_list = await Group.filter(Group.name.in_(groups))
+        if not group_list:
+            log.debug(f"Permission denied: groups not found: {group_list}.")
+            raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
+
         user_belongs_groups, group_list = user.belongs_to_groups(
             group_list, any_match=any_match
         )
-        detail = "You do not have sufficient rights to this resource."
         if not user_belongs_groups:
             log.debug(
                 f"Permission denied: user({user.username}) does not belong to groups: {groups}"

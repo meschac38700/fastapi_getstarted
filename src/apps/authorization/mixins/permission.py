@@ -8,6 +8,9 @@ class PermissionMixin:
         self, permissions: Iterable[Permission], any_match: bool = False
     ) -> bool:
         """all listed permissions"""
+        if not permissions:
+            return False
+
         if any_match:
             return any(perm in self.get_permissions() for perm in permissions)
 
