@@ -69,9 +69,6 @@ async def patch_user(pk: int, user: UserPatch):
 @routers.post(
     "/",
     status_code=HTTPStatus.CREATED,
-    dependencies=[
-        Depends(permission_required(["create_user"], groups=["create_user"]))
-    ],
 )
 async def post_user(user: UserCreate):
     return await User(**user.model_dump(exclude_unset=True)).save()
