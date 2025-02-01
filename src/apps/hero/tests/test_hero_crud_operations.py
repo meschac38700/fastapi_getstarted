@@ -71,6 +71,7 @@ class TestHeroCRUD(AsyncTestCase):
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
         self.assertEqual(data["name"], new_hero.name)
+        self.assertEqual(1, 2)
 
     async def test_patch_entire_hero_should_not_be_possible(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()

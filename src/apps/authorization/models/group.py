@@ -8,9 +8,12 @@ from apps.user.models import User
 from ._base import GroupBase
 from .permission import Permission
 from .relation_links import GroupUserLink, PermissionGroupLink
+from .utils import CRUDModelMixin
 
 
-class Group(PermissionMixin, GroupBase, table=True):
+class Group(CRUDModelMixin, PermissionMixin, GroupBase, table=True):
+    __tablename__ = "permission_group"
+
     id: int = Field(primary_key=True, allow_mutation=False)
     permissions: list[Permission] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionGroupLink
