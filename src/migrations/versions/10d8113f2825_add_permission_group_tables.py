@@ -1,8 +1,8 @@
 """Add permission,group tables
 
-Revision ID: c62f1208d6c2
+Revision ID: 10d8113f2825
 Revises: bfb7afe74a8e
-Create Date: 2025-02-01 23:26:17.554031
+Create Date: 2025-02-02 12:26:44.494258
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "c62f1208d6c2"
+revision: str = "10d8113f2825"
 down_revision: Union[str, None] = "bfb7afe74a8e"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -55,13 +55,9 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("group_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["group_name"],
-            ["permission_group.name"],
+            ["group_name"], ["permission_group.name"], ondelete="CASCADE"
         ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["user.id"],
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["user.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("user_id", "group_name"),
     )
     op.create_table(
@@ -71,12 +67,10 @@ def upgrade() -> None:
             "permission_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["group_name"],
-            ["permission_group.name"],
+            ["group_name"], ["permission_group.name"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
-            ["permission_name"],
-            ["permission.name"],
+            ["permission_name"], ["permission.name"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("group_name", "permission_name"),
     )
@@ -87,13 +81,9 @@ def upgrade() -> None:
             "permission_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["permission_name"],
-            ["permission.name"],
+            ["permission_name"], ["permission.name"], ondelete="CASCADE"
         ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["user.id"],
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["user.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("user_id", "permission_name"),
     )
     # ### end Alembic commands ###
