@@ -18,16 +18,14 @@ class TestOAuth2Scheme(AsyncTestCase):
         await Permission.generate_crud_objects(User.table_name())
 
     async def test_deleted_token_should_invalid_authentication(self):
-        token = await JWTToken.get_or_create(self.user)
         await self.add_permissions(self.user, ["update_user"])
 
         await self.client.login(self.user.username)
 
         response = await self.client.patch("/users/1", json={"last_name": "DOE"})
-        print(f"{response.json()}")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        await token.delete()
+        await (await JWTToken.get(JWTToken.user_id == self.user.id)).delete()
 
         response = await self.client.patch("/users/1", json={"last_name": "DOE"})
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
