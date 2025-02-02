@@ -1,19 +1,35 @@
 import re
 from importlib import import_module
-from typing import Any
+from typing import TYPE_CHECKING, Any, Sequence
 
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 
+from apps.authorization.mixins import PermissionMixin
+from apps.authorization.models.permission import Permission
+from apps.authorization.models.relation_links import (
+    GroupUserLink,
+    PermissionUserLink,
+)
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
 
 from ._base import UserSQLBaseModel
 
+if TYPE_CHECKING:
+    from apps.authorization.models.group import Group
 _EMPTY = type("Empty", (), {})
 
 
-class User(UserSQLBaseModel, table=True):
+class User(PermissionMixin, UserSQLBaseModel, table=True):
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
+    permissions: list[Permission] = Relationship(
+        sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionUserLink
+    )
+    groups: list["Group"] = Relationship(
+        back_populates="users",
+        sa_relationship_kwargs={"lazy": "joined"},
+        link_model=GroupUserLink,
+    )
 
     def model_post_init(self, __context: Any) -> None:
         self._hash_password()
@@ -44,3 +60,33 @@ class User(UserSQLBaseModel, table=True):
 
     def check_password(self, password_plain: str):
         return self._password_hasher.verify(password_plain, self.password)
+
+    def _intersection_groups(self, groups: list["Group"]) -> list["Group"]:
+        groups_belong_to = []
+        user_groups = self.groups
+        for group in groups:
+            if group in user_groups:
+                groups_belong_to.append(group)
+
+        return groups_belong_to
+
+    def _belongs_to_any_groups(
+        self, groups: list["Group"]
+    ) -> tuple[bool, list["Group"]]:
+        if not self.groups:
+            return False, groups
+
+        belong_groups = self._intersection_groups(groups)
+        return len(belong_groups) > 1, belong_groups
+
+    def belongs_to_groups(
+        self, groups: list["Group"] | Sequence["Group"], *, any_match: bool = False
+    ) -> tuple[bool, list["Group"]]:
+        if not self.groups:
+            return False, groups
+
+        if any_match:
+            return self._belongs_to_any_groups(groups)
+
+        belong_groups = self._intersection_groups(groups)
+        return len(belong_groups) == len(groups), belong_groups
