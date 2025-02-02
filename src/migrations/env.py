@@ -1,7 +1,7 @@
 import asyncio
 import re
 from logging.config import fileConfig
-from typing import Any, Sequence
+from typing import Any
 
 import sqlalchemy as sa
 from alembic import context
@@ -35,67 +35,12 @@ target_metadata = app_metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-
-def sql_select(
-    conn, table_name: str, *, where: str, order_by: str = ""
-) -> list[dict[str, Any]]:
-    perms_statement = sa.text(f"""
-        SELECT *
-        FROM {table_name}
-        WHERE {where}
-        {order_by};
-    """)
-    return conn.execute(perms_statement).mappings().all()
-
-
-async def link_permission_to_group(
-    perms: Sequence[Permission], groups: Sequence[Group]
-):
-    task_list = []
-    for perm in perms:
-        for group in groups:
-            if group.name != perm.name:
-                continue
-            group.permissions = [*group.permissions, perm]
-            task_list.append(group.save())
-
-    await asyncio.gather(*task_list)
-
-
-async def generate_old_models_crud_permissions(engine: Any):
-    """Generate CRUD permissions for all created models before permission model.
-
-    (User/Hero models)
-    """
-
-    def permission_table_exists(conn):
-        return conn.engine.dialect.has_table(conn, "permission")
-
-    if not await engine.run_sync(permission_table_exists):
-        return
-
-    await asyncio.gather(
-        Permission.generate_crud_objects("hero"),
-        Permission.generate_crud_objects("user"),
-        Group.generate_crud_objects("hero"),
-        Group.generate_crud_objects("user"),
-    )
-    perms_user, perms_hero, groups_user, groups_hero = await asyncio.gather(
-        Permission.filter(Permission.target_table == "user"),
-        Permission.filter(Permission.target_table == "hero"),
-        Group.filter(Permission.target_table == "user"),
-        Group.filter(Permission.target_table == "hero"),
-    )
-    await asyncio.gather(
-        link_permission_to_group(perms_user, groups_user),
-        link_permission_to_group(perms_hero, groups_hero),
-    )
+Data = list[dict[str, Any]]
 
 
 async def run_async_migrations(connectable):
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-        await generate_old_models_crud_permissions(connection)
     await connectable.dispose()
 
 
@@ -119,10 +64,7 @@ def _extract_table_name(statement: str) -> str | None:
     return res.group("table_name")
 
 
-Data = list[dict[str, Any]]
-
-
-def _get_permission_group_link_insert_query(permissions: Data, groups: Data) -> str:
+def _build_permission_group_link_insert_query(permissions: Data, groups: Data) -> str:
     query = f"""
     INSERT INTO {PermissionGroupLink.table_name()}(permission_name, group_name) VALUES
     """
@@ -134,6 +76,60 @@ def _get_permission_group_link_insert_query(permissions: Data, groups: Data) -> 
             continue
         query += f"{val}"
     return query + ";"
+
+
+def sql_select(conn, table_name: str, *, where: str, order_by: str = "") -> Data:
+    _order_by = f"ORDER BY {order_by}" if order_by else ""
+    perms_statement = sa.text(f"""
+        SELECT *
+        FROM {table_name}
+        WHERE {where}
+        {_order_by};
+    """)
+    return conn.execute(perms_statement).mappings().all()
+
+
+def _generate_permissions(conn, cursor, table_name: str) -> Data:
+    # Auto generate crud permissions for previously created model table
+    perms_sql = Permission.get_crud_data_list(table_name, raw_sql=True)
+    cursor.execute(perms_sql)
+    return sql_select(
+        conn,
+        Permission.table_name(),
+        where=f"target_table='{table_name}'",
+        order_by="name ASC",
+    )
+
+
+def _generate_groups(conn, cursor, table_name: str) -> Data:
+    # Auto generate crud groups for previously created model table
+    groups_sql = Group.get_crud_data_list(table_name, raw_sql=True)
+    cursor.execute(groups_sql)
+    return sql_select(
+        conn,
+        Group.table_name(),
+        where=f"name LIKE '%_{table_name}'",
+        order_by="name ASC",
+    )
+
+
+def _generate_permission_group_links(
+    conn, cursor, table_name: str, *, perms: Data, groups: Data
+) -> None:
+    # Auto generate permission group links
+    table_exists = conn.engine.dialect.has_table(conn, PermissionGroupLink.table_name())
+    if not table_exists:
+        return
+    links = sql_select(
+        conn,
+        PermissionGroupLink.table_name(),
+        where=f"group_name LIKE '%_{table_name}'",
+    )
+    if links:
+        return
+
+    permission_group_link_sql = _build_permission_group_link_insert_query(perms, groups)
+    cursor.execute(permission_group_link_sql)
 
 
 def after_cursor_execute(
@@ -149,36 +145,16 @@ def after_cursor_execute(
     )
     if not permission_table_exists or table_name is None:
         return
+    perms = _generate_permissions(conn, cursor, table_name)
 
-    # Auto generate crud permissions for previously created model table
-    perms_sql = Permission.get_crud_data_list(table_name, raw_sql=True)
-    cursor.execute(perms_sql)
-    perms = sql_select(
-        conn,
-        Permission.table_name(),
-        where=f"target_table='{table_name}'",
-        order_by="ORDER BY name",
-    )
-
-    # Auto generate crud groups for previously created model table
     table_exists = conn.engine.dialect.has_table(conn, Group.table_name())
     if not table_exists:
         return
-    groups_sql = Group.get_crud_data_list(table_name, raw_sql=True)
-    cursor.execute(groups_sql)
-    groups = sql_select(
-        conn,
-        Group.table_name(),
-        where=f"name LIKE '%_{table_name}'",
-        order_by="ORDER BY name",
-    )
+    groups = _generate_groups(conn, cursor, table_name)
 
-    # permission group link
-    table_exists = conn.engine.dialect.has_table(conn, PermissionGroupLink.table_name())
-    if not table_exists:
-        return
-    permission_group_link_sql = _get_permission_group_link_insert_query(perms, groups)
-    cursor.execute(permission_group_link_sql)
+    _generate_permission_group_links(
+        conn, cursor, table_name, perms=perms, groups=groups
+    )
 
 
 def run_migrations_online():
