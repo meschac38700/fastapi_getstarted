@@ -1,3 +1,3 @@
-from .permissions import ManagePermissionMigration
+from .permissions import PermissionAfterCursorExecute
 
-__all__ = ["ManagePermissionMigration"]
+__all__ = ["PermissionAfterCursorExecute"]

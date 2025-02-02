@@ -1,22 +1,53 @@
 from typing import Any
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql.asyncpg import (
+    AsyncAdapt_asyncpg_cursor,
+    PGExecutionContext_asyncpg,
+)
+from sqlalchemy.engine.base import Connection
 
 from apps.authorization.models.group import Group
 from apps.authorization.models.permission import Permission
 from apps.authorization.models.relation_links import PermissionGroupLink
+from migrations.sql import utils as migration_utils
 
 Data = list[dict[str, Any]]
 
 
-class ManagePermissionMigration:
+class PermissionAfterCursorExecute:
     """Manage permissions for new models when applying migrations."""
 
-    def __init__(self, conn, cursor):
+    def _set_attributes(self, conn: Connection, cursor: AsyncAdapt_asyncpg_cursor):
         self.conn = conn
         self.cursor = cursor
         self.permission_table = Permission.table_name()
         self.group_table = Group.table_name()
+
+    def __call__(
+        self,
+        conn: Connection,
+        cursor: AsyncAdapt_asyncpg_cursor,
+        statement: str,
+        parameters: tuple[Any],
+        context: PGExecutionContext_asyncpg,
+        executemany: bool,
+    ):
+        if not context.isddl:
+            return
+
+        table_name = migration_utils.extract_table_name(statement)
+        self._set_attributes(conn, cursor)
+
+        if not self.permission_table_exists() or table_name is None:
+            return
+        perms = self.generate_permissions(table_name)
+
+        if not self.group_table_exists():
+            return
+        groups = self.generate_groups(table_name)
+
+        self.generate_permission_group_links(table_name, perms=perms, groups=groups)
 
     def _table_exists(self, table_name: str) -> bool:
         return self.conn.engine.dialect.has_table(self.conn, table_name)
