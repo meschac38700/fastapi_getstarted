@@ -1,7 +1,10 @@
 from http import HTTPStatus
 from typing import Any
 
+from apps.authorization.models.group import Group
+from apps.authorization.models.permission import Permission
 from apps.hero.models import Hero
+from apps.user.models import User
 from core.test.async_case import AsyncTestCase
 
 
@@ -10,6 +13,13 @@ class TestHeroCRUD(AsyncTestCase):
         "users",
         "heroes",
     ]
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        # TODO(Eliam): not necessary if we test in a Docker container
+        await Permission.generate_crud_objects(Hero.table_name())
+        await Group.generate_crud_objects(Hero.table_name())
+        self.user = await User.get(User.username == "fastapi")
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
@@ -35,6 +45,13 @@ class TestHeroCRUD(AsyncTestCase):
         await self.client.login("fastapi")
 
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        group_create = await Group.get(Group.name == "create_hero")
+        await self.add_permissions(group_create, ["create_hero"])
+        await group_create.add_user(self.user)
+
+        response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
         stored_hero = await Hero.get(Hero.name == "Super Test Man")
@@ -50,7 +67,16 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
 
+        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
         await self.client.login("fastapi")
+        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        group_create = await Group.get(Group.name == "update_hero")
+        await self.add_permissions(group_create, ["update_hero"])
+        await group_create.add_user(self.user)
 
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -64,14 +90,22 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man"}
 
+        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
         await self.client.login("fastapi")
+        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        group_create = await Group.get(Group.name == "update_hero")
+        await self.add_permissions(group_create, ["update_hero"])
+        await group_create.add_user(self.user)
 
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
         self.assertEqual(data["name"], new_hero.name)
-        self.assertEqual(1, 2)
 
     async def test_patch_entire_hero_should_not_be_possible(self):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
@@ -83,6 +117,10 @@ class TestHeroCRUD(AsyncTestCase):
         }
 
         await self.client.login("fastapi")
+
+        group_create = await Group.get(Group.name == "update_hero")
+        await self.add_permissions(group_create, ["update_hero"])
+        await group_create.add_user(self.user)
 
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
@@ -96,7 +134,20 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         self.assertIsNotNone(hero.id)
 
+        response = await self.client.delete(
+            f"/heroes/{hero.id}", params={"id": hero.id}
+        )
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
         await self.client.login("fastapi")
+        response = await self.client.delete(
+            f"/heroes/{hero.id}", params={"id": hero.id}
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        group_create = await Group.get(Group.name == "delete_hero")
+        await self.add_permissions(group_create, ["delete_hero"])
+        await group_create.add_user(self.user)
 
         response = await self.client.delete(
             f"/heroes/{hero.id}", params={"id": hero.id}

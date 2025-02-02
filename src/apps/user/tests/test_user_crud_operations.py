@@ -1,6 +1,8 @@
 from datetime import date
 from http import HTTPStatus
 
+from apps.authorization.models.group import Group
+from apps.authorization.models.permission import Permission
 from apps.user.models import User
 from core.test.async_case import AsyncTestCase
 
@@ -9,6 +11,13 @@ class TestUserCRUD(AsyncTestCase):
     fixtures = [
         "users",
     ]
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        # TODO(Eliam): not necessary if we test in a Docker container
+        await Permission.generate_crud_objects(User.table_name())
+        await Group.generate_crud_objects(User.table_name())
+        self.user = await User.get(User.username == "fastapi")
 
     async def test_get_users(self):
         response = await self.client.get("/users/")
@@ -33,13 +42,10 @@ class TestUserCRUD(AsyncTestCase):
             "password": "jdoe",
         }
         self.assertIsNone(await User.get(User.username == data["username"]))
-        response = await self.client.post("/users/", json=data)
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
-
-        await self.client.login("fastapi")
 
         response = await self.client.post("/users/", json=data)
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
+
         actual_user = response.json()
         created_user = await User.get(User.username == data["username"])
         self.assertIsNotNone(created_user)
@@ -61,8 +67,14 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
         }
 
-        await self.client.login("fastapi")
+        response = await self.client.patch(f"/users/{user.id}", json=data)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
+        await self.client.login(self.user.username)
+        response = await self.client.patch(f"/users/{user.id}", json=data)
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        await self.add_permissions(self.user, ["update_user"])
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -87,9 +99,14 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
         }
+        response = await self.client.patch(f"/users/{user.id}", json=data)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.login(self.user.username)
+        response = await self.client.patch(f"/users/{user.id}", json=data)
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
+        await self.add_permissions(self.user, ["update_user"])
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
@@ -113,9 +130,14 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
             "password": "jdoe",
         }
+        response = await self.client.patch(f"/users/{user.id}", json=data)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.login(self.user.username)
+        response = await self.client.patch(f"/users/{user.id}", json=data)
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
+        await self.add_permissions(self.user, ["update_user"])
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -125,11 +147,14 @@ class TestUserCRUD(AsyncTestCase):
         self.assertTrue(user.check_password(data["password"]))
 
     async def test_delete_user(self):
-        user_to_delete = await User.get(User.id == 1)
-        self.assertIsNotNone(user_to_delete)
+        response = await self.client.patch(f"/users/{self.user.id}")
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.login(self.user.username)
+        response = await self.client.patch(f"/users/{self.user.id}")
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        response = await self.client.delete(f"/users/{user_to_delete.id}")
+        await self.add_permissions(self.user, ["delete_user"])
+        response = await self.client.delete(f"/users/{self.user.id}")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(User.id == user_to_delete.id))
+        self.assertIsNone(await User.get(User.id == self.user.id))

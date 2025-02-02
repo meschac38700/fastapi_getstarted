@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-from sqlmodel import and_
-
 from apps.authorization.models.permission import Permission
 from apps.hero.models import Hero
 from apps.user.models import User
@@ -18,7 +16,7 @@ class TestUserPermission(AsyncTestCase):
         await super().asyncSetUp()
         self.user = await User.get(User.username == "fastapi")
         # TODO(Eliam): Remove the following line of code once the test in docker container task completed
-        await Permission.generate_crud_permissions(Hero.table_name())
+        await Permission.generate_crud_objects(Hero.table_name())
 
     async def test_user_has_no_rights_to_edit_resource(self):
         hero_id = 1
@@ -36,13 +34,7 @@ class TestUserPermission(AsyncTestCase):
         hero_id = 1
         await self.client.user_login(self.user)
 
-        edit_hero_perm = await Permission.get(
-            and_(
-                Permission.target_table == Hero.table_name(),
-                Permission.name.startswith("update"),
-            )
-        )
-        await self.user.add_permission(edit_hero_perm)
+        await self.add_permissions(self.user, ["update_hero"])
 
         data = {"secret_name": "test edit"}
         response = await self.client.patch(f"/heroes/{hero_id}", json=data)

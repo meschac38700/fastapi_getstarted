@@ -17,16 +17,14 @@ class TestGroupPermissions(AsyncTestCase):
         await super().asyncSetUp()
         self.user = await User.get(User.username == "fastapi")
         # TODO(Eliam): Remove the following line of code once the test in docker container task completed
-        await Permission.generate_crud_permissions(Hero.table_name())
+        await Permission.generate_crud_objects(Hero.table_name())
+        await Group.generate_crud_objects(Hero.table_name())
 
     async def test_group_has_no_right_permissions_cannot_edit(self):
-        self.read_group = await Group(
-            name="read_hero", display_name="Read hero resources."
-        ).save()
-        await self.read_group.add_permission(
-            await Permission.get(Permission.name == "read_hero")
-        )
-        await self.read_group.add_user(self.user)
+        read_group = await Group.get(Group.name == "read_hero")
+        # TODO(Eliam): remove after test in docker Done
+        await self.add_permissions(read_group, ["read_hero"])
+        await read_group.add_user(self.user)
 
         await self.client.user_login(self.user)
 
@@ -39,13 +37,10 @@ class TestGroupPermissions(AsyncTestCase):
         )
 
     async def test_group_permission_to_edit_resource(self):
-        self.edit_group = await Group(
-            name="update_hero", display_name="Update hero resources."
-        ).save()
-        await self.edit_group.add_permission(
-            await Permission.get(Permission.name == "update_hero")
-        )
-        await self.edit_group.add_user(self.user)
+        edit_group = await Group.get(Group.name == "update_hero")
+        # TODO(Eliam): remove after test in docker Done
+        await self.add_permissions(edit_group, ["update_hero"])
+        await edit_group.add_user(self.user)
 
         await self.client.user_login(self.user)
 

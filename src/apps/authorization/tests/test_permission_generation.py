@@ -10,7 +10,7 @@ class TestPermissionGeneration(AsyncTestCase):
         # TODO(Eliam): The following line of code is needed just when we run the tests outside the Docker container
         #  Alembic migration should automatically generate all permissions
         #  but as we are manually initializing the database, the alembic code is not executed
-        await Permission.generate_crud_permissions(Hero.table_name())
+        await Permission.generate_crud_objects(Hero.table_name())
 
         hero_crud_perms = await Permission.filter(
             Permission.target_table == Hero.table_name()
@@ -29,9 +29,7 @@ class TestPermissionGeneration(AsyncTestCase):
         )
 
     async def test_get_permission_insert_raw_sql(self):
-        actual_sql = Permission.get_model_crud_permissions(
-            Hero.table_name(), raw_sql=True
-        )
+        actual_sql = Permission.get_crud_data_list(Hero.table_name(), raw_sql=True)
         expected_sql = """INSERT INTO permission(name, description, display_name, target_table)
             VALUES('create_hero', 'This permission allows user to create any Hero instance.', 'Create hero', 'hero'),
             ('read_hero', 'This permission allows user to read any Hero instance.', 'Read hero', 'hero'),
