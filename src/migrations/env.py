@@ -10,9 +10,7 @@ from sqlalchemy.dialects.postgresql.asyncpg import PGExecutionContext_asyncpg
 from sqlalchemy.ext.asyncio import AsyncEngine, async_engine_from_config
 
 from apps import app_metadata
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
-from apps.authorization.models.relation_links import PermissionGroupLink
+from migrations.events.after_cursor_execute import ManagePermissionMigration
 from settings import settings
 
 # this is the Alembic Config object, which provides
@@ -64,74 +62,6 @@ def _extract_table_name(statement: str) -> str | None:
     return res.group("table_name")
 
 
-def _build_permission_group_link_insert_query(permissions: Data, groups: Data) -> str:
-    query = f"""
-    INSERT INTO {PermissionGroupLink.table_name()}(permission_name, group_name) VALUES
-    """
-    for i, perm_group in enumerate(zip(permissions, groups)):
-        perm, group = perm_group
-        val = (perm["name"], group["name"])
-        if i > 0:
-            query += f",\n {val}"
-            continue
-        query += f"{val}"
-    return query + ";"
-
-
-def sql_select(conn, table_name: str, *, where: str, order_by: str = "") -> Data:
-    _order_by = f"ORDER BY {order_by}" if order_by else ""
-    perms_statement = sa.text(f"""
-        SELECT *
-        FROM {table_name}
-        WHERE {where}
-        {_order_by};
-    """)
-    return conn.execute(perms_statement).mappings().all()
-
-
-def _generate_permissions(conn, cursor, table_name: str) -> Data:
-    # Auto generate crud permissions for previously created model table
-    perms_sql = Permission.get_crud_data_list(table_name, raw_sql=True)
-    cursor.execute(perms_sql)
-    return sql_select(
-        conn,
-        Permission.table_name(),
-        where=f"target_table='{table_name}'",
-        order_by="name ASC",
-    )
-
-
-def _generate_groups(conn, cursor, table_name: str) -> Data:
-    # Auto generate crud groups for previously created model table
-    groups_sql = Group.get_crud_data_list(table_name, raw_sql=True)
-    cursor.execute(groups_sql)
-    return sql_select(
-        conn,
-        Group.table_name(),
-        where=f"name LIKE '%_{table_name}'",
-        order_by="name ASC",
-    )
-
-
-def _generate_permission_group_links(
-    conn, cursor, table_name: str, *, perms: Data, groups: Data
-) -> None:
-    # Auto generate permission group links
-    table_exists = conn.engine.dialect.has_table(conn, PermissionGroupLink.table_name())
-    if not table_exists:
-        return
-    links = sql_select(
-        conn,
-        PermissionGroupLink.table_name(),
-        where=f"group_name LIKE '%_{table_name}'",
-    )
-    if links:
-        return
-
-    permission_group_link_sql = _build_permission_group_link_insert_query(perms, groups)
-    cursor.execute(permission_group_link_sql)
-
-
 def after_cursor_execute(
     conn, cursor, statement, _, context: PGExecutionContext_asyncpg, ___
 ):
@@ -139,21 +69,18 @@ def after_cursor_execute(
         return
 
     table_name = _extract_table_name(statement)
+    permission_manager = ManagePermissionMigration(conn, cursor)
 
-    permission_table_exists = conn.engine.dialect.has_table(
-        conn, Permission.table_name()
-    )
-    if not permission_table_exists or table_name is None:
+    if not permission_manager.permission_table_exists() or table_name is None:
         return
-    perms = _generate_permissions(conn, cursor, table_name)
+    perms = permission_manager.generate_permissions(table_name)
 
-    table_exists = conn.engine.dialect.has_table(conn, Group.table_name())
-    if not table_exists:
+    if not permission_manager.group_table_exists():
         return
-    groups = _generate_groups(conn, cursor, table_name)
+    groups = permission_manager.generate_groups(table_name)
 
-    _generate_permission_group_links(
-        conn, cursor, table_name, perms=perms, groups=groups
+    permission_manager.generate_permission_group_links(
+        table_name, perms=perms, groups=groups
     )
 
 
