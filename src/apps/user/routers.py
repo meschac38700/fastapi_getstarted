@@ -30,10 +30,18 @@ async def get_user(pk: int):
         Depends(permission_required(["update_user"], groups=["update_user"]))
     ],
 )
-async def update_user(pk: int, user: UserCreate):
+async def update_user(
+    pk: int, user: UserCreate, current_user: User = Depends(current_user())
+):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    if not current_user.is_admin and user != stored_user:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You do not have sufficient rights to this resource.",
+        )
 
     user.check_all_required_fields_updated(stored_user.model_dump())
     if not user.is_updated:
@@ -51,10 +59,18 @@ async def update_user(pk: int, user: UserCreate):
         Depends(permission_required(["update_user"], groups=["update_user"]))
     ],
 )
-async def patch_user(pk: int, user: UserPatch):
+async def patch_user(
+    pk: int, user: UserPatch, current_user: User = Depends(current_user())
+):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    if not current_user.is_admin and user != stored_user:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You do not have sufficient rights to this resource.",
+        )
 
     if user.check_all_fields_updated(stored_user.model_dump()):
         detail = "Cannot use PATCH to update entire object, use PUT instead."
