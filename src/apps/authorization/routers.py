@@ -29,8 +29,8 @@ async def get_permissions(
     if target_table is not None:
         filters.append(Permission.target_table == target_table)
 
-    permission_query = Permission.all(offset=offset, limit=limit)
-    if filters:
-        permission_query = Permission.filter(and_(*filters), offset=offset, limit=limit)
-
-    return await permission_query
+    return await (
+        Permission.filter(and_(*filters), offset=offset, limit=limit)
+        if filters
+        else Permission.all(offset=offset, limit=limit)
+    )
