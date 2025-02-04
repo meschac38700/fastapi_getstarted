@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from apps.authorization.dependencies import permission_required
 
+from ..authentication.dependencies.oauth2 import current_user
 from .models import User
 from .models.pydantic.create import UserCreate
 from .models.pydantic.patch import UserPatch
@@ -78,12 +79,21 @@ async def post_user(user: UserCreate):
     "/{pk}",
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
-        Depends(permission_required(["delete_user"], groups=["delete_user"]))
+        Depends(
+            permission_required(["delete_user"], groups=["delete_user"]),
+        )
     ],
 )
-async def delete_user(pk: int):
+async def delete_user(pk: int, user: User = Depends(current_user())):
     stored_user = await User.get(User.id == pk)
+
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    if not user.is_admin and user != stored_user:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You do not have sufficient rights to this resource.",
+        )
 
     return await stored_user.delete()

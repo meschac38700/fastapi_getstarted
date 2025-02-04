@@ -23,3 +23,15 @@ class UserSQLBaseModel(UserBase, TimestampedSQLBaseModel):
             postgresql.ENUM(UserRole), default=UserRole.active, index=True
         )
     )
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role is UserRole.admin
+
+    @property
+    def is_staff(self) -> bool:
+        return self.role is UserRole.staff
+
+    @property
+    def is_active(self) -> bool:
+        return self.role is UserRole.active
