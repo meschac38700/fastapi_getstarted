@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlmodel import Field
 
 from apps.user.utils.types import UserRole
@@ -14,10 +15,11 @@ class UserBase(SQLTable):
     email: str | None = Field(default=None, unique=True)
     address: str | None = None
     age: int | None = None
-    role: UserRole = Field(
-        sa_column=sa.Column(sa.Enum(UserRole), default=UserRole.active, index=True)
-    )
 
 
 class UserSQLBaseModel(UserBase, TimestampedSQLBaseModel):
-    pass
+    role: UserRole = Field(
+        sa_column=sa.Column(
+            postgresql.ENUM(UserRole), default=UserRole.active, index=True
+        )
+    )
