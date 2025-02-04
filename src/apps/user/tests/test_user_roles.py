@@ -1,3 +1,4 @@
+import asyncio
 from http import HTTPStatus
 
 from apps.authorization.models.permission import Permission
@@ -14,10 +15,12 @@ class TestUserRoles(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         # TODO(Eliam): You already know the song. to be removed
-        await Permission.generate_crud_objects(User.table_name())
-        self.admin = await User.get(User.role == UserRole.admin)
-        self.staff = await User.get(User.role == UserRole.staff)
-        self.active = await User.get(User.role == UserRole.active)
+        _, self.admin, self.staff, self.active = await asyncio.gather(
+            Permission.generate_crud_objects(User.table_name()),
+            User.get(User.role == UserRole.admin),
+            User.get(User.role == UserRole.staff),
+            User.get(User.role == UserRole.active),
+        )
 
     async def test_user_active_can_delete_only_his_own_account(self):
         await self.add_permissions(self.active, ["delete_user"])
