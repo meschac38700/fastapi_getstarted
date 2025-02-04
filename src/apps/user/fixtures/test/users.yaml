@@ -18,9 +18,9 @@
 
 - model: user.User
   properties:
-    username: jdoe
-    first_name: John
+    username: active
+    first_name: Active
     last_name: DOE
-    password: jdoe123
-    email: j.doe@example.com
+    password: active123
+    email: a.doe@example.com
     role: active

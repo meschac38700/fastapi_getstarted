@@ -158,3 +158,15 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.delete(f"/users/{self.user.id}")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(User.id == self.user.id))
+
+    async def test_use_token_of_deleted_user(self):
+        await self.add_permissions(self.user, ["delete_user"])
+        await self.client.user_login(self.user)
+        await self.user.delete()
+
+        response = await self.client.delete(f"/users/{self.user.id}")
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        self.assertEqual(
+            "Invalid authentication token. user does not exist.",
+            response.json()["detail"],
+        )
