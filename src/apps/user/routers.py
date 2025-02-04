@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from apps.authorization.dependencies import permission_required
 
+from ..authentication.dependencies.oauth2 import current_user
 from .models import User
 from .models.pydantic.create import UserCreate
 from .models.pydantic.patch import UserPatch
@@ -29,10 +30,18 @@ async def get_user(pk: int):
         Depends(permission_required(["update_user"], groups=["update_user"]))
     ],
 )
-async def update_user(pk: int, user: UserCreate):
+async def update_user(
+    pk: int, user: UserCreate, current_user: User = Depends(current_user())
+):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    if not current_user.is_admin and user != stored_user:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You do not have sufficient rights to this resource.",
+        )
 
     user.check_all_required_fields_updated(stored_user.model_dump())
     if not user.is_updated:
@@ -50,10 +59,18 @@ async def update_user(pk: int, user: UserCreate):
         Depends(permission_required(["update_user"], groups=["update_user"]))
     ],
 )
-async def patch_user(pk: int, user: UserPatch):
+async def patch_user(
+    pk: int, user: UserPatch, current_user: User = Depends(current_user())
+):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    if not current_user.is_admin and user != stored_user:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You do not have sufficient rights to this resource.",
+        )
 
     if user.check_all_fields_updated(stored_user.model_dump()):
         detail = "Cannot use PATCH to update entire object, use PUT instead."
@@ -78,12 +95,21 @@ async def post_user(user: UserCreate):
     "/{pk}",
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
-        Depends(permission_required(["delete_user"], groups=["delete_user"]))
+        Depends(
+            permission_required(["delete_user"], groups=["delete_user"]),
+        )
     ],
 )
-async def delete_user(pk: int):
+async def delete_user(pk: int, user: User = Depends(current_user())):
     stored_user = await User.get(User.id == pk)
+
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    if not user.is_admin and user != stored_user:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You do not have sufficient rights to this resource.",
+        )
 
     return await stored_user.delete()

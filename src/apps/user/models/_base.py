@@ -1,5 +1,8 @@
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlmodel import Field
 
+from apps.user.utils.types import UserRole
 from core.db import SQLTable
 from core.db.models import TimestampedSQLBaseModel
 
@@ -15,4 +18,20 @@ class UserBase(SQLTable):
 
 
 class UserSQLBaseModel(UserBase, TimestampedSQLBaseModel):
-    pass
+    role: UserRole = Field(
+        sa_column=sa.Column(
+            postgresql.ENUM(UserRole), default=UserRole.active, index=True
+        )
+    )
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role is UserRole.admin
+
+    @property
+    def is_staff(self) -> bool:
+        return self.role is UserRole.staff
+
+    @property
+    def is_active(self) -> bool:
+        return self.role is UserRole.active

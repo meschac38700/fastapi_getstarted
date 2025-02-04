@@ -5,6 +5,7 @@
     last_name: Python
     password: fastapi
     email: fastapi@example.com
+    role: admin
 
 - model: user.User
   properties:
@@ -13,3 +14,13 @@
     last_name: FastAPI
     password: test
     email: pytest@example.com
+    role: staff
+
+- model: user.User
+  properties:
+    username: active
+    first_name: Active
+    last_name: DOE
+    password: active123
+    email: a.doe@example.com
+    role: active
