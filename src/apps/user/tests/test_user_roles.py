@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from apps.authorization.models.permission import Permission
 from apps.user.models import User
 from apps.user.utils.types import UserRole
 from core.test.async_case import AsyncTestCase
@@ -12,6 +13,8 @@ class TestUserRoles(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
+        # TODO(Eliam): You already know the song. to be removed
+        await Permission.generate_crud_objects(User.table_name())
         self.admin = await User.get(User.role == UserRole.admin)
         self.staff = await User.get(User.role == UserRole.staff)
         self.active = await User.get(User.role == UserRole.active)
