@@ -31,16 +31,16 @@ async def get_user(pk: int):
     ],
 )
 async def update_user(
-    pk: int, user: UserCreate, current_user: User = Depends(current_user())
+    pk: int, user: UserCreate, auth_user: User = Depends(current_user())
 ):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
-    if not current_user.is_admin and user != stored_user:
+    if not auth_user.is_admin and user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="You do not have sufficient rights to this resource.",
+            detail="Your role does not allow you to do this action",
         )
 
     user.check_all_required_fields_updated(stored_user.model_dump())
@@ -60,16 +60,16 @@ async def update_user(
     ],
 )
 async def patch_user(
-    pk: int, user: UserPatch, current_user: User = Depends(current_user())
+    pk: int, user: UserPatch, auth_user: User = Depends(current_user())
 ):
     stored_user = await User.get(User.id == pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
-    if not current_user.is_admin and user != stored_user:
+    if not auth_user.is_admin and user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="You do not have sufficient rights to this resource.",
+            detail="Your role does not allow you to do this action.",
         )
 
     if user.check_all_fields_updated(stored_user.model_dump()):
@@ -109,7 +109,7 @@ async def delete_user(pk: int, user: User = Depends(current_user())):
     if not user.is_admin and user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="You do not have sufficient rights to this resource.",
+            detail="Your role does not allow you to do this action",
         )
 
     return await stored_user.delete()

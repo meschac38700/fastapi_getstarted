@@ -30,7 +30,7 @@ class TestUserRoles(AsyncTestCase):
         response = await self.client.delete(f"/users/{self.admin.id}")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "You do not have sufficient rights to this resource.",
+            "Your role does not allow you to do this action",
             response.json()["detail"],
         )
 
@@ -47,7 +47,7 @@ class TestUserRoles(AsyncTestCase):
         response = await self.client.delete(f"/users/{self.admin.id}")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "You do not have sufficient rights to this resource.",
+            "Your role does not allow you to do this action",
             response.json()["detail"],
         )
 
