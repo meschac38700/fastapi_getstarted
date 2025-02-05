@@ -26,7 +26,7 @@ class TestPermissionCRUD(AsyncTestCase):
         response = await self.client.get("authorizations/permissions")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "You do not have sufficient rights to this resource.",
+            "Your role does not allow you to do this action",
             response.json()["detail"],
         )
 
