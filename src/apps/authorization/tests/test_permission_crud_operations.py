@@ -23,7 +23,7 @@ class TestPermissionCRUD(AsyncTestCase):
     async def test_get_permission_with_staff_user_permission_denied(self):
         await self.client.user_login(self.staff)
 
-        response = await self.client.get("authorizations/permissions")
+        response = await self.client.get("authorizations/permissions/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
             "Your role does not allow you to do this action",
@@ -33,7 +33,7 @@ class TestPermissionCRUD(AsyncTestCase):
     async def test_get_permission_with_admin_user(self):
         await self.client.user_login(self.admin)
 
-        response = await self.client.get("authorizations/permissions")
+        response = await self.client.get("authorizations/permissions/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
         self.assertTrue(len(response.json()) >= 4)
 
@@ -41,7 +41,7 @@ class TestPermissionCRUD(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.get(
-            "authorizations/permissions", params={"name": "read_permission"}
+            "authorizations/permissions/", params={"name": "read_permission"}
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
         expected = {
@@ -60,7 +60,7 @@ class TestPermissionCRUD(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.get(
-            "authorizations/permissions", params={"target_table": "permission"}
+            "authorizations/permissions/", params={"target_table": "permission"}
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
         self.assertTrue(len(response.json()) >= 4)
@@ -69,7 +69,7 @@ class TestPermissionCRUD(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.get(
-            "authorizations/permissions",
+            "authorizations/permissions/",
             params={"name": "create_permission", "target_table": "permission"},
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -91,17 +91,23 @@ class TestPermissionCRUD(AsyncTestCase):
             "target_table": "user",
             "display_name": "Delete admin account",
         }
-        response = await self.client.post("/authorizations/permissions", json=post_data)
+        response = await self.client.post(
+            "/authorizations/permissions/", json=post_data
+        )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.staff)
 
-        response = await self.client.post("/authorizations/permissions", json=post_data)
+        response = await self.client.post(
+            "/authorizations/permissions/", json=post_data
+        )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.force_login(self.admin)
 
-        response = await self.client.post("/authorizations/permissions", json=post_data)
+        response = await self.client.post(
+            "/authorizations/permissions/", json=post_data
+        )
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
         actual_data = response.json()
@@ -121,21 +127,21 @@ class TestPermissionCRUD(AsyncTestCase):
             name="patch_test_permission", target_table=Permission.table_name()
         ).save()
         response = await self.client.patch(
-            f"/authorizations/permissions/{permission.id}", json=update_data
+            f"/authorizations/permissions/{permission.id}/", json=update_data
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.staff)
 
         response = await self.client.patch(
-            f"/authorizations/permissions/{permission.id}", json=update_data
+            f"/authorizations/permissions/{permission.id}/", json=update_data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.force_login(self.admin)
 
         response = await self.client.patch(
-            f"/authorizations/permissions/{permission.id}", json=update_data
+            f"/authorizations/permissions/{permission.id}/", json=update_data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -152,21 +158,21 @@ class TestPermissionCRUD(AsyncTestCase):
             name="update_test_permission", target_table=Permission.table_name()
         ).save()
         response = await self.client.put(
-            f"/authorizations/permissions/{permission.id}", json=update_data
+            f"/authorizations/permissions/{permission.id}/", json=update_data
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.staff)
 
         response = await self.client.put(
-            f"/authorizations/permissions/{permission.id}", json=update_data
+            f"/authorizations/permissions/{permission.id}/", json=update_data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.force_login(self.admin)
 
         response = await self.client.put(
-            f"/authorizations/permissions/{permission.id}", json=update_data
+            f"/authorizations/permissions/{permission.id}/", json=update_data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -179,21 +185,21 @@ class TestPermissionCRUD(AsyncTestCase):
             name="delete_test_permission", target_table=Permission.table_name()
         ).save()
         response = await self.client.delete(
-            f"/authorizations/permissions/{permission.id}"
+            f"/authorizations/permissions/{permission.id}/"
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.staff)
 
         response = await self.client.delete(
-            f"/authorizations/permissions/{permission.id}"
+            f"/authorizations/permissions/{permission.id}/"
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.force_login(self.admin)
 
         response = await self.client.delete(
-            f"/authorizations/permissions/{permission.id}"
+            f"/authorizations/permissions/{permission.id}/"
         )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 

@@ -10,11 +10,11 @@ from apps.authorization.models.pydantic.permission import (
 )
 from apps.user.dependencies.roles import AdminAccess
 
-routers = APIRouter(tags=["authorization"], prefix="/authorizations")
+routers = APIRouter()
 
 
 @routers.get(
-    "/permissions",
+    "/",
     name="List all app permissions",
     dependencies=[Depends(AdminAccess())],
 )
@@ -39,7 +39,7 @@ async def get_permissions(
 
 
 @routers.post(
-    "/permissions",
+    "/",
     name="Create new Permission",
     dependencies=[Depends(AdminAccess())],
     status_code=HTTPStatus.CREATED,
@@ -49,7 +49,7 @@ async def create_permission(permission_data: PermissionCreate):
 
 
 @routers.patch(
-    "/permissions/{pk}",
+    "/{pk}/",
     name="Patch a Permission",
     dependencies=[Depends(AdminAccess())],
 )
@@ -73,7 +73,7 @@ async def patch_permission(pk: int, permission_data: PermissionUpdate):
 
 
 @routers.put(
-    "/permissions/{pk}",
+    "/{pk}/",
     name="Update a Permission",
     dependencies=[Depends(AdminAccess())],
 )
@@ -94,7 +94,7 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
 
 
 @routers.delete(
-    "/permissions/{pk}",
+    "/{pk}/",
     name="Delete a Permission",
     dependencies=[Depends(AdminAccess())],
     status_code=HTTPStatus.NO_CONTENT,
