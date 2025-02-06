@@ -173,3 +173,28 @@ class TestPermissionCRUD(AsyncTestCase):
         actual_data = response.json()
         self.assertIsNotNone(actual_data.pop("id", None))
         self.assertTrue(actual_data[k] == v for k, v in update_data.items())
+
+    async def test_delete_permission(self):
+        permission = await Permission(
+            name="delete_test_permission", target_table=Permission.table_name()
+        ).save()
+        response = await self.client.delete(
+            f"/authorizations/permissions/{permission.id}"
+        )
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
+        await self.client.user_login(self.staff)
+
+        response = await self.client.delete(
+            f"/authorizations/permissions/{permission.id}"
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        await self.client.force_login(self.admin)
+
+        response = await self.client.delete(
+            f"/authorizations/permissions/{permission.id}"
+        )
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
+
+        self.assertIsNone(await Permission.get(Permission.id == permission.id))
