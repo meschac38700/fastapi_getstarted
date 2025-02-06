@@ -111,3 +111,34 @@ class TestPermissionCRUD(AsyncTestCase):
             await Permission.get(Permission.id == created_permission_id)
         )
         self.assertTrue(actual_data[k] == v for k, v in post_data.items())
+
+    async def test_patch_permission(self):
+        update_data = {
+            "description": "New permission description",
+            "display_name": "Delete admin account Modified",
+        }
+        permission = await Permission(
+            name="patch_test_permission", target_table=Permission.table_name()
+        ).save()
+        response = await self.client.patch(
+            f"/authorizations/permissions/{permission.id}", json=update_data
+        )
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
+        await self.client.user_login(self.staff)
+
+        response = await self.client.patch(
+            f"/authorizations/permissions/{permission.id}", json=update_data
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        await self.client.force_login(self.admin)
+
+        response = await self.client.patch(
+            f"/authorizations/permissions/{permission.id}", json=update_data
+        )
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        actual_data = response.json()
+        self.assertIsNotNone(actual_data.pop("id", None))
+        self.assertTrue(actual_data[k] == v for k, v in update_data.items())
