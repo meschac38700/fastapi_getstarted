@@ -105,5 +105,9 @@ class TestPermissionCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
         actual_data = response.json()
-        self.assertIsNotNone(actual_data.pop("id", None))
+        created_permission_id = actual_data.pop("id", None)
+        self.assertIsNotNone(created_permission_id)
+        self.assertIsNotNone(
+            await Permission.get(Permission.id == created_permission_id)
+        )
         self.assertTrue(actual_data[k] == v for k, v in post_data.items())

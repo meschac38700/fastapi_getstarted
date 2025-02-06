@@ -1,7 +1,10 @@
+from http import HTTPStatus
+
 from fastapi import APIRouter, Depends
 from sqlmodel import and_
 
 from apps.authorization.models.permission import Permission
+from apps.authorization.models.pydantic import PermissionCreate
 from apps.user.dependencies.roles import AdminAccess
 
 routers = APIRouter(tags=["authorization"], prefix="/authorizations")
@@ -30,3 +33,13 @@ async def get_permissions(
         if filters
         else Permission.all(offset=offset, limit=limit)
     )
+
+
+@routers.post(
+    "/permissions",
+    name="Create new Permission",
+    dependencies=[Depends(AdminAccess())],
+    status_code=HTTPStatus.CREATED,
+)
+async def create_permission(permission_data: PermissionCreate):
+    return await Permission(**permission_data.model_dump()).save()
