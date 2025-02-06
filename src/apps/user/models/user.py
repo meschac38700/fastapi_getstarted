@@ -1,3 +1,4 @@
+import asyncio
 import re
 from importlib import import_module
 from typing import TYPE_CHECKING, Any, Iterable, Sequence
@@ -97,3 +98,6 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
 
         belong_groups = self._intersection_groups(groups)
         return len(belong_groups) == len(groups), belong_groups
+
+    async def add_to_groups(self, groups: Iterable["Group"]):
+        await asyncio.gather(*[grp.add_user(self) for grp in groups])
