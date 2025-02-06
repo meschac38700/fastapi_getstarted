@@ -1,10 +1,13 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import and_
 
 from apps.authorization.models.permission import Permission
-from apps.authorization.models.pydantic import PermissionCreate
+from apps.authorization.models.pydantic import (
+    PermissionCreate,
+    PermissionUpdate,
+)
 from apps.user.dependencies.roles import AdminAccess
 
 routers = APIRouter(tags=["authorization"], prefix="/authorizations")
@@ -43,3 +46,27 @@ async def get_permissions(
 )
 async def create_permission(permission_data: PermissionCreate):
     return await Permission(**permission_data.model_dump()).save()
+
+
+@routers.patch(
+    "/permissions/{pk}",
+    name="Patch a Permission",
+    dependencies=[Depends(AdminAccess())],
+)
+async def patch_permission(pk: int, permission_data: PermissionUpdate):
+    permission = await Permission.get(Permission.id == pk)
+    if permission is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
+        )
+
+    if permission_data.check_all_fields_updated(permission.model_dump()):
+        detail = "Cannot use PATCH to update entire registry, use PUT instead."
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
+
+    if not permission_data.is_updated:
+        return permission
+
+    permission.update_from_dict(permission_data.model_dump(exclude_unset=True))
+
+    return await permission.save()
