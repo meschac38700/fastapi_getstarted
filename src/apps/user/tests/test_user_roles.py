@@ -27,7 +27,7 @@ class TestUserRoles(AsyncTestCase):
         await self.client.user_login(self.active)
 
         # Try to delete another account than his own
-        response = await self.client.delete(f"/users/{self.admin.id}")
+        response = await self.client.delete(f"/users/{self.admin.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
             "Your role does not allow you to do this action",
@@ -35,7 +35,7 @@ class TestUserRoles(AsyncTestCase):
         )
 
         # Delete his own account: Should pass
-        response = await self.client.delete(f"/users/{self.active.id}")
+        response = await self.client.delete(f"/users/{self.active.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(User.id == self.active.id))
 
@@ -44,7 +44,7 @@ class TestUserRoles(AsyncTestCase):
         await self.client.user_login(self.staff)
 
         # Try to delete another account than his own
-        response = await self.client.delete(f"/users/{self.admin.id}")
+        response = await self.client.delete(f"/users/{self.admin.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
             "Your role does not allow you to do this action",
@@ -52,7 +52,7 @@ class TestUserRoles(AsyncTestCase):
         )
 
         # Delete his own account: Should pass
-        response = await self.client.delete(f"/users/{self.staff.id}")
+        response = await self.client.delete(f"/users/{self.staff.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(User.id == self.staff.id))
 
@@ -61,11 +61,11 @@ class TestUserRoles(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         # Try to delete another account than his own
-        response = await self.client.delete(f"/users/{self.staff.id}")
+        response = await self.client.delete(f"/users/{self.staff.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(User.id == self.staff.id))
 
         # Delete his own account: Should pass
-        response = await self.client.delete(f"/users/{self.admin.id}")
+        response = await self.client.delete(f"/users/{self.admin.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(User.id == self.admin.id))
