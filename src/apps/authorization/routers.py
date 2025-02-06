@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import and_
 
 from apps.authorization.models.permission import Permission
-from apps.authorization.models.pydantic import (
+from apps.authorization.models.pydantic.permission import (
     PermissionCreate,
     PermissionUpdate,
 )
