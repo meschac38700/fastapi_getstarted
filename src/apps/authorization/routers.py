@@ -70,3 +70,24 @@ async def patch_permission(pk: int, permission_data: PermissionUpdate):
     permission.update_from_dict(permission_data.model_dump(exclude_unset=True))
 
     return await permission.save()
+
+
+@routers.put(
+    "/permissions/{pk}",
+    name="Update a Permission",
+    dependencies=[Depends(AdminAccess())],
+)
+async def put_permission(pk: int, permission_data: PermissionCreate):
+    permission = await Permission.get(Permission.id == pk)
+    if permission is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
+        )
+    # if all required fields are not updated, pydantic error will be generated (PermissionCreate)
+    permission_data.check_all_required_fields_updated(permission.model_dump())
+    if not permission_data.is_updated:
+        return permission
+
+    permission.update_from_dict(permission_data.model_dump(exclude_unset=True))
+
+    return await permission.save()
