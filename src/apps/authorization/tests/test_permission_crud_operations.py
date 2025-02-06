@@ -84,3 +84,26 @@ class TestPermissionCRUD(AsyncTestCase):
         actual = data[0]
         actual.pop("id", None)
         self.assertEqual(actual, expected)
+
+    async def test_add_new_permission(self):
+        post_data = {
+            "name": "delete_admin_account",
+            "target_table": "user",
+            "display_name": "Delete admin account",
+        }
+        response = await self.client.post("/authorizations/permissions", json=post_data)
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
+        await self.client.user_login(self.staff)
+
+        response = await self.client.post("/authorizations/permissions", json=post_data)
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        await self.client.force_login(self.admin)
+
+        response = await self.client.post("/authorizations/permissions", json=post_data)
+        self.assertEqual(HTTPStatus.CREATED, response.status_code)
+
+        actual_data = response.json()
+        self.assertIsNotNone(actual_data.pop("id", None))
+        self.assertTrue(actual_data[k] == v for k, v in post_data.items())
