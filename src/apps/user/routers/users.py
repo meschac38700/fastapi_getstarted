@@ -2,14 +2,13 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from apps.authentication.dependencies.oauth2 import current_user
 from apps.authorization.dependencies import permission_required
+from apps.user.models import User
+from apps.user.models.pydantic.create import UserCreate
+from apps.user.models.pydantic.patch import UserPatch
 
-from ..authentication.dependencies.oauth2 import current_user
-from .models import User
-from .models.pydantic.create import UserCreate
-from .models.pydantic.patch import UserPatch
-
-routers = APIRouter(tags=["users"], prefix="/users")
+routers = APIRouter()
 
 
 @routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
@@ -17,13 +16,13 @@ async def get_users(offset: int = 0, limit=100):
     return await User.all(offset=offset, limit=limit)
 
 
-@routers.get("/{pk}", name="Get single user", status_code=HTTPStatus.OK)
+@routers.get("/{pk}/", name="Get single user", status_code=HTTPStatus.OK)
 async def get_user(pk: int):
     return await User.get(User.id == pk)
 
 
 @routers.put(
-    "/{pk}",
+    "/{pk}/",
     name="Update user",
     status_code=HTTPStatus.OK,
     dependencies=[
@@ -52,7 +51,7 @@ async def update_user(
 
 
 @routers.patch(
-    "/{pk}",
+    "/{pk}/",
     status_code=HTTPStatus.OK,
     name="Patch user",
     dependencies=[
@@ -92,7 +91,7 @@ async def post_user(user: UserCreate):
 
 
 @routers.delete(
-    "/{pk}",
+    "/{pk}/",
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
         Depends(

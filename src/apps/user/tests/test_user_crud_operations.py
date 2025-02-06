@@ -27,7 +27,7 @@ class TestUserCRUD(AsyncTestCase):
 
     async def test_get_user(self):
         expected_user = await User.get(User.id == 1)
-        response = await self.client.get(f"/users/{expected_user.id}")
+        response = await self.client.get(f"/users/{expected_user.id}/")
 
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -67,15 +67,15 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
         }
 
-        response = await self.client.patch(f"/users/{user.id}", json=data)
+        response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.login(user.username)
-        response = await self.client.patch(f"/users/{user.id}", json=data)
+        response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.add_permissions(user, ["update_user"])
-        response = await self.client.patch(f"/users/{user.id}", json=data)
+        response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         patched_user = response.json()
@@ -99,15 +99,15 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
         }
-        response = await self.client.patch(f"/users/{user.id}", json=data)
+        response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.login(user.username)
-        response = await self.client.patch(f"/users/{user.id}", json=data)
+        response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.add_permissions(user, ["update_user"])
-        response = await self.client.patch(f"/users/{user.id}", json=data)
+        response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
         expected_response = {
@@ -130,15 +130,15 @@ class TestUserCRUD(AsyncTestCase):
             "email": "john.doe@example.com",
             "password": "jdoe",
         }
-        response = await self.client.put(f"/users/{user.id}", json=data)
+        response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(user)
-        response = await self.client.put(f"/users/{user.id}", json=data)
+        response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.add_permissions(user, ["update_user"])
-        response = await self.client.put(f"/users/{user.id}", json=data)
+        response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         user = await User.get(User.id == user.id)
@@ -147,15 +147,15 @@ class TestUserCRUD(AsyncTestCase):
         self.assertTrue(user.check_password(data["password"]))
 
     async def test_delete_user(self):
-        response = await self.client.delete(f"/users/{self.user.id}")
+        response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.login(self.user.username)
-        response = await self.client.delete(f"/users/{self.user.id}")
+        response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.add_permissions(self.user, ["delete_user"])
-        response = await self.client.delete(f"/users/{self.user.id}")
+        response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(User.id == self.user.id))
 
@@ -164,7 +164,7 @@ class TestUserCRUD(AsyncTestCase):
         await self.client.user_login(self.user)
         await self.user.delete()
 
-        response = await self.client.delete(f"/users/{self.user.id}")
+        response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
         self.assertEqual(
             "Invalid authentication token. user does not exist.",
