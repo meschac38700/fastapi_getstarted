@@ -19,7 +19,7 @@ class TestHeroCRUD(AsyncTestCase):
         # TODO(Eliam): not necessary if we test in a Docker container
         await Permission.generate_crud_objects(Hero.table_name())
         await Group.generate_crud_objects(Hero.table_name())
-        self.user = await User.get(User.username == "fastapi")
+        self.user = await User.get(User.username == "test")
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
@@ -42,7 +42,7 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
 
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
@@ -70,7 +70,7 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
         response = await self.client.put(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
@@ -93,7 +93,7 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
         response = await self.client.patch(f"/heroes/{hero.id}", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
@@ -116,7 +116,7 @@ class TestHeroCRUD(AsyncTestCase):
             "user_id": 1,
         }
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
 
         group_create = await Group.get(Group.name == "update_hero")
         await self.add_permissions(group_create, ["update_hero"])
@@ -139,7 +139,7 @@ class TestHeroCRUD(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
         response = await self.client.delete(
             f"/heroes/{hero.id}", params={"id": hero.id}
         )

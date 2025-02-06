@@ -13,7 +13,7 @@ class TestOAuth2Scheme(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.user = await User.get(User.username == "fastapi")
+        self.user = await User.get(User.username == "test")
         # TODO(Eliam): remove once test in docker task done
         await Permission.generate_crud_objects(User.table_name())
 
@@ -22,7 +22,9 @@ class TestOAuth2Scheme(AsyncTestCase):
 
         await self.client.login(self.user.username)
 
-        response = await self.client.patch("/users/1", json={"last_name": "DOE"})
+        response = await self.client.patch(
+            f"/users/{self.user.id}", json={"last_name": "DOE"}
+        )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         await (await JWTToken.get(JWTToken.user_id == self.user.id)).delete()

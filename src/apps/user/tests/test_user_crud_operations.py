@@ -17,7 +17,7 @@ class TestUserCRUD(AsyncTestCase):
         # TODO(Eliam): not necessary if we test in a Docker container
         await Permission.generate_crud_objects(User.table_name())
         await Group.generate_crud_objects(User.table_name())
-        self.user = await User.get(User.username == "fastapi")
+        self.user = await User.get(User.username == "test")
 
     async def test_get_users(self):
         response = await self.client.get("/users/")
@@ -70,11 +70,11 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login(self.user.username)
+        await self.client.login(user.username)
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(self.user, ["update_user"])
+        await self.add_permissions(user, ["update_user"])
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -102,11 +102,11 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login(self.user.username)
+        await self.client.login(user.username)
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(self.user, ["update_user"])
+        await self.add_permissions(user, ["update_user"])
         response = await self.client.patch(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
@@ -133,11 +133,11 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.put(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login(self.user.username)
+        await self.client.user_login(user)
         response = await self.client.put(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(self.user, ["update_user"])
+        await self.add_permissions(user, ["update_user"])
         response = await self.client.put(f"/users/{user.id}", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 

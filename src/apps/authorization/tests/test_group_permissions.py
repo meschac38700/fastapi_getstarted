@@ -15,7 +15,7 @@ class TestGroupPermissions(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.user = await User.get(User.username == "fastapi")
+        self.user = await User.get(User.username == "test")
         # TODO(Eliam): Remove the following line of code once the test in docker container task completed
         await Permission.generate_crud_objects(Hero.table_name())
         await Group.generate_crud_objects(Hero.table_name())

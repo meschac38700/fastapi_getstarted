@@ -37,7 +37,7 @@ async def update_user(
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
-    if not auth_user.is_admin and user != stored_user:
+    if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="Your role does not allow you to do this action",
@@ -66,7 +66,7 @@ async def patch_user(
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
-    if not auth_user.is_admin and user != stored_user:
+    if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="Your role does not allow you to do this action.",
