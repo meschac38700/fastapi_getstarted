@@ -91,3 +91,19 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
     permission.update_from_dict(permission_data.model_dump(exclude_unset=True))
 
     return await permission.save()
+
+
+@routers.delete(
+    "/permissions/{pk}",
+    name="Delete a Permission",
+    dependencies=[Depends(AdminAccess())],
+    status_code=HTTPStatus.NO_CONTENT,
+)
+async def delete_permission(pk: int):
+    permission = await Permission.get(Permission.id == pk)
+    if permission is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
+        )
+
+    await permission.delete()
