@@ -29,14 +29,20 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
 
     @classmethod
     def setUpClass(cls):
-        asyncio.run(create_db_and_tables(_engine))
-        asyncio.run(cls._load_fixtures())
+        async def _main():
+            await create_db_and_tables(_engine)
+            await cls._load_fixtures()
+
+        asyncio.run(_main())
         cls.db_service = DBService()
 
     @classmethod
     def tearDownClass(cls):
-        asyncio.run(delete_db_and_tables(_engine))
-        asyncio.run(cls.db_service.dispose())
+        async def _main():
+            await delete_db_and_tables(_engine)
+            await cls.db_service.dispose()
+
+        asyncio.run(_main())
 
     async def asyncTearDown(self):
         await super().asyncTearDown()
