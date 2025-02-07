@@ -29,6 +29,8 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
+
         async def _main():
             await create_db_and_tables(_engine)
             await cls._load_fixtures()
@@ -38,6 +40,8 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
+
         async def _main():
             await delete_db_and_tables(_engine)
             await cls.db_service.dispose()
