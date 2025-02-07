@@ -23,7 +23,7 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(self.user)
 
         data = {"secret_name": "test edit"}
-        response = await self.client.patch(f"/heroes/{hero_id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
             response.json()["detail"],
@@ -37,7 +37,7 @@ class TestUserPermission(AsyncTestCase):
         await self.add_permissions(self.user, ["update_hero"])
 
         data = {"secret_name": "test edit"}
-        response = await self.client.patch(f"/heroes/{hero_id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         actual_data = response.json()
