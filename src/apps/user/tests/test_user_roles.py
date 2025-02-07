@@ -23,6 +23,7 @@ class TestUserRoles(AsyncTestCase):
         )
 
     async def test_user_active_can_delete_only_his_own_account(self):
+        self.assertIsNotNone(self.active)
         await self.add_permissions(self.active, ["delete_user"])
         await self.client.user_login(self.active)
 
@@ -44,7 +45,10 @@ class TestUserRoles(AsyncTestCase):
         await self.client.user_login(self.staff)
 
         # Try to delete another account than his own
-        response = await self.client.delete(f"/users/{self.admin.id}/")
+        user = await User(
+            username="someone", first_name="John", last_name="DOE", password="someone"
+        ).save()
+        response = await self.client.delete(f"/users/{user.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
             "Your role does not allow you to do this action",
@@ -57,13 +61,17 @@ class TestUserRoles(AsyncTestCase):
         self.assertIsNone(await User.get(User.id == self.staff.id))
 
     async def test_user_admin_can_delete_any_account(self):
+        user = await User(
+            username="someone", first_name="John", last_name="DOE", password="someone"
+        ).save()
+        self.assertIsNotNone(self.admin)
         await self.add_permissions(self.admin, ["delete_user"])
         await self.client.user_login(self.admin)
 
         # Try to delete another account than his own
-        response = await self.client.delete(f"/users/{self.staff.id}/")
+        response = await self.client.delete(f"/users/{user.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(User.id == self.staff.id))
+        self.assertIsNone(await User.get(User.id == user.id))
 
         # Delete his own account: Should pass
         response = await self.client.delete(f"/users/{self.admin.id}/")
