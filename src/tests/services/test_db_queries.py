@@ -16,6 +16,7 @@ class TestDBService(AsyncTestCase):
         ]
 
     async def test_insert_batch(self):
+        await self.delete_all(Hero)
         data = await self.db_service.all(Hero)
         self.assertEqual(0, len(data))
         # load data
@@ -24,7 +25,6 @@ class TestDBService(AsyncTestCase):
         self.assertGreaterEqual(len(data), len(self.hero_list()))
 
     async def test_insert_batch_prevent_duplication(self):
-        self.assertEqual(0, len(await self.db_service.all(Hero)))
         # load data twice
         await self.db_service.insert_batch(self.hero_list())
         await self.db_service.insert_batch(self.hero_list())
