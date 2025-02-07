@@ -1,3 +1,4 @@
+import asyncio
 from unittest.async_case import IsolatedAsyncioTestCase
 
 from httpx import ASGITransport
@@ -18,27 +19,35 @@ _engine = settings.get_engine()
 
 class AsyncTestCase(IsolatedAsyncioTestCase):
     fixtures: list[str] | None = None
+    db_service: DBService = None
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await create_db_and_tables(_engine)
-        self.db_service = DBService()
-        await self._load_fixtures()
         self.client = AsyncClientTest(
             transport=ASGITransport(app=app), base_url=BASE_URL
         )
 
+    @classmethod
+    def setUpClass(cls):
+        asyncio.run(create_db_and_tables(_engine))
+        asyncio.run(cls._load_fixtures())
+        cls.db_service = DBService()
+
+    @classmethod
+    def tearDownClass(cls):
+        asyncio.run(delete_db_and_tables(_engine))
+        asyncio.run(cls.db_service.dispose())
+
     async def asyncTearDown(self):
         await super().asyncTearDown()
-        await delete_db_and_tables(_engine)
-        await self.db_service.dispose()
         await self.client.aclose()
 
-    async def _load_fixtures(self):
-        if not self.fixtures:
+    @classmethod
+    async def _load_fixtures(cls):
+        if not cls.fixtures:
             return
 
-        await LoadFixtures().load_fixtures(self.fixtures)
+        await LoadFixtures().load_fixtures(cls.fixtures)
 
     async def add_permissions(self, item: User | Group, permissions: list[str]):
         _permissions = await Permission.filter(Permission.name.in_(permissions))
