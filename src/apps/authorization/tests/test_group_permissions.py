@@ -29,7 +29,7 @@ class TestGroupPermissions(AsyncTestCase):
         await self.client.user_login(self.user)
 
         data = {"secret_name": "Test edit"}
-        response = await self.client.patch("/heroes/1", json=data)
+        response = await self.client.patch("/heroes/1/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
             response.json()["detail"],
@@ -46,7 +46,7 @@ class TestGroupPermissions(AsyncTestCase):
 
         hero_id = 1
         data = {"secret_name": "Test edit"}
-        response = await self.client.patch(f"/heroes/{hero_id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         actual_data = response.json()
