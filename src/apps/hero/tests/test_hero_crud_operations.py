@@ -27,7 +27,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertGreaterEqual(len(response.json()), 1)
 
     async def test_get_hero(self):
-        response = await self.client.get("/heroes/1")
+        response = await self.client.get("/heroes/1/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         hero = response.json()
@@ -67,18 +67,18 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
 
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.user)
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         group_create = await Group.get(Group.name == "update_hero")
         await self.add_permissions(group_create, ["update_hero"])
         await group_create.add_user(self.user)
 
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
@@ -90,18 +90,18 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man"}
 
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.user)
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         group_create = await Group.get(Group.name == "update_hero")
         await self.add_permissions(group_create, ["update_hero"])
         await group_create.add_user(self.user)
 
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
@@ -122,7 +122,7 @@ class TestHeroCRUD(AsyncTestCase):
         await self.add_permissions(group_create, ["update_hero"])
         await group_create.add_user(self.user)
 
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
         expected_json = {
@@ -135,13 +135,13 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertIsNotNone(hero.id)
 
         response = await self.client.delete(
-            f"/heroes/{hero.id}", params={"id": hero.id}
+            f"/heroes/{hero.id}/", params={"id": hero.id}
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.user)
         response = await self.client.delete(
-            f"/heroes/{hero.id}", params={"id": hero.id}
+            f"/heroes/{hero.id}/", params={"id": hero.id}
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
@@ -150,7 +150,7 @@ class TestHeroCRUD(AsyncTestCase):
         await group_create.add_user(self.user)
 
         response = await self.client.delete(
-            f"/heroes/{hero.id}", params={"id": hero.id}
+            f"/heroes/{hero.id}/", params={"id": hero.id}
         )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 

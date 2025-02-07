@@ -10,7 +10,7 @@ from apps.authentication.models import JWTToken
 from apps.authentication.models.pydantic import JWTTokenRead
 from apps.user.models import User
 
-routers = APIRouter(tags=["authentication"], prefix=settings.AUTH_PREFIX_URL)
+routers = APIRouter(tags=["Authentication"], prefix=settings.AUTH_PREFIX_URL)
 
 
 @routers.post("/token", name="Generate JWT Token")

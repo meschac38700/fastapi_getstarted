@@ -16,7 +16,7 @@ def get_authenticated_user_groups(auth_user: User = Depends(current_user())):
 
 @routers.get(
     "/{pk}/groups/",
-    name="List all user's groups",
+    name="Admin endpoint: List the specified user's groups",
     dependencies=[Depends(AdminAccess())],
 )
 async def get_user_groups(pk: int):
