@@ -99,5 +99,6 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
         return len(belong_groups) == len(groups), belong_groups
 
     async def add_to_groups(self, groups: Iterable["Group"]):
-        self.groups.extend(groups)
+        missing_groups = [grp for grp in groups if grp not in self.groups]
+        self.groups.extend(missing_groups)
         return await self.save()

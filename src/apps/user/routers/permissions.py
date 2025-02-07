@@ -17,7 +17,7 @@ async def get_authenticated_user_permissions(auth_user: User = Depends(current_u
 
 @routers.get(
     "/{pk}/permissions/",
-    name="List current authenticated user's permissions",
+    name="Admin endpoint: List the specified user's permissions",
     dependencies=[Depends(AdminAccess())],
 )
 async def get_user_permissions(pk: int):

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date
 from http import HTTPStatus
 
@@ -12,12 +13,12 @@ class TestUserCRUD(AsyncTestCase):
         "users",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        # TODO(Eliam): not necessary if we test in a Docker container
-        await Permission.generate_crud_objects(User.table_name())
-        await Group.generate_crud_objects(User.table_name())
-        self.user = await User.get(User.username == "test")
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        asyncio.run(Permission.generate_crud_objects(User.table_name()))
+        asyncio.run(Group.generate_crud_objects(User.table_name()))
+        cls.user = asyncio.run(User.get(User.username == "test"))
 
     async def test_get_users(self):
         response = await self.client.get("/users/")
@@ -56,11 +57,11 @@ class TestUserCRUD(AsyncTestCase):
 
     async def test_patch_user(self):
         user = await User(
-            username="jdoe",
-            first_name="John",
-            last_name="DOE",
-            password="jdoe",
-            email="jdoe@example.test",
+            username="user_patch",
+            first_name="Test",
+            last_name="Pytest",
+            password="test123",
+            email="patch.user@example.test",
         ).save()
         data = {
             "username": "doej",
@@ -84,11 +85,11 @@ class TestUserCRUD(AsyncTestCase):
 
     async def test_patch_entire_user_should_not_be_possible(self):
         user = await User(
-            username="jdoe",
-            first_name="John",
-            last_name="DOE",
-            password="jdoe",
-            email="jdoe@example.test",
+            username="patch_entire",
+            first_name="test",
+            last_name="Pytest",
+            password="test123",
+            email="patch.entire@example.test",
         ).save()
         data = {
             "username": "doej",
@@ -117,17 +118,17 @@ class TestUserCRUD(AsyncTestCase):
 
     async def test_put_user(self):
         user = await User(
-            username="jdoe",
+            username="user_put",
             first_name="John",
             last_name="DOE",
             password="jdoe",
-            email="jdoe@example.test",
+            email="put.user@example.test",
         ).save()
         data = {
-            "username": "doej",
-            "first_name": "jane",
+            "username": "put_user",
+            "first_name": "Jane",
             "last_name": "DOE",
-            "email": "john.doe@example.com",
+            "email": "user.put@example.com",
             "password": "jdoe",
         }
         response = await self.client.put(f"/users/{user.id}/", json=data)
@@ -160,11 +161,17 @@ class TestUserCRUD(AsyncTestCase):
         self.assertIsNone(await User.get(User.id == self.user.id))
 
     async def test_use_token_of_deleted_user(self):
-        await self.add_permissions(self.user, ["delete_user"])
-        await self.client.user_login(self.user)
-        await self.user.delete()
+        user = await User(
+            username="deleted_token",
+            first_name="Test",
+            last_name="Pytest",
+            password="test123",
+        ).save()
+        await self.add_permissions(user, ["delete_user"])
+        await self.client.user_login(user)
+        await user.delete()
 
-        response = await self.client.delete(f"/users/{self.user.id}/")
+        response = await self.client.delete(f"/users/{user.id}/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
         self.assertEqual(
             "Invalid authentication token. user does not exist.",

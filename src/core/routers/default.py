@@ -16,13 +16,21 @@ async def load_fake_data():
 
 
 def register_default_endpoints(app: FastAPI):
+    default_tags = ["Default"]
     default_endpoints = [
-        {"path": "/", "endpoint": secret_key, "methods": ["GET"], "name": "secret_key"},
+        {
+            "path": "/",
+            "endpoint": secret_key,
+            "methods": ["GET"],
+            "name": "secret_key",
+            "tags": default_tags,
+        },
         {
             "path": "/fixtures",
             "endpoint": load_fake_data,
             "methods": ["POST"],
             "name": "fixtures",
+            "tags": default_tags,
         },
     ]
     for endpoint in default_endpoints:

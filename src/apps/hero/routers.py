@@ -10,10 +10,10 @@ from .models import Hero
 from .models.pydantic.create import HeroCreate
 from .models.pydantic.patch import HeroPatch
 
-routers = APIRouter(tags=["heroes"], prefix="/heroes")
+routers = APIRouter(tags=["Heroes"], prefix="/heroes")
 
 
-@routers.get("/{pk}", name="Get hero by id.")
+@routers.get("/{pk}/", name="Get hero by id.")
 async def get_hero(pk: int):
     return await Hero.get(Hero.id == pk)
 
@@ -41,7 +41,7 @@ async def create_hero(hero: HeroCreate):
 
 
 @routers.put(
-    "/{pk}",
+    "/{pk}/",
     name="Update hero",
     response_model=Hero,
     status_code=HTTPStatus.OK,
@@ -66,7 +66,7 @@ async def update_hero(pk: int, hero: HeroCreate):
 
 
 @routers.patch(
-    "/{pk}",
+    "/{pk}/",
     name="Patch hero",
     response_model=Hero,
     status_code=HTTPStatus.OK,
@@ -91,7 +91,7 @@ async def patch_hero(pk: int, hero: HeroPatch):
 
 
 @routers.delete(
-    "/{pk}",
+    "/{pk}/",
     name="Delete hero",
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
