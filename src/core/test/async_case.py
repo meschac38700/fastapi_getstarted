@@ -61,6 +61,9 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
 
     async def add_permissions(self, item: User | Group, permissions: list[str]):
         _permissions = await Permission.filter(Permission.name.in_(permissions))
-        item.permissions.extend(_permissions)
+        missing_permissions = [
+            perm for perm in _permissions if perm not in item.permissions
+        ]
+        item.permissions.extend(missing_permissions)
         await item.save()
         self.assertTrue(item.has_permissions(_permissions))
