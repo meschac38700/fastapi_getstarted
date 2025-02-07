@@ -70,18 +70,24 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.user_login(self.user)
+        user = await User(
+            username="user_put",
+            first_name="Test",
+            last_name="Pytest",
+            password="pytest123",
+        ).save()
+
+        await self.client.user_login(user)
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         group_create = await Group.get(Group.name == "update_hero")
-        await self.add_permissions(group_create, ["update_hero"])
-        await group_create.add_user(self.user)
+        await group_create.add_user(user)
 
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        new_hero = await Hero.get(Hero.id == hero.id)
         self.assertEqual(data["name"], new_hero.name)
         self.assertEqual(data["secret_name"], new_hero.secret_name)
         self.assertEqual(data["age"], new_hero.age)
@@ -93,18 +99,23 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.user_login(self.user)
+        user = await User(
+            username="user_patch",
+            first_name="Test",
+            last_name="Pytest",
+            password="pytest123",
+        ).save()
+        await self.client.user_login(user)
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         group_create = await Group.get(Group.name == "update_hero")
-        await self.add_permissions(group_create, ["update_hero"])
-        await group_create.add_user(self.user)
+        await group_create.add_user(user)
 
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        new_hero = await Hero.get(Hero.id == hero.id)
         self.assertEqual(data["name"], new_hero.name)
 
     async def test_patch_entire_hero_should_not_be_possible(self):
