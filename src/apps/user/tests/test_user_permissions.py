@@ -145,3 +145,4 @@ class TestUserPermission(AsyncTestCase):
 
         user = await user.refresh()
         self.assertFalse(user.has_permissions(perms))
+        self.assertListEqual(response.json(), [])
