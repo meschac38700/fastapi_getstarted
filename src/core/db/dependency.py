@@ -119,6 +119,7 @@ class DBService:
     async def refresh(
         self, instance: SQLModel, *args, session: AsyncSession, **kwargs
     ) -> SQLModel:
+        session.add(instance)
         await session.refresh(instance, *args, **kwargs)
         return instance
 
