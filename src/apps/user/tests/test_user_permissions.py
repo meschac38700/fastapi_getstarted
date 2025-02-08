@@ -114,6 +114,8 @@ class TestUserPermission(AsyncTestCase):
 
         user = await user.refresh()
         self.assertTrue(user.has_permissions(perms))
+        expected_perms_response = [perm.model_dump(mode="json") for perm in perms]
+        self.assertEqual(response.json(), expected_perms_response)
 
     async def test_remove_permissions_to_user(self):
         data = {"permissions": ["create_user", "read_user"]}
