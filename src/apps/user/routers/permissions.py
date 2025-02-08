@@ -42,3 +42,18 @@ async def add_permissions_user(pk: int, permissions: PermissionList):
     await stored_user.extend_permissions(await permissions.to_object_list())
 
     return stored_user.get_permissions()
+
+
+@routers.post(
+    "/{pk}/permissions/remove/",
+    name="Admin endpoint: Remove some permissions to a certain user",
+    dependencies=[Depends(AdminAccess())],
+)
+async def remove_permissions_user(pk: int, permissions: PermissionList):
+    stored_user = await User.get(User.id == pk)
+    if stored_user is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+
+    await stored_user.remove_permissions(await permissions.to_object_list())
+
+    return stored_user.get_permissions()
