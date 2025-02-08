@@ -114,3 +114,32 @@ class TestUserPermission(AsyncTestCase):
 
         user = await user.refresh()
         self.assertTrue(user.has_permissions(perms))
+
+    async def test_remove_permissions_to_user(self):
+        data = {"permissions": ["create_user", "read_user"]}
+        user = await User(
+            username="add_permission",
+            first_name="Test",
+            last_name="Pytest",
+            password="test123",
+        ).save()
+
+        await self.add_permissions(user, data["permissions"])
+        perms = await Permission.filter(Permission.name in data["permissions"])
+        self.assertTrue(user.has_permissions(perms))
+
+        self.client.user_login(user)
+
+        response = await self.client.post(
+            f"/users/{user.id}/remove/permissions/", json=data
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        self.client.force_login(self.admin)
+        response = await self.client.post(
+            f"/users/{user.id}/remove/permissions/", json=data
+        )
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        user = await user.refresh()
+        self.assertFalse(user.has_permissions(perms))
