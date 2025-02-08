@@ -41,3 +41,6 @@ class ModelQuery:
         cls, items: Iterable[SQLModel], *, batch_size: int = 50
     ) -> None:
         await cls.objects().insert_batch(items, batch_size=batch_size)
+
+    async def refresh(self) -> Self:
+        return await self.objects().refresh(self)

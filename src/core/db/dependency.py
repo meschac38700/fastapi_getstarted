@@ -116,7 +116,9 @@ class DBService:
         return data_list.first() is not None
 
     @session_decorator
-    async def refresh(self, instance: SQLModel, *args, session: AsyncSession, **kwargs):
+    async def refresh(
+        self, instance: SQLModel, *args, session: AsyncSession, **kwargs
+    ) -> SQLModel:
         await session.refresh(instance, *args, **kwargs)
         return instance
 

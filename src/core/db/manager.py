@@ -77,3 +77,7 @@ class ModelManager:
     @session_decorator
     async def delete(self, item: SQLModel):
         await self.db_service.delete(item)
+
+    @session_decorator
+    async def refresh(self, item: SQLModel) -> SQLModel:
+        return await self.db_service.refresh(item)
