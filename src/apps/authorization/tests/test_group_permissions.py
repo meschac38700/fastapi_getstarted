@@ -91,3 +91,41 @@ class TestGroupPermissions(AsyncTestCase):
         group = await group.refresh()
         self.assertTrue(group.has_permissions(perms))
         self.assertEqual(response.json(), expected_response)
+
+    async def test_remove_permission_to_a_certain_group(self):
+        group = await Group(
+            name="user_read_only",
+            target_table=User.table_name(),
+            display_name="Read only user informations",
+        ).save()
+        perms = await Permission.filter(Permission.target_table == User.table_name())
+        await group.extend_permissions(perms)
+        self.assertEqual(group.get_permissions(), perms)
+
+        data = {
+            "permissions": [perm.name for perm in perms if perm.name != "read_user"]
+        }
+        print(data)
+
+        response = await self.client.post(
+            f"/authorizations/groups/{group.id}/permissions/remove/", json=data
+        )
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
+        await self.client.user_login(self.active)
+        response = await self.client.post(
+            f"/authorizations/groups/{group.id}/permissions/remove/", json=data
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        await self.client.user_login(self.admin)
+        response = await self.client.post(
+            f"/authorizations/groups/{group.id}/permissions/remove/", json=data
+        )
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        read_perm = await Permission.get(Permission.name == "read_user")
+        expected_response = [read_perm.model_dump(mode="json")]
+        self.assertEqual(response.json(), expected_response)
+        group = await group.refresh()
+        self.assertEqual(group.get_permissions(), [read_perm])
