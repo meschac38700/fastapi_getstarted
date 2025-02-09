@@ -125,6 +125,7 @@ class DBService:
 
     @session_decorator
     async def delete(self, instance: SQLModel, *, session: AsyncSession):
+        session.add(instance)
         await session.delete(instance)
         await session.commit()
 

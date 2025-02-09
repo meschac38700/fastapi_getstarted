@@ -108,7 +108,7 @@ class TestUserPermission(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.client.force_login(self.admin)
+        await self.client.user_login(self.admin)
         response = await self.client.post(
             f"/users/{user.id}/permissions/add/", json=data
         )
@@ -139,7 +139,7 @@ class TestUserPermission(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.client.force_login(self.admin)
+        await self.client.user_login(self.admin)
         response = await self.client.post(
             f"/users/{user.id}/permissions/remove/", json=data
         )
