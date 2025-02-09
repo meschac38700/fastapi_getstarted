@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from apps.authorization.models.permission import Permission
 from apps.user.models import User
+from apps.user.utils.types import UserRole
 from core.test.async_case import AsyncTestCase
 
 
@@ -14,9 +15,9 @@ class TestUserPermission(AsyncTestCase):
         await Permission.generate_crud_objects(User.table_name())
 
         self.active, self.staff, self.admin = await asyncio.gather(
-            User.get(User.role == "active"),
-            User.get(User.role == "staff"),
-            User.get(User.role == "admin"),
+            User.get(User.role == UserRole.active),
+            User.get(User.role == UserRole.staff),
+            User.get(User.role == UserRole.admin),
         )
 
     async def test_get_another_user_permissions_denied(self):
@@ -40,7 +41,8 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "Your role does not allow you to do this action", response.json()["detail"]
+            "this action is prohibited with this user currently logged in",
+            response.json()["detail"],
         )
 
     async def test_get_own_user_permissions_denied(self):

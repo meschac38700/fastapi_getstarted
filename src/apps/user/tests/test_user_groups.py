@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from apps.authorization.models.group import Group
 from apps.user.models import User
+from apps.user.utils.types import UserRole
 from core.test.async_case import AsyncTestCase
 
 
@@ -18,9 +19,9 @@ class TestUserGroup(AsyncTestCase):
         await super().asyncSetUp()
 
         self.active, self.staff, self.admin = await asyncio.gather(
-            User.get(User.role == "active"),
-            User.get(User.role == "staff"),
-            User.get(User.role == "admin"),
+            User.get(User.role == UserRole.active),
+            User.get(User.role == UserRole.staff),
+            User.get(User.role == UserRole.admin),
         )
 
     async def test_get_own_groups_using_admin_endpoint_denied(self):
@@ -33,7 +34,8 @@ class TestUserGroup(AsyncTestCase):
         response = await self.client.get(f"/users/{self.staff.id}/groups/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "Your role does not allow you to do this action", response.json()["detail"]
+            "this action is prohibited with this user currently logged in",
+            response.json()["detail"],
         )
 
     async def test_get_own_user_groups(self):

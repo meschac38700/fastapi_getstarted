@@ -29,7 +29,7 @@ class TestGroupCRUD(AsyncTestCase):
         response = await self.client.get("authorizations/groups/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "Your role does not allow you to do this action",
+            "this action is prohibited with this user currently logged in",
             response.json()["detail"],
         )
 

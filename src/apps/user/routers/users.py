@@ -39,7 +39,7 @@ async def update_user(
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="Your role does not allow you to do this action",
+            detail="this action is prohibited with this user currently logged in",
         )
 
     user.check_all_required_fields_updated(stored_user.model_dump())
@@ -68,7 +68,7 @@ async def patch_user(
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="Your role does not allow you to do this action.",
+            detail="this action is prohibited with this user currently logged in.",
         )
 
     if user.check_all_fields_updated(stored_user.model_dump()):
@@ -108,7 +108,7 @@ async def delete_user(pk: int, user: User = Depends(current_user())):
     if not user.is_admin and user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="Your role does not allow you to do this action",
+            detail="this action is prohibited with this user currently logged in",
         )
 
     return await stored_user.delete()
