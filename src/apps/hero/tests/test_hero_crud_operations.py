@@ -19,7 +19,7 @@ class TestHeroCRUD(AsyncTestCase):
         # TODO(Eliam): not necessary if we test in a Docker container
         await Permission.generate_crud_objects(Hero.table_name())
         await Group.generate_crud_objects(Hero.table_name())
-        self.user = await User.get(User.username == "fastapi")
+        self.user = await User.get(User.username == "test")
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
@@ -27,7 +27,7 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertGreaterEqual(len(response.json()), 1)
 
     async def test_get_hero(self):
-        response = await self.client.get("/heroes/1")
+        response = await self.client.get("/heroes/1/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         hero = response.json()
@@ -42,7 +42,7 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
 
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
@@ -67,21 +67,27 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man", "secret_name": "Pytest Asyncio", "age": 1977}
 
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        user = await User(
+            username="user_put",
+            first_name="Test",
+            last_name="Pytest",
+            password="pytest123",
+        ).save()
+
+        await self.client.user_login(user)
+        response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         group_create = await Group.get(Group.name == "update_hero")
-        await self.add_permissions(group_create, ["update_hero"])
-        await group_create.add_user(self.user)
+        await group_create.add_user(user)
 
-        response = await self.client.put(f"/heroes/{hero.id}", json=data)
+        response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        new_hero = await Hero.get(Hero.id == hero.id)
         self.assertEqual(data["name"], new_hero.name)
         self.assertEqual(data["secret_name"], new_hero.secret_name)
         self.assertEqual(data["age"], new_hero.age)
@@ -90,21 +96,26 @@ class TestHeroCRUD(AsyncTestCase):
         hero = await Hero(name="Super Test Man", secret_name="Pytest", age=1970).save()
         data = {"name": "Test man"}
 
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        user = await User(
+            username="user_patch",
+            first_name="Test",
+            last_name="Pytest",
+            password="pytest123",
+        ).save()
+        await self.client.user_login(user)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         group_create = await Group.get(Group.name == "update_hero")
-        await self.add_permissions(group_create, ["update_hero"])
-        await group_create.add_user(self.user)
+        await group_create.add_user(user)
 
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        new_hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        new_hero = await Hero.get(Hero.id == hero.id)
         self.assertEqual(data["name"], new_hero.name)
 
     async def test_patch_entire_hero_should_not_be_possible(self):
@@ -116,13 +127,13 @@ class TestHeroCRUD(AsyncTestCase):
             "user_id": 1,
         }
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
 
         group_create = await Group.get(Group.name == "update_hero")
         await self.add_permissions(group_create, ["update_hero"])
         await group_create.add_user(self.user)
 
-        response = await self.client.patch(f"/heroes/{hero.id}", json=data)
+        response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
         expected_json = {
@@ -135,13 +146,13 @@ class TestHeroCRUD(AsyncTestCase):
         self.assertIsNotNone(hero.id)
 
         response = await self.client.delete(
-            f"/heroes/{hero.id}", params={"id": hero.id}
+            f"/heroes/{hero.id}/", params={"id": hero.id}
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
-        await self.client.login("fastapi")
+        await self.client.user_login(self.user)
         response = await self.client.delete(
-            f"/heroes/{hero.id}", params={"id": hero.id}
+            f"/heroes/{hero.id}/", params={"id": hero.id}
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
@@ -150,7 +161,7 @@ class TestHeroCRUD(AsyncTestCase):
         await group_create.add_user(self.user)
 
         response = await self.client.delete(
-            f"/heroes/{hero.id}", params={"id": hero.id}
+            f"/heroes/{hero.id}/", params={"id": hero.id}
         )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 

@@ -116,12 +116,16 @@ class DBService:
         return data_list.first() is not None
 
     @session_decorator
-    async def refresh(self, instance: SQLModel, *args, session: AsyncSession, **kwargs):
+    async def refresh(
+        self, instance: SQLModel, *args, session: AsyncSession, **kwargs
+    ) -> SQLModel:
+        session.add(instance)
         await session.refresh(instance, *args, **kwargs)
         return instance
 
     @session_decorator
     async def delete(self, instance: SQLModel, *, session: AsyncSession):
+        session.add(instance)
         await session.delete(instance)
         await session.commit()
 

@@ -11,7 +11,7 @@ class TestHandleJWTToken(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.user = await User.get(User.username == "fastapi")
+        self.user = await User.get(User.username == "test")
 
     async def test_generate_valid_jwt_token(self):
         token = await JWTToken.get_or_create(self.user)

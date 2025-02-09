@@ -1,6 +1,6 @@
 import re
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
 from sqlmodel import Field, Relationship
 
@@ -33,6 +33,13 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
 
     def model_post_init(self, __context: Any) -> None:
         self._hash_password()
+
+    def has_permissions(
+        self, permissions: Iterable[Permission], any_match: bool = False
+    ) -> bool:
+        if self.is_admin:
+            return True
+        return super().has_permissions(permissions, any_match)
 
     def update_from_dict(self, data: dict[str, Any]):
         for key, value in data.items():
@@ -90,3 +97,8 @@ class User(PermissionMixin, UserSQLBaseModel, table=True):
 
         belong_groups = self._intersection_groups(groups)
         return len(belong_groups) == len(groups), belong_groups
+
+    async def add_to_groups(self, groups: Iterable["Group"]):
+        missing_groups = [grp for grp in groups if grp not in self.groups]
+        self.groups.extend(missing_groups)
+        return await self.save()

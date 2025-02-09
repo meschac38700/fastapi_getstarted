@@ -18,6 +18,10 @@ class AsyncClientTest(AsyncClient):
         await self.user_login(user)
         return user
 
+    async def force_login(self, user: User):
+        await self.logout()
+        await self.user_login(user)
+
     async def logout(self) -> None:
         if self._token is None:
             return

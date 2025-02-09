@@ -29,7 +29,7 @@ class Group(CRUDModelMixin, PermissionMixin, GroupBase, table=True):
         await self.save()
 
     async def extend_users(self, users: Iterable[User]):
-        self.users.extend(users)
+        self.users.extend([user for user in users if user not in self.users])
         await self.save()
 
     async def remove_users(self, users: Iterable[User]):

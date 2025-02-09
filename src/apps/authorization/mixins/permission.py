@@ -25,8 +25,12 @@ class PermissionMixin:
         self.permissions.append(permission)
         await self.save()
 
-    async def extend_permissions(self, permission: Iterable[Permission]):
-        self.permissions.extend(permission)
+    async def extend_permissions(self, permissions: Iterable[Permission]):
+        self.permissions.extend(
+            permission
+            for permission in permissions
+            if permission not in self.permissions
+        )
         await self.save()
 
     async def remove_permissions(self, permissions: Iterable[Permission]):
