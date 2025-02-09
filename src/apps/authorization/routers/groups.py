@@ -5,6 +5,7 @@ from sqlmodel import and_
 
 from apps.authorization.models.group import Group
 from apps.authorization.models.pydantic.group import GroupCreate, GroupUpdate
+from apps.authorization.models.pydantic.permission import PermissionList
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models.pydantic.create import UserList
 
@@ -127,3 +128,33 @@ async def remove_user_to_group(pk: int, users: UserList):
     await group.remove_users(await users.to_object_list())
 
     return group.users
+
+
+@routers.post(
+    "/{pk}/permissions/add/",
+    name="Add some permissions to a certain group",
+    dependencies=[Depends(AdminAccess())],
+)
+async def add_permissions_to_group(pk: int, permissions: PermissionList):
+    group = await Group.get(Group.id == pk)
+    if group is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+
+    await group.extend_permissions(await permissions.to_object_list())
+
+    return group.get_permissions()
+
+
+@routers.post(
+    "/{pk}/permissions/remove/",
+    name="Remove some permissions to a certain group",
+    dependencies=[Depends(AdminAccess())],
+)
+async def remove_permissions_to_group(pk: int, permissions: PermissionList):
+    group = await Group.get(Group.id == pk)
+    if group is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+
+    await group.remove_permissions(await permissions.to_object_list())
+
+    return group.get_permissions()
