@@ -85,7 +85,7 @@ class TestGroupCRUD(AsyncTestCase):
         data = response.json()
         self.assertTrue(len(data) == 1)
         actual = data[0]
-        actual.pop("id", None)
+        self.assertIsInstance(actual.pop("id", None), int)
         self.assertEqual(actual, expected)
 
     async def test_add_new_group(self):

@@ -83,7 +83,7 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
         )
-    # if all required fields are not updated, pydantic error will be generated (PermissionCreate)
+
     permission_data.check_all_required_fields_updated(permission.model_dump())
     if not permission_data.is_updated:
         return permission

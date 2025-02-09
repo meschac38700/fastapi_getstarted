@@ -19,11 +19,9 @@ async def get_groups(
     offset: int = 0,
     limit: int = 100,
 ):
-    # TODO(Eliam): user startswith filter here.
-    #  Required: https://github.com/meschac38700/fastapi_getstarted/issues/31
     filters = []
     if name is not None:
-        filters.append(Group.name == name)
+        filters.append(Group.name.startswith(name))
 
     if target_table is not None:
         filters.append(Group.target_table == target_table)
@@ -105,7 +103,7 @@ async def delete_group(pk: int):
     name="Add some users to a certain group",
     dependencies=[Depends(AdminAccess())],
 )
-async def add_user_to_group(pk: int, users: UserList):
+async def add_users_to_group(pk: int, users: UserList):
     group = await Group.get(Group.id == pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
@@ -117,10 +115,10 @@ async def add_user_to_group(pk: int, users: UserList):
 
 @routers.post(
     "/{pk}/users/remove/",
-    name="Remove some user to a  certain group",
+    name="Remove some user to a certain group",
     dependencies=[Depends(AdminAccess())],
 )
-async def remove_user_to_group(pk: int, users: UserList):
+async def remove_users_to_group(pk: int, users: UserList):
     group = await Group.get(Group.id == pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
