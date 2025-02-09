@@ -4,6 +4,7 @@ from apps.authorization.models.group import Group
 from apps.authorization.models.permission import Permission
 from apps.hero.models import Hero
 from apps.user.models import User
+from apps.user.utils.types import UserRole
 from core.test.async_case import AsyncTestCase
 
 
@@ -15,7 +16,9 @@ class TestGroupPermissions(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.user = await User.get(User.username == "test")
+        self.admin = await User.get(User.role == UserRole.admin)
+        self.user = await User.get(User.role == UserRole.staff)
+        self.active = await User.get(User.role == UserRole.active)
         # TODO(Eliam): Remove the following line of code once the test in docker container task completed
         await Permission.generate_crud_objects(Hero.table_name())
         await Group.generate_crud_objects(Hero.table_name())
@@ -55,3 +58,36 @@ class TestGroupPermissions(AsyncTestCase):
         self.assertEqual(data["secret_name"], hero.secret_name)
         self.assertEqual(actual_data["secret_name"], data["secret_name"])
         self.assertEqual(actual_data["id"], hero_id)
+
+    async def test_add_permission_to_a_certain_group(self):
+        group = await Group(
+            name="can_do_everything_with_user_table",
+            target_table=User.table_name(),
+            display_name="Can do anything about user",
+            description="Can do everything about user operations except those that require an administrator role.",
+        ).save()
+        self.assertEqual(group.get_permissions(), [])
+
+        perms = await Permission.filter(Permission.target_table == User.table_name())
+        data = {"permissions": [perm.name for perm in perms]}
+        response = await self.client.post(
+            f"/authorizations/groups/{group.id}/permissions/add/", json=data
+        )
+        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+
+        await self.client.user_login(self.user)
+        response = await self.client.post(
+            f"/authorizations/groups/{group.id}/permissions/add/", json=data
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+
+        await self.client.user_login(self.admin)
+        response = await self.client.post(
+            f"/authorizations/groups/{group.id}/permissions/add/", json=data
+        )
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        expected_response = [perm.model_dump(mode="json") for perm in perms]
+        group = await group.refresh()
+        self.assertTrue(group.has_permissions(perms))
+        self.assertEqual(response.json(), expected_response)
