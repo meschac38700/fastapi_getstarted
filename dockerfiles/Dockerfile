@@ -11,8 +11,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONFAULTHANDLER=1
 # Virtual env
 ENV VIRTUAL_ENV=/opt/.venv
-# prod | local | dev | test.
-ARG APP_ENV=prod
+ENV APP_PORT=80
 
 # -------------------- Python dependencies --------------------
 
@@ -43,7 +42,7 @@ ENV PYTHONPATH=$VBIN
 RUN useradd --user-group --create-home --uid 1000 ${USER}
 
 # APP_PORT is an environment variable, used in entrypoint.sh file to run server.
-ARG APP_EXPOSE_PORT=${APP_PORT:-80}
+ARG APP_EXPOSE_PORT=$APP_PORT
 
 EXPOSE ${APP_EXPOSE_PORT}
 
