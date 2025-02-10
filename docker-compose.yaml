@@ -32,8 +32,6 @@ services:
       database:
         condition: service_healthy
         restart: true
-    volumes:
-      - ./src:/home/appuser/app/www
     ports:
       - "8001:8001"
     env_file:
