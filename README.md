@@ -4,6 +4,7 @@
 
 ###### *_python >= 3.13.X_*
 
+
 # Get started
 
 Rename the folder **envs.example** to **envs** Then change the environment
@@ -11,7 +12,11 @@ information
 
 # Build Application environment
 
-#### Install dependencies
+### Install dependencies
+##### required at least:
+###### *_uv == 0.5.29_*
+
+---
 
 We use
 [uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer) to
