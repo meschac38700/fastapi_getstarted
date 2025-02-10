@@ -26,6 +26,7 @@ jobs:
 
       - name: Prepare test environment
         run: |
+          export UV_LINK_MODE=copy
           export PYTHON_VERSION=${{ matrix.python-version }}
           docker compose -f docker-compose.test.yaml up -d
 

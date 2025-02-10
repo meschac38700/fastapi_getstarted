@@ -11,11 +11,8 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONFAULTHANDLER=1
 # Virtual env
 ENV VIRTUAL_ENV=/opt/.venv
-# prod | local | dev | test.
-ARG APP_ENV=prod
 
 # -------------------- Python dependencies --------------------
-
 FROM base AS virtualenv
 
 ENV UV_PROJECT_ENVIRONMENT=$VIRTUAL_ENV
@@ -24,7 +21,7 @@ ENV UV_COMPILE_BYTECODE=1
 # Install dependencies:
 COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /bin/
 
-COPY pyproject.toml uv.lock ./
+COPY ./pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
