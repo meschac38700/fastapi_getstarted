@@ -10,7 +10,7 @@
 *.log
 *.pot
 *.pyc
-__pycache__/
+**__pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -188,6 +188,4 @@ cython_debug/
 
 # Redis
 redis/redis.conf
-tests
-src/**/tests
-src/scripts
+**tests/
