@@ -1,4 +1,3 @@
-import asyncio
 from http import HTTPStatus
 
 from apps.authorization.models.group import Group
@@ -15,20 +14,13 @@ class TestGroupPermissions(AsyncTestCase):
         "heroes",
     ]
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        async def _set_permissions_groups():
-            # TODO(Eliam): Remove the following line of code once the test in docker container task completed
-            await Permission.generate_crud_objects(Hero.table_name())
-            await Permission.generate_crud_objects(User.table_name())
-            await Group.generate_crud_objects(Hero.table_name())
-
-        asyncio.run(_set_permissions_groups())
-
     async def asyncSetUp(self):
         await super().asyncSetUp()
+        # TODO(Eliam): Remove the following line of code once the test in docker container task completed
+        await Permission.generate_crud_objects(Hero.table_name())
+        await Permission.generate_crud_objects(User.table_name())
+        await Group.generate_crud_objects(Hero.table_name())
+
         self.admin = await User.get(User.role == UserRole.admin)
         self.user = await User.get(User.role == UserRole.staff)
         self.active = await User.get(User.role == UserRole.active)
