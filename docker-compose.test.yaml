@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/tests.Dockerfile
       args:
         PYTHON_VERSION: "${PYTHON_VERSION:-3.13}"
     healthcheck:
