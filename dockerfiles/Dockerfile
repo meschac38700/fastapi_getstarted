@@ -24,7 +24,7 @@ ENV UV_COMPILE_BYTECODE=1
 # Install dependencies:
 COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /bin/
 
-COPY ../pyproject.toml uv.lock ./
+COPY ./pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
@@ -61,6 +61,6 @@ WORKDIR ${APP_DIR}
 
 USER ${USER}
 
-COPY --chown=${USER}:${USER} ../src .
+COPY --chown=${USER}:${USER} ./src .
 
 RUN chmod +x ./scripts/entrypoint.sh
