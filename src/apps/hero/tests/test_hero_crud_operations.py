@@ -81,8 +81,8 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        group_create = await Group.get(Group.name == "update_hero")
-        await group_create.add_user(user)
+        update_hero_perm = await Permission.get(Permission.name == "update_hero")
+        await user.add_permission(update_hero_perm)
 
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -109,8 +109,8 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        group_create = await Group.get(Group.name == "update_hero")
-        await group_create.add_user(user)
+        update_hero_perm = await Permission.get(Permission.name == "update_hero")
+        await user.add_permission(update_hero_perm)
 
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
