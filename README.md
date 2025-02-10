@@ -4,6 +4,7 @@
 
 ###### *_python >= 3.13.X_*
 
+[K8s repo](https://github.com/meschac38700/k8s_fastapi_getstarted)
 
 # Get started
 
