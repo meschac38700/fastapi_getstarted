@@ -10,14 +10,9 @@ from core.test.async_case import AsyncTestCase
 class TestUserGroup(AsyncTestCase):
     fixtures = ["users"]
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        asyncio.run(Group.generate_crud_objects(User.table_name()))
-
     async def asyncSetUp(self):
         await super().asyncSetUp()
-
+        await Group.generate_crud_objects(User.table_name())
         self.active, self.staff, self.admin = await asyncio.gather(
             User.get(User.role == UserRole.active),
             User.get(User.role == UserRole.staff),

@@ -1,4 +1,3 @@
-import asyncio
 from datetime import date
 from http import HTTPStatus
 
@@ -13,12 +12,11 @@ class TestUserCRUD(AsyncTestCase):
         "users",
     ]
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        asyncio.run(Permission.generate_crud_objects(User.table_name()))
-        asyncio.run(Group.generate_crud_objects(User.table_name()))
-        cls.user = asyncio.run(User.get(User.username == "test"))
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await Permission.generate_crud_objects(User.table_name())
+        await Group.generate_crud_objects(User.table_name())
+        self.user = await User.get(User.username == "test")
 
     async def test_get_users(self):
         response = await self.client.get("/users/")

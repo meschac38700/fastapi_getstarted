@@ -1,4 +1,3 @@
-import asyncio
 from unittest.async_case import IsolatedAsyncioTestCase
 
 from httpx import ASGITransport
@@ -21,40 +20,15 @@ _engine = settings.get_engine()
 class AsyncTestCase(IsolatedAsyncioTestCase):
     fixtures: list[str] | None = None
     db_service: DBService = None
+    _loaded_once: bool = False
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
+        await self._load_once()
         self.client = AsyncClientTest(
             transport=ASGITransport(app=app), base_url=BASE_URL
         )
         self.db_service = DBService()
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        async def _main():
-            await create_db_and_tables(_engine)
-            await cls._load_fixtures()
-
-        asyncio.run(_main())
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        asyncio.run(delete_db_and_tables(_engine))
-
-    async def asyncTearDown(self):
-        await super().asyncTearDown()
-        await self.client.aclose()
-        await self.db_service.dispose()
-
-    @classmethod
-    async def _load_fixtures(cls):
-        if not cls.fixtures:
-            return
-
-        await LoadFixtures().load_fixtures(cls.fixtures)
 
     async def add_permissions(self, item: User | Group, permissions: list[str]):
         _permissions = await Permission.filter(Permission.name.in_(permissions))
@@ -71,3 +45,28 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
         async with _engine.begin() as session:
             await session.execute(delete(model))
             await session.commit()
+
+    async def _load_fixtures(self):
+        if not self.fixtures:
+            return
+
+        await LoadFixtures().load_fixtures(self.fixtures)
+
+    async def _load_once(self):
+        if self._loaded_once:
+            return
+
+        await delete_db_and_tables(_engine)
+        await create_db_and_tables(_engine)
+        await self._load_fixtures()
+        self._loaded_once = True
+
+    async def asyncTearDown(self):
+        await super().asyncTearDown()
+        await self.client.aclose()
+        await self.db_service.dispose()
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._loaded_once = False
