@@ -11,11 +11,8 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONFAULTHANDLER=1
 # Virtual env
 ENV VIRTUAL_ENV=/opt/.venv
-# prod | local | dev | test.
-ARG APP_ENV=prod
 
 # -------------------- Python dependencies --------------------
-
 FROM base AS virtualenv
 
 ENV UV_PROJECT_ENVIRONMENT=$VIRTUAL_ENV

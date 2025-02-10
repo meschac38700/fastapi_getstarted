@@ -14,21 +14,20 @@ ENV VIRTUAL_ENV=/opt/.venv
 ENV APP_PORT=80
 
 # -------------------- Python dependencies --------------------
-
 FROM base AS virtualenv
 
 ENV UV_PROJECT_ENVIRONMENT=$VIRTUAL_ENV
 ENV UV_COMPILE_BYTECODE=1
 
 # Install dependencies:
-COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.5.29 /uv /uvx /bin/
 
 COPY ./pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --all-extras --no-install-project --no-editable
+    uv sync --frozen --no-dev --no-install-project --no-editable;
 
 # -------------------- Python final image --------------------
 FROM base AS runtime
