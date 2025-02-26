@@ -33,8 +33,9 @@ async def login(
 @routers.post(
     "/token/refresh", name="Refresh JWT token", dependencies=[Depends(oauth2_scheme())]
 )
-async def refresh(user_id: int):
-    token = await JWTToken.get(JWTToken.user_id == user_id)
+async def refresh(user_id: int, user: User):
+    # TODO(Eliam): Need code refactor -> use directly oauth2_scheme
+    token = await JWTToken.get(user_id=user_id)
 
     if token is None:
         raise HTTPException(

@@ -15,6 +15,13 @@ def oauth2_scheme():
     ) -> JWTToken:
         stored_token = await JWTToken.get(JWTToken.access_token == token)
 
+        # It seems like we do not check for token validity
+        if stored_token.is_expired:
+            raise HTTPException(
+                status_code=HTTPStatus.UNAUTHORIZED,
+                detail="Session expired.",
+            )
+
         if stored_token is None:
             raise HTTPException(
                 status_code=HTTPStatus.UNAUTHORIZED,
