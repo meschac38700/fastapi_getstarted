@@ -1,11 +1,10 @@
-import glob
 import importlib
 import re
 from pathlib import Path
 
 from fastapi import FastAPI
 
-from settings import BASE_DIR
+from core.file_manager import get_application_paths
 
 
 class AppRouter:
@@ -25,15 +24,6 @@ class AppRouter:
         self.routers_module_name = "routers"
         self.app_pkg_name = "apps"
 
-    def _is_valid_router_module(self, module_path: Path):
-        """Check if the given module path is a valid module."""
-        return any(
-            [
-                (module_path / self.routers_module_name).exists(),  # pkg
-                (module_path / (self.routers_module_name + ".py")).exists(),  # module
-            ]
-        )
-
     def _import_router_module(self, module_path: Path):
         """Prepare and import router module."""
         _module_path = (
@@ -45,11 +35,7 @@ class AppRouter:
 
     def register_all(self, app: FastAPI):
         """Register all routers from apps folder."""
-        for module_path_str in glob.glob(str(BASE_DIR / self.app_pkg_name / "*")):
-            module_path = Path(module_path_str)
-            if not self._is_valid_router_module(module_path):
-                continue
-
+        for module_path in get_application_paths():
             # extract module name, to be used as router prefix
             prefix = f"/{module_path.stem}"
 
