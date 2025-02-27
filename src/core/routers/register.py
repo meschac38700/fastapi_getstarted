@@ -1,10 +1,9 @@
 import importlib
-import re
 from pathlib import Path
 
 from fastapi import FastAPI
 
-from core.file_manager import get_application_paths
+from core.file_manager import get_application_paths, linux_path_to_module_path
 
 
 class AppRouter:
@@ -26,11 +25,9 @@ class AppRouter:
 
     def _import_router_module(self, module_path: Path):
         """Prepare and import router module."""
-        _module_path = (
-            self.app_pkg_name
-            + f"{module_path}.{self.routers_module_name}".split(self.app_pkg_name)[-1]
-        )
-        _module_path = re.sub("/", ".", _module_path).strip(".")
+        _module_path = module_path / self.routers_module_name
+        _module_path = linux_path_to_module_path(_module_path)
+
         return importlib.import_module(_module_path)
 
     def register_all(self, app: FastAPI):
