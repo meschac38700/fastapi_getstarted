@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from commands.cli import main
+from core.commands import main
 
 if __name__ == "__main__":
     main()

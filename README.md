@@ -77,11 +77,6 @@ docker compose up
 ```bash
 python manage dev
 ```
-##### OR
-```bash
-cd src/
-python -m commands dev
-```
 
 ##### Using docker compose
 ```bash
@@ -91,11 +86,6 @@ docker compose -f docker-compose.dev.yaml up -d
 #### Run application tests
 ```bash
 python manage tests
-```
-##### OR
-```bash
-cd src/
-python -m commands tests
 ```
 
 #### Running migrations
