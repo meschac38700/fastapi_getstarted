@@ -12,24 +12,3 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
-  api_test:
-    container_name: api_test
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: dockerfiles/tests.Dockerfile
-      args:
-        PYTHON_VERSION: "${PYTHON_VERSION:-3.13}"
-    healthcheck:
-      test: curl --fail http://localhost:$$APP_PORT/ || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    depends_on:
-      database_test:
-        condition: service_healthy
-        restart: true
-    env_file:
-      - envs.example/test/.env
-    command: ["bash", "./scripts/entrypoint.sh"]

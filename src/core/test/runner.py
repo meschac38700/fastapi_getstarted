@@ -22,7 +22,7 @@ class AppTestRunner:
         _test_paths = test_paths or []
         self.logger.info("Start running tests.")
         ps = subprocess.Popen(
-            ["pytest", *_test_paths, *pytest_args],
+            ["pytest", *pytest_args, *_test_paths],
             env=dict(os.environ, **self.env_vars),
             stderr=subprocess.STDOUT,
         )
@@ -41,7 +41,7 @@ class AppTestRunner:
         _test_paths = [str(test_path) for test_path in test_paths]
         if target_apps:
             _test_paths = [
-                f"{settings.BASE_DIR / app_name}" for app_name in target_apps
+                f"{settings.BASE_DIR / "apps" / app_name}" for app_name in target_apps
             ]
 
         self._run_tests(_test_paths, *pytest_args)

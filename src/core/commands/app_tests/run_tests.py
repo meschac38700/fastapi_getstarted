@@ -38,7 +38,7 @@ def tests(
         > python manage.py tests  # Run all application tests
         > python manage.py tests --apps user authentication  # Run all specific application's tests
         > python manage.py tests /apps/user apps/authentication  # Run all tests of the specified applications
-        > python manage.py tests --pytest-args --create-db --pytest-args --strict # Specify pytest args
+        > python manage.py tests --pytest-args="--ignore=apps/"--pytest-args --strict # Specify pytest args
     """
     dk_compose = DockerComposeManager(
         settings.BASE_DIR.parent / "docker-compose.test.yaml", env="test"
