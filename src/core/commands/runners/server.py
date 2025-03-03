@@ -3,7 +3,7 @@ from typing import Annotated
 import typer
 
 import settings
-from core.commands.utils.runners.server import DevServer
+from core.commands.runners.utils.server import ServerRunner
 from core.services.docker.compose import DockerComposeManager
 
 app = typer.Typer(rich_markup_mode="rich")
@@ -27,7 +27,7 @@ def server(
 ):
     dk_file = settings.BASE_DIR.parent / "docker-compose.dev.yaml"
 
-    server_runner = DevServer(port=port, host=host, reload=reload)
+    server_runner = ServerRunner(port=port, host=host, reload=reload)
 
     docker_manager = DockerComposeManager(dk_file, env="dev")
 

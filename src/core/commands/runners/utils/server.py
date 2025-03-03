@@ -5,7 +5,7 @@ import subprocess
 _logger = logging.getLogger(__file__)
 
 
-class DevServer:
+class ServerRunner:
     def __init__(
         self,
         *,

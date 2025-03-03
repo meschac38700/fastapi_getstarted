@@ -10,7 +10,7 @@ app = typer.Typer(rich_markup_mode="rich")
 _logger = logging.getLogger(__file__)
 
 
-class AppTestRunner:
+class TestRunner:
     def __init__(self, p_logger: logging.Logger | None = None):
         self.logger = p_logger or _logger
         self.env_vars = {

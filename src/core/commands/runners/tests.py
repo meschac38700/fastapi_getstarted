@@ -4,8 +4,8 @@ from pathlib import Path
 import typer
 
 import settings
+from core.commands.runners.utils.test import TestRunner
 from core.services.docker.compose import DockerComposeManager
-from core.test.runner import AppTestRunner
 from core.types.annotations.command_types import (
     TyperListArgument,
     TyperListOption,
@@ -44,7 +44,7 @@ def tests(
         settings.BASE_DIR.parent / "docker-compose.test.yaml", env="test"
     )
 
-    test_command = AppTestRunner()
+    test_command = TestRunner()
 
     def _run_test():
         test_command(
