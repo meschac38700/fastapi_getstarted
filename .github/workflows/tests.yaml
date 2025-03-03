@@ -28,7 +28,7 @@ jobs:
         run: |
           export UV_LINK_MODE=copy
           export PYTHON_VERSION=${{ matrix.python-version }}
-          docker compose -f docker-compose.test.yaml up -d
+          docker compose -f docker-compose.test.ci.yaml up -d
 
       - name: Run Tests
         run: |

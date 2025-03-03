@@ -19,9 +19,10 @@ class UserBase(SQLTable):
 
 class UserSQLBaseModel(UserBase, TimestampedSQLBaseModel):
     role: UserRole = Field(
+        default=UserRole.active,
         sa_column=sa.Column(
             postgresql.ENUM(UserRole), default=UserRole.active, index=True
-        )
+        ),
     )
 
     @property

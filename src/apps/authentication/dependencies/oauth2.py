@@ -21,6 +21,12 @@ def oauth2_scheme():
                 detail="Invalid authentication token.",
             )
 
+        if stored_token.is_expired:
+            raise HTTPException(
+                status_code=HTTPStatus.UNAUTHORIZED,
+                detail="Session expired.",
+            )
+
         if stored_token.user is None:
             raise HTTPException(
                 status_code=HTTPStatus.UNAUTHORIZED,

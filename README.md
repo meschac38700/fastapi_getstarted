@@ -66,17 +66,26 @@ export APP_ENVIRONMENT=dev
 
 ## Run the application
 
-Run prod server
+##### Run prod server
 
 ```bash
 docker compose up
 ```
 
-Run development server
-[TODO(Create command dev server)](https://github.com/meschac38700/fastapi_getstarted/issues/6)
+##### Run development server
 
 ```bash
-docker compose -f docker-compose.dev.yaml up -d database-dev && fastapi dev src/main.py
+python manage dev
+```
+
+##### Using docker compose
+```bash
+docker compose -f docker-compose.dev.yaml up -d
+```
+
+#### Run application tests
+```bash
+python manage tests
 ```
 
 #### Running migrations
