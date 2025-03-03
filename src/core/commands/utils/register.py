@@ -21,8 +21,7 @@ class AppCommandRegisterManager[T = typer.Typer]:  # noqa: E251
 
     def _retrieve_app_command_instances(self):
         """Retrieve all instances of command from the apps' folder."""
-        app_paths = get_application_paths()
-        for app_path in app_paths:
+        for app_path in get_application_paths():
             command_module = self._get_command_module(app_path)
             if command_module is None:
                 continue
