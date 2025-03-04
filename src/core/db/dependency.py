@@ -66,11 +66,11 @@ class DBService:
     async def get(
         self,
         model: SQLModel,
-        filter_by: ColumnExpressionArgument[bool] | bool,
+        filter_by: list[ColumnExpressionArgument[bool] | bool],
         *,
         session: AsyncSession,
     ):
-        res = await session.scalars(select(model).where(filter_by))
+        res = await session.scalars(select(model).where(*filter_by))
         return res.first()
 
     @session_decorator
@@ -93,14 +93,14 @@ class DBService:
     async def filter(
         self,
         model: SQLModel,
-        filters: ColumnExpressionArgument[bool] | bool,
+        filters: list[ColumnExpressionArgument[bool] | bool],
         *,
         session: AsyncSession = None,
         offset: int = 0,
         limit: int = 100,
     ):
         data_list = await session.scalars(
-            select(model).where(filters).offset(offset).limit(limit)
+            select(model).where(*filters).offset(offset).limit(limit)
         )
         return data_list.unique().all()
 

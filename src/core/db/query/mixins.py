@@ -1,29 +1,27 @@
 from collections.abc import Iterable, Sequence
 from typing import Self
 
-from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel
 
 from core.db.manager import ModelManager
+from core.db.query.operators import QueryExpressionManager
 
 
-class ModelQuery:
+class ModelQuery(QueryExpressionManager):
     @classmethod
     def objects(cls) -> ModelManager:
         return ModelManager(cls)
 
     @classmethod
-    async def get(cls, filter_by: ColumnExpressionArgument[bool] | bool) -> Self | None:
-        return await cls.objects().get(filter_by)
+    async def get(cls, **filters) -> Self | None:
+        filter_by = cls.resolve_filters(**filters)
+        return await cls.objects().get(*filter_by)
 
     @classmethod
     async def filter(
-        cls,
-        filter_by: ColumnExpressionArgument[bool] | bool,
-        *,
-        offset: int = 0,
-        limit: int = 100,
+        cls, *, offset: int = 0, limit: int = 100, **filters
     ) -> Sequence[Self]:
+        filter_by = cls.resolve_filters(**filters)
         return await cls.objects().filter(filter_by, offset=offset, limit=limit)
 
     @classmethod

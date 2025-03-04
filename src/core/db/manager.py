@@ -45,7 +45,7 @@ class ModelManager:
         await self.db_service.insert_batch(data, batch_size=batch_size)
 
     @session_decorator
-    async def get(self, filter_by: ColumnExpressionArgument[bool] | bool):
+    async def get(self, filter_by: list[ColumnExpressionArgument[bool] | bool]):
         return await self.db_service.get(self.model_class, filter_by)
 
     @session_decorator
@@ -61,13 +61,13 @@ class ModelManager:
     @session_decorator
     async def filter(
         self,
-        filters: ColumnExpressionArgument[bool] | bool,
+        filter_by: list[ColumnExpressionArgument[bool] | bool],
         *,
         offset: int = 0,
         limit: int = 100,
     ):
         return await self.db_service.filter(
-            self.model_class, filters, offset=offset, limit=limit
+            self.model_class, filter_by, offset=offset, limit=limit
         )
 
     @session_decorator
