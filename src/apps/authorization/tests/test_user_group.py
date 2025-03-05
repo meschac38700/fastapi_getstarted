@@ -11,9 +11,9 @@ class TestUserGroup(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.admin = await User.get(User.role == UserRole.admin)
-        self.staff = await User.get(User.role == UserRole.staff)
-        self.active = await User.get(User.role == UserRole.active)
+        self.admin = await User.get(role=UserRole.admin)
+        self.staff = await User.get(role=UserRole.staff)
+        self.active = await User.get(role=UserRole.active)
 
     async def test_add_users_to_group(self):
         group = await Group(

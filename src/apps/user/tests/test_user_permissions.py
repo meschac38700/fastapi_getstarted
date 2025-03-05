@@ -15,9 +15,9 @@ class TestUserPermission(AsyncTestCase):
         await Permission.generate_crud_objects(User.table_name())
 
         self.active, self.staff, self.admin = await asyncio.gather(
-            User.get(User.role == UserRole.active),
-            User.get(User.role == UserRole.staff),
-            User.get(User.role == UserRole.admin),
+            User.get(role=UserRole.active),
+            User.get(role=UserRole.staff),
+            User.get(role=UserRole.admin),
         )
 
     async def test_get_another_user_permissions_denied(self):
@@ -98,7 +98,7 @@ class TestUserPermission(AsyncTestCase):
             password="test123",
         ).save()
         data = {"permissions": ["create_user", "read_user"]}
-        perms = await Permission.filter(Permission.name.in_(data["permissions"]))
+        perms = await Permission.filter(name__in=data["permissions"])
         self.assertFalse(user.has_permissions(perms))
 
         await self.client.user_login(user)
@@ -129,7 +129,7 @@ class TestUserPermission(AsyncTestCase):
         ).save()
 
         await self.add_permissions(user, data["permissions"])
-        perms = await Permission.filter(Permission.name.in_(data["permissions"]))
+        perms = await Permission.filter(name__in=data["permissions"])
         self.assertTrue(user.has_permissions(perms))
 
         await self.client.user_login(user)

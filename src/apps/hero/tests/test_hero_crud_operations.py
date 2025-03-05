@@ -19,7 +19,7 @@ class TestHeroCRUD(AsyncTestCase):
         # TODO(Eliam): not necessary if we test in a Docker container
         await Permission.generate_crud_objects(Hero.table_name())
         await Group.generate_crud_objects(Hero.table_name())
-        self.user = await User.get(User.username == "test")
+        self.user = await User.get(username="test")
 
     async def test_get_heroes(self):
         response = await self.client.get("/heroes/")
@@ -47,14 +47,14 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        group_create = await Group.get(Group.name == "create_hero")
+        group_create = await Group.get(name="create_hero")
         await self.add_permissions(group_create, ["create_hero"])
         await group_create.add_user(self.user)
 
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
-        stored_hero = await Hero.get(Hero.name == "Super Test Man")
+        stored_hero = await Hero.get(name="Super Test Man")
         self.assertIsInstance(stored_hero, Hero)
 
         hero_created: dict[str, Any] = response.json()
@@ -81,13 +81,13 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        update_hero_perm = await Permission.get(Permission.name == "update_hero")
+        update_hero_perm = await Permission.get(name="update_hero")
         await user.add_permission(update_hero_perm)
 
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        new_hero = await Hero.get(Hero.id == hero.id)
+        new_hero = await Hero.get(id=hero.id)
         self.assertEqual(data["name"], new_hero.name)
         self.assertEqual(data["secret_name"], new_hero.secret_name)
         self.assertEqual(data["age"], new_hero.age)
@@ -109,13 +109,13 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        update_hero_perm = await Permission.get(Permission.name == "update_hero")
+        update_hero_perm = await Permission.get(name="update_hero")
         await user.add_permission(update_hero_perm)
 
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        new_hero = await Hero.get(Hero.id == hero.id)
+        new_hero = await Hero.get(id=hero.id)
         self.assertEqual(data["name"], new_hero.name)
 
     async def test_patch_entire_hero_should_not_be_possible(self):
@@ -129,7 +129,7 @@ class TestHeroCRUD(AsyncTestCase):
 
         await self.client.user_login(self.user)
 
-        group_create = await Group.get(Group.name == "update_hero")
+        group_create = await Group.get(name="update_hero")
         await self.add_permissions(group_create, ["update_hero"])
         await group_create.add_user(self.user)
 
@@ -156,7 +156,7 @@ class TestHeroCRUD(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        group_create = await Group.get(Group.name == "delete_hero")
+        group_create = await Group.get(name="delete_hero")
         await self.add_permissions(group_create, ["delete_hero"])
         await group_create.add_user(self.user)
 
@@ -165,5 +165,5 @@ class TestHeroCRUD(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 
-        hero = await self.db_service.get(Hero, Hero.id == hero.id)
+        hero = await self.db_service.get(Hero, id=hero.id)
         self.assertIsNone(hero)

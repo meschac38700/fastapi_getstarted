@@ -26,7 +26,7 @@ def group_permission_required(
         detail = "You do not have sufficient rights to this resource."
         user = token.user
 
-        group_list = await Group.filter(Group.name.in_(groups))
+        group_list = await Group.filter(name__in=groups)
         if not group_list:
             log.debug(f"Permission denied: groups not found: {group_list}.")
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
@@ -44,7 +44,7 @@ def group_permission_required(
         if not permissions:
             return user
 
-        permission_list = await Permission.filter(Permission.name.in_(permissions))
+        permission_list = await Permission.filter(name__in=permissions)
         at_least_one_group_has_permission = any(
             grp.has_permissions(permission_list, any_match=any_match)
             for grp in group_list

@@ -12,9 +12,7 @@ class TestPermissionGeneration(AsyncTestCase):
         #  but as we are manually initializing the database, the alembic code is not executed
         await Permission.generate_crud_objects(Hero.table_name())
 
-        hero_crud_perms = await Permission.filter(
-            Permission.target_table == Hero.table_name()
-        )
+        hero_crud_perms = await Permission.filter(target_table=Hero.table_name())
         self.assertEqual(4, len(hero_crud_perms))
         expected_perm_names = [
             "create_hero",

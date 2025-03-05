@@ -63,14 +63,9 @@ class DBService:
             await session.commit()
 
     @session_decorator
-    async def get(
-        self,
-        model: SQLModel,
-        filter_by: ColumnExpressionArgument[bool] | bool,
-        *,
-        session: AsyncSession,
-    ):
-        res = await session.scalars(select(model).where(filter_by))
+    async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
+        filter_by = model.resolve_filters(**filters)
+        res = await session.scalars(select(model).where(*filter_by))
         return res.first()
 
     @session_decorator
@@ -93,14 +88,15 @@ class DBService:
     async def filter(
         self,
         model: SQLModel,
-        filters: ColumnExpressionArgument[bool] | bool,
         *,
         session: AsyncSession = None,
         offset: int = 0,
         limit: int = 100,
+        **filters,
     ):
+        filter_by = model.resolve_filters(**filters)
         data_list = await session.scalars(
-            select(model).where(filters).offset(offset).limit(limit)
+            select(model).where(*filter_by).offset(offset).limit(limit)
         )
         return data_list.unique().all()
 

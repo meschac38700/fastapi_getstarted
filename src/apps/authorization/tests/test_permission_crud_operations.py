@@ -17,7 +17,7 @@ class TestPermissionCRUD(AsyncTestCase):
 
         await Permission.generate_crud_objects(Permission.table_name())
         self.admin, self.staff = await asyncio.gather(
-            User.get(User.role == UserRole.admin), User.get(User.role == UserRole.staff)
+            User.get(role=UserRole.admin), User.get(role=UserRole.staff)
         )
 
     async def test_get_permission_with_staff_user_permission_denied(self):
@@ -113,9 +113,7 @@ class TestPermissionCRUD(AsyncTestCase):
         actual_data = response.json()
         created_permission_id = actual_data.pop("id", None)
         self.assertIsNotNone(created_permission_id)
-        self.assertIsNotNone(
-            await Permission.get(Permission.id == created_permission_id)
-        )
+        self.assertIsNotNone(await Permission.get(id=created_permission_id))
         self.assertTrue(actual_data[k] == v for k, v in post_data.items())
 
     async def test_patch_permission(self):
@@ -203,4 +201,4 @@ class TestPermissionCRUD(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 
-        self.assertIsNone(await Permission.get(Permission.id == permission.id))
+        self.assertIsNone(await Permission.get(id=permission.id))

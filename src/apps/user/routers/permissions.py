@@ -22,7 +22,7 @@ async def get_authenticated_user_permissions(auth_user: User = Depends(current_u
     dependencies=[Depends(AdminAccess())],
 )
 async def get_user_permissions(pk: int):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
@@ -35,7 +35,7 @@ async def get_user_permissions(pk: int):
     dependencies=[Depends(AdminAccess())],
 )
 async def add_permissions_user(pk: int, permissions: PermissionList):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
@@ -50,7 +50,7 @@ async def add_permissions_user(pk: int, permissions: PermissionList):
     dependencies=[Depends(AdminAccess())],
 )
 async def remove_permissions_user(pk: int, permissions: PermissionList):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 

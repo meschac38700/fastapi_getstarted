@@ -13,4 +13,4 @@ class UserList(BaseModel):
     users: list[str]
 
     async def to_object_list(self):
-        return await User.filter(User.username.in_(self.users))
+        return await User.filter(username__in=self.users)

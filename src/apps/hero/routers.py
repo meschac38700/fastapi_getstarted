@@ -15,7 +15,7 @@ routers = APIRouter(tags=["Heroes"], prefix="/heroes")
 
 @routers.get("/{pk}/", name="Get hero by id.")
 async def get_hero(pk: int):
-    return await Hero.get(Hero.id == pk)
+    return await Hero.get(id=pk)
 
 
 @routers.get("/", name="Get heroes")
@@ -50,7 +50,7 @@ async def create_hero(hero: HeroCreate):
     ],
 )
 async def update_hero(pk: int, hero: HeroCreate):
-    stored_hero: Hero = await Hero.get(Hero.id == pk)
+    stored_hero: Hero = await Hero.get(id=pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
 
@@ -75,7 +75,7 @@ async def update_hero(pk: int, hero: HeroCreate):
     ],
 )
 async def patch_hero(pk: int, hero: HeroPatch):
-    stored_hero: Hero = await Hero.get(Hero.id == pk)
+    stored_hero: Hero = await Hero.get(id=pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
 
@@ -99,7 +99,7 @@ async def patch_hero(pk: int, hero: HeroPatch):
     ],
 )
 async def delete_hero(pk: int):
-    stored_hero: Hero = await Hero.get(Hero.id == pk)
+    stored_hero: Hero = await Hero.get(id=pk)
     if stored_hero is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
 
