@@ -14,7 +14,7 @@ class AsyncClientTest(AsyncClient):
         )
 
     async def login(self, username: str) -> User:
-        user = await User.get(User.username == username)
+        user = await User.get(username=username)
         await self.user_login(user)
         return user
 

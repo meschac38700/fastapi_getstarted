@@ -47,7 +47,7 @@ class JWTToken(JWTTokenSQLBaseModel, table=True):
 
     @classmethod
     async def get_or_create(cls, user: User) -> Self:
-        token = await cls.get(cls.user_id == user.id)
+        token = await cls.get(user_id=user.id)
         if token is not None and not token.is_expired:
             return token
 

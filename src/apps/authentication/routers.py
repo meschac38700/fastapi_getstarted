@@ -17,7 +17,7 @@ routers = APIRouter(tags=["Authentication"], prefix=settings.AUTH_PREFIX_URL)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> JWTTokenRead:
-    user = await User.get(User.username == form_data.username)
+    user = await User.get(username=form_data.username)
     if user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 

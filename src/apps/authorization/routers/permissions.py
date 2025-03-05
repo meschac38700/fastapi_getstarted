@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import and_
 
 from apps.authorization.models.permission import Permission
 from apps.authorization.models.pydantic.permission import (
@@ -24,15 +23,15 @@ async def get_permissions(
     offset: int = 0,
     limit: int = 100,
 ):
-    filters = []
+    filters = {}
     if name is not None:
-        filters.append(Permission.name == name)
+        filters["name"] = name
 
     if target_table is not None:
-        filters.append(Permission.target_table == target_table)
+        filters["target_table"] = target_table
 
     return await (
-        Permission.filter(and_(*filters), offset=offset, limit=limit)
+        Permission.filter(**filters, offset=offset, limit=limit)
         if filters
         else Permission.all(offset=offset, limit=limit)
     )
@@ -54,7 +53,7 @@ async def create_permission(permission_data: PermissionCreate):
     dependencies=[Depends(AdminAccess())],
 )
 async def patch_permission(pk: int, permission_data: PermissionUpdate):
-    permission = await Permission.get(Permission.id == pk)
+    permission = await Permission.get(id=pk)
     if permission is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
@@ -78,7 +77,7 @@ async def patch_permission(pk: int, permission_data: PermissionUpdate):
     dependencies=[Depends(AdminAccess())],
 )
 async def put_permission(pk: int, permission_data: PermissionCreate):
-    permission = await Permission.get(Permission.id == pk)
+    permission = await Permission.get(id=pk)
     if permission is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
@@ -100,7 +99,7 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
     status_code=HTTPStatus.NO_CONTENT,
 )
 async def delete_permission(pk: int):
-    permission = await Permission.get(Permission.id == pk)
+    permission = await Permission.get(id=pk)
     if permission is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."

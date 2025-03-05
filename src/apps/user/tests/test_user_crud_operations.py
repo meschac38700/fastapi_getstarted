@@ -16,7 +16,7 @@ class TestUserCRUD(AsyncTestCase):
         await super().asyncSetUp()
         await Permission.generate_crud_objects(User.table_name())
         await Group.generate_crud_objects(User.table_name())
-        self.user = await User.get(User.username == "test")
+        self.user = await User.get(username="test")
 
     async def test_get_users(self):
         response = await self.client.get("/users/")
@@ -25,7 +25,7 @@ class TestUserCRUD(AsyncTestCase):
         self.assertGreaterEqual(len(users), 1)
 
     async def test_get_user(self):
-        expected_user = await User.get(User.id == 1)
+        expected_user = await User.get(id=1)
         response = await self.client.get(f"/users/{expected_user.id}/")
 
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -40,13 +40,13 @@ class TestUserCRUD(AsyncTestCase):
             "last_name": "DOE",
             "password": "jdoe",
         }
-        self.assertIsNone(await User.get(User.username == data["username"]))
+        self.assertIsNone(await User.get(username=data["username"]))
 
         response = await self.client.post("/users/", json=data)
         self.assertEqual(HTTPStatus.CREATED, response.status_code)
 
         actual_user = response.json()
-        created_user = await User.get(User.username == data["username"])
+        created_user = await User.get(username=data["username"])
         self.assertIsNotNone(created_user)
         self.assertEqual(created_user.username, actual_user["username"])
         self.assertEqual(created_user.first_name, actual_user["first_name"])
@@ -140,7 +140,7 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        user = await User.get(User.id == user.id)
+        user = await User.get(id=user.id)
         self.assertEqual(data["username"], user.username)
         self.assertEqual(data["email"], user.email)
         self.assertTrue(user.check_password(data["password"]))
@@ -156,7 +156,7 @@ class TestUserCRUD(AsyncTestCase):
         await self.add_permissions(self.user, ["delete_user"])
         response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(User.id == self.user.id))
+        self.assertIsNone(await User.get(id=self.user.id))
 
     async def test_use_token_of_deleted_user(self):
         user = await User(

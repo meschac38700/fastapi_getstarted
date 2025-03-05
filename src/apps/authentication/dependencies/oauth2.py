@@ -13,7 +13,7 @@ def oauth2_scheme():
     async def wrapper(
         token=Depends(OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)),
     ) -> JWTToken:
-        stored_token = await JWTToken.get(JWTToken.access_token == token)
+        stored_token = await JWTToken.get(access_token=token)
 
         if stored_token is None:
             raise HTTPException(

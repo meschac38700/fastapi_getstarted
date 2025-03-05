@@ -14,9 +14,9 @@ class TestUserGroup(AsyncTestCase):
         await super().asyncSetUp()
         await Group.generate_crud_objects(User.table_name())
         self.active, self.staff, self.admin = await asyncio.gather(
-            User.get(User.role == UserRole.active),
-            User.get(User.role == UserRole.staff),
-            User.get(User.role == UserRole.admin),
+            User.get(role=UserRole.active),
+            User.get(role=UserRole.staff),
+            User.get(role=UserRole.admin),
         )
 
     async def test_get_own_groups_using_admin_endpoint_denied(self):
@@ -40,9 +40,7 @@ class TestUserGroup(AsyncTestCase):
         await self.client.user_login(self.staff)
 
         expected_groups = ["read_user", "create_user", "update_user"]
-        await self.staff.add_to_groups(
-            await Group.filter(Group.name.in_(expected_groups))
-        )
+        await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get("/users/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -60,9 +58,7 @@ class TestUserGroup(AsyncTestCase):
 
         # Get groups of active user
         expected_groups = ["read_user", "create_user", "update_user"]
-        await self.active.add_to_groups(
-            await Group.filter(Group.name.in_(expected_groups))
-        )
+        await self.active.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get(f"/users/{self.active.id}/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -72,9 +68,7 @@ class TestUserGroup(AsyncTestCase):
         )
 
         # Get groups of staff user
-        await self.staff.add_to_groups(
-            await Group.filter(Group.name.in_(expected_groups))
-        )
+        await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
         response = await self.client.get(f"/users/{self.staff.id}/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 

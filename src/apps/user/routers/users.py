@@ -18,7 +18,7 @@ async def get_users(offset: int = 0, limit=100):
 
 @routers.get("/{pk}/", name="Get single user", status_code=HTTPStatus.OK)
 async def get_user(pk: int):
-    return await User.get(User.id == pk)
+    return await User.get(id=pk)
 
 
 @routers.put(
@@ -32,7 +32,7 @@ async def get_user(pk: int):
 async def update_user(
     pk: int, user: UserCreate, auth_user: User = Depends(current_user())
 ):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
@@ -61,7 +61,7 @@ async def update_user(
 async def patch_user(
     pk: int, user: UserPatch, auth_user: User = Depends(current_user())
 ):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 
@@ -100,7 +100,7 @@ async def post_user(user: UserCreate):
     ],
 )
 async def delete_user(pk: int, user: User = Depends(current_user())):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
 
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")

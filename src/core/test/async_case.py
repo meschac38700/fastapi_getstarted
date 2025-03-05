@@ -30,8 +30,8 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
         )
         self.db_service = DBService()
 
-    async def add_permissions(self, item: User | Group, permissions: list[str]):
-        _permissions = await Permission.filter(Permission.name.in_(permissions))
+    async def add_permissions(self, item: User | Group, permission_names: list[str]):
+        _permissions = await Permission.filter(name__in=permission_names)
         missing_permissions = [
             perm for perm in _permissions if perm not in item.permissions
         ]

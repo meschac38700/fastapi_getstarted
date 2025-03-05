@@ -15,4 +15,4 @@ class PermissionList(BaseModel):
     permissions: list[str]
 
     async def to_object_list(self) -> Sequence[Permission]:
-        return await Permission.filter(Permission.name.in_(self.permissions))
+        return await Permission.filter(name__in=self.permissions)

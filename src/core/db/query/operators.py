@@ -32,7 +32,7 @@ class QueryExpressionManager:
                 raise ValueError(f"Invalid operator: {key}")
 
             resolver = cls._operator_resolvers().get(operator, cls._equals)
-            _filters.append(resolver(**{_key: value}))
+            _filters.extend(resolver(**{_key: value}))
         return _filters
 
     @classmethod

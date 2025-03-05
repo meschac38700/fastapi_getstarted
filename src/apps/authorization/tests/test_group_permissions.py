@@ -21,12 +21,12 @@ class TestGroupPermissions(AsyncTestCase):
         await Permission.generate_crud_objects(User.table_name())
         await Group.generate_crud_objects(Hero.table_name())
 
-        self.admin = await User.get(User.role == UserRole.admin)
-        self.user = await User.get(User.role == UserRole.staff)
-        self.active = await User.get(User.role == UserRole.active)
+        self.admin = await User.get(role=UserRole.admin)
+        self.user = await User.get(role=UserRole.staff)
+        self.active = await User.get(role=UserRole.active)
 
     async def test_group_has_no_right_permissions_cannot_edit(self):
-        read_group = await Group.get(Group.name == "read_hero")
+        read_group = await Group.get(name="read_hero")
         # TODO(Eliam): remove after test in docker Done
         await self.add_permissions(read_group, ["read_hero"])
         await read_group.add_user(self.user)
@@ -42,7 +42,7 @@ class TestGroupPermissions(AsyncTestCase):
         )
 
     async def test_group_permission_to_edit_resource(self):
-        edit_group = await Group.get(Group.name == "update_hero")
+        edit_group = await Group.get(name="update_hero")
         # TODO(Eliam): remove after test in docker Done
         await self.add_permissions(edit_group, ["update_hero"])
         await edit_group.add_user(self.user)
@@ -55,7 +55,7 @@ class TestGroupPermissions(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         actual_data = response.json()
-        hero = await Hero.get(Hero.id == hero_id)
+        hero = await Hero.get(id=hero_id)
         self.assertEqual(hero_id, hero.id)
         self.assertEqual(data["secret_name"], hero.secret_name)
         self.assertEqual(actual_data["secret_name"], data["secret_name"])
@@ -70,7 +70,7 @@ class TestGroupPermissions(AsyncTestCase):
         ).save()
         self.assertEqual(group.get_permissions(), [])
 
-        perms = await Permission.filter(Permission.target_table == User.table_name())
+        perms = await Permission.filter(target_table=User.table_name())
         data = {"permissions": [perm.name for perm in perms]}
         response = await self.client.post(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
@@ -100,7 +100,7 @@ class TestGroupPermissions(AsyncTestCase):
             target_table=User.table_name(),
             display_name="Read only user informations",
         ).save()
-        perms = await Permission.filter(Permission.target_table == User.table_name())
+        perms = await Permission.filter(target_table=User.table_name())
         await group.extend_permissions(perms)
         self.assertEqual(group.get_permissions(), perms)
 
@@ -125,7 +125,7 @@ class TestGroupPermissions(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        read_perm = await Permission.get(Permission.name == "read_user")
+        read_perm = await Permission.get(name="read_user")
         expected_response = [read_perm.model_dump(mode="json")]
         self.assertEqual(response.json(), expected_response)
         group = await group.refresh()

@@ -23,7 +23,7 @@ def user_permission_required(
 
     async def dependency():
         detail = "You do not have sufficient rights to this resource."
-        permission_list = await Permission.filter(Permission.name.in_(permissions))
+        permission_list = await Permission.filter(name__in=permissions)
 
         if not permission_list:
             log.debug(f"Permission denied: permissions not found: {permissions}.")

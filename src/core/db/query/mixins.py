@@ -14,15 +14,13 @@ class ModelQuery(QueryExpressionManager):
 
     @classmethod
     async def get(cls, **filters) -> Self | None:
-        filter_by = cls.resolve_filters(**filters)
-        return await cls.objects().get(*filter_by)
+        return await cls.objects().get(**filters)
 
     @classmethod
     async def filter(
         cls, *, offset: int = 0, limit: int = 100, **filters
     ) -> Sequence[Self]:
-        filter_by = cls.resolve_filters(**filters)
-        return await cls.objects().filter(filter_by, offset=offset, limit=limit)
+        return await cls.objects().filter(**filters, offset=offset, limit=limit)
 
     @classmethod
     async def all(cls, *, offset: int = 0, limit: int = 100) -> Sequence[Self]:

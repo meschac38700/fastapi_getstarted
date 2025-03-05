@@ -20,7 +20,7 @@ def get_authenticated_user_groups(auth_user: User = Depends(current_user())):
     dependencies=[Depends(AdminAccess())],
 )
 async def get_user_groups(pk: int):
-    stored_user = await User.get(User.id == pk)
+    stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
 

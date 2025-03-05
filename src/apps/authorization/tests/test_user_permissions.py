@@ -14,7 +14,7 @@ class TestUserPermission(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.user = await User.get(User.username == "test")
+        self.user = await User.get(username="test")
         # TODO(Eliam): Remove the following line of code once the test in docker container task completed
         await Permission.generate_crud_objects(Hero.table_name())
 
@@ -41,7 +41,7 @@ class TestUserPermission(AsyncTestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         actual_data = response.json()
-        hero = await Hero.get(Hero.id == hero_id)
+        hero = await Hero.get(id=hero_id)
         self.assertEqual(hero_id, hero.id)
         self.assertEqual(data["secret_name"], hero.secret_name)
         self.assertEqual(actual_data["secret_name"], data["secret_name"])

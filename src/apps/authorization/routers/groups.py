@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import and_
 
 from apps.authorization.models.group import Group
 from apps.authorization.models.pydantic.group import GroupCreate, GroupUpdate
@@ -19,17 +18,15 @@ async def get_groups(
     offset: int = 0,
     limit: int = 100,
 ):
-    filters = []
+    filters = {}
     if name is not None:
-        filters.append(Group.name.startswith(name))
+        filters["name__startswith"] = name
 
     if target_table is not None:
-        filters.append(Group.target_table == target_table)
+        filters["target_table"] = target_table
 
     return await (
-        Group.filter(and_(*filters), offset=offset, limit=limit)
-        if filters
-        else Group.all()
+        Group.filter(**filters, offset=offset, limit=limit) if filters else Group.all()
     )
 
 
@@ -49,7 +46,7 @@ async def create_group(group_data: GroupCreate):
     dependencies=[Depends(AdminAccess())],
 )
 async def patch_group(pk: int, group_data: GroupUpdate):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
 
@@ -71,7 +68,7 @@ async def patch_group(pk: int, group_data: GroupUpdate):
     dependencies=[Depends(AdminAccess())],
 )
 async def put_group(pk: int, group_data: GroupCreate):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
     # if all required fields are not updated, pydantic error will be generated (GroupCreate)
@@ -91,7 +88,7 @@ async def put_group(pk: int, group_data: GroupCreate):
     status_code=HTTPStatus.NO_CONTENT,
 )
 async def delete_group(pk: int):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
 
@@ -104,7 +101,7 @@ async def delete_group(pk: int):
     dependencies=[Depends(AdminAccess())],
 )
 async def add_users_to_group(pk: int, users: UserList):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
 
@@ -119,7 +116,7 @@ async def add_users_to_group(pk: int, users: UserList):
     dependencies=[Depends(AdminAccess())],
 )
 async def remove_users_to_group(pk: int, users: UserList):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
 
@@ -134,7 +131,7 @@ async def remove_users_to_group(pk: int, users: UserList):
     dependencies=[Depends(AdminAccess())],
 )
 async def add_permissions_to_group(pk: int, permissions: PermissionList):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
 
@@ -149,7 +146,7 @@ async def add_permissions_to_group(pk: int, permissions: PermissionList):
     dependencies=[Depends(AdminAccess())],
 )
 async def remove_permissions_to_group(pk: int, permissions: PermissionList):
-    group = await Group.get(Group.id == pk)
+    group = await Group.get(id=pk)
     if group is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
 

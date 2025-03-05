@@ -20,7 +20,7 @@ class TestGroupCRUD(AsyncTestCase):
         await Group.generate_crud_objects(Permission.table_name())
 
         self.admin, self.staff = await asyncio.gather(
-            User.get(User.role == UserRole.admin), User.get(User.role == UserRole.staff)
+            User.get(role=UserRole.admin), User.get(role=UserRole.staff)
         )
 
     async def test_get_group_with_staff_user_permission_denied(self):
@@ -110,7 +110,7 @@ class TestGroupCRUD(AsyncTestCase):
         actual_data = response.json()
         created_group_id = actual_data.pop("id", None)
         self.assertIsNotNone(created_group_id)
-        self.assertIsNotNone(await Group.get(Group.id == created_group_id))
+        self.assertIsNotNone(await Group.get(id=created_group_id))
         self.assertTrue(actual_data[k] == v for k, v in post_data.items())
 
     async def test_patch_group(self):
@@ -192,4 +192,4 @@ class TestGroupCRUD(AsyncTestCase):
         response = await self.client.delete(f"/authorizations/groups/{group.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
 
-        self.assertIsNone(await Group.get(Group.id == group.id))
+        self.assertIsNone(await Group.get(id=group.id))

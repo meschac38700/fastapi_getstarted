@@ -49,7 +49,7 @@ class CRUDModelMixin:
     @classmethod
     async def generate_crud_objects(cls, table: str):
         """Create items for the given table based of CRUD methods."""
-        if await cls.get(cls.name == f"read_{table}"):
+        if await cls.get(name=f"read_{table}"):
             return
 
         data_list = cls.get_crud_data_list(table)
