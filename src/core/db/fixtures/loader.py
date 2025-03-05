@@ -98,7 +98,11 @@ class LoadFixtures:
     def _order_by_desired_fixtures(
         self, app_paths: Iterable[str], fixture_names: Sequence[str]
     ):
-        """Make a fixture path generator based on the order of the given fixture names."""
+        """Make a fixture path generator based on the order of the given fixture names.
+
+        Allows fixtures to be loaded in the specified order.
+        Thus, the developer defines the loading order of the fixtures.
+        """
         paths = list(app_paths)
         for fixture_name in fixture_names:
             for path in paths:
