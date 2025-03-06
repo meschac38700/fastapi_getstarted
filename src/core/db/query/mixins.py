@@ -17,7 +17,7 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().get(**filters)
 
     @classmethod
-    async def values(cls, *attrs, filters: dict[str, Any] = None):
+    async def values(cls, *attrs, filters: dict[str, Any] | None = None):
         """Select specific columns from database table.
 
         :example

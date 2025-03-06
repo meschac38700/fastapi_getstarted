@@ -1,13 +1,14 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any, ParamSpec, TypeVar
 
 from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel
 
 from .dependency import DBService
 
-Fn = Callable[..., Any]
+P = ParamSpec("P")
+Fn = Callable[P, Any]
 T = TypeVar("T", bound=SQLModel)
 
 
@@ -49,7 +50,7 @@ class ModelManager:
         return await self.db_service.get(self.model_class, **filters)
 
     @session_decorator
-    async def values(self, *attrs, filters: dict[str, Any]):
+    async def values(self, *attrs, filters: dict[str, Any] | None = None):
         return await self.db_service.values(self.model_class, *attrs, filters=filters)
 
     @session_decorator

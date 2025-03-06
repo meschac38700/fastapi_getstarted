@@ -1,7 +1,7 @@
 import itertools
 from collections.abc import Callable
 from functools import wraps
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, ParamSpec, TypeVar
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +10,8 @@ from sqlmodel import SQLModel, delete, select
 
 from settings import settings
 
-Fn = Callable[..., Any]
+P = ParamSpec("P")
+Fn = Callable[P, Any]
 T = TypeVar("T", bound=SQLModel)
 
 
