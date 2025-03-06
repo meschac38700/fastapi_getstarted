@@ -16,7 +16,7 @@ class TestDBService(AsyncTestCase):
         ]
 
     async def test_insert_batch(self):
-        await self.delete_all(Hero)
+        await Hero.truncate()
         data = await self.db_service.all(Hero)
         self.assertEqual(0, len(data))
         # load data
