@@ -6,7 +6,7 @@ from typing import Annotated, Any, TypeVar
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel, delete, select
 
 from settings import settings
 
@@ -123,6 +123,11 @@ class DBService:
     async def delete(self, instance: SQLModel, *, session: AsyncSession):
         session.add(instance)
         await session.delete(instance)
+        await session.commit()
+
+    @session_decorator
+    async def truncate(self, instance: SQLModel, *, session: AsyncSession):
+        await session.execute(delete(instance))
         await session.commit()
 
     # TODO(Complete with others functions)

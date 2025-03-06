@@ -81,3 +81,7 @@ class ModelManager:
     @session_decorator
     async def refresh(self, item: SQLModel) -> SQLModel:
         return await self.db_service.refresh(item)
+
+    @session_decorator
+    async def truncate(self):
+        await self.db_service.truncate(self.model_class)

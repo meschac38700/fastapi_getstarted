@@ -40,3 +40,7 @@ class ModelQuery(QueryExpressionManager):
 
     async def refresh(self) -> Self:
         return await self.objects().refresh(self)
+
+    @classmethod
+    async def truncate(cls) -> Self:
+        return await cls.objects().truncate()
