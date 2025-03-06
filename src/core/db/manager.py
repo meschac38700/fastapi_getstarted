@@ -49,6 +49,10 @@ class ModelManager:
         return await self.db_service.get(self.model_class, **filters)
 
     @session_decorator
+    async def values(self, *attrs, filters: dict[str, Any]):
+        return await self.db_service.values(self.model_class, *attrs, filters=filters)
+
+    @session_decorator
     async def all(
         self,
         *,

@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Sequence
-from typing import Self
+from typing import Any, Self
 
 from sqlmodel import SQLModel
 
@@ -15,6 +15,17 @@ class ModelQuery(QueryExpressionManager):
     @classmethod
     async def get(cls, **filters) -> Self | None:
         return await cls.objects().get(**filters)
+
+    @classmethod
+    async def values(cls, *attrs, filters: dict[str, Any] = None):
+        """Select specific columns from database table.
+
+        :example
+          > import asyncio
+          > from apps.user.models import User
+          > asyncio.run( User.values("first_name", "last_name", "age", filters={"role": "admin"}) )
+        """
+        return await cls.objects().values(*attrs, filters=filters)
 
     @classmethod
     async def filter(

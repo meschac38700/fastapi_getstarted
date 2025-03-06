@@ -69,6 +69,20 @@ class DBService:
         return res.first()
 
     @session_decorator
+    async def values(self, model: SQLModel, *attrs, **kwargs):
+        session = kwargs.get("session")
+        filters = kwargs.get("filters", {})
+
+        _values = [getattr(model, attr) for attr in attrs]
+        if filters:
+            filter_by = model.resolve_filters(**filters)
+            res = await session.execute(select(*_values).where(*filter_by))
+        else:
+            res = await session.execute(select(*_values))
+
+        return res.all()
+
+    @session_decorator
     async def all(
         self,
         model: SQLModel,
