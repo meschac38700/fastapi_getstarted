@@ -6,7 +6,7 @@ from typing import Annotated, Any, TypeVar
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel, delete, select
 
 from settings import settings
 
@@ -69,6 +69,20 @@ class DBService:
         return res.first()
 
     @session_decorator
+    async def values(self, model: SQLModel, *attrs, **kwargs):
+        session = kwargs.get("session")
+        filters = kwargs.get("filters", {})
+
+        _values = [getattr(model, attr) for attr in attrs]
+        if filters:
+            filter_by = model.resolve_filters(**filters)
+            res = await session.execute(select(*_values).where(*filter_by))
+        else:
+            res = await session.execute(select(*_values))
+
+        return res.all()
+
+    @session_decorator
     async def all(
         self,
         model: SQLModel,
@@ -123,6 +137,11 @@ class DBService:
     async def delete(self, instance: SQLModel, *, session: AsyncSession):
         session.add(instance)
         await session.delete(instance)
+        await session.commit()
+
+    @session_decorator
+    async def truncate(self, instance: SQLModel, *, session: AsyncSession):
+        await session.execute(delete(instance))
         await session.commit()
 
     # TODO(Complete with others functions)

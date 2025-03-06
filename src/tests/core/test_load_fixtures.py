@@ -7,8 +7,8 @@ from core.test.async_case import AsyncTestCase
 class TestLoadFixture(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.delete_all(Hero)
-        await self.delete_all(User)
+        await Hero.truncate()
+        await User.truncate()
         self.loader = LoadFixtures()
 
     async def test_load_hero_fixtures_single_file(self):
