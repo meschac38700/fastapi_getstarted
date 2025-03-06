@@ -99,6 +99,10 @@ cd src
 alembic revision --autogenerate -m "message of commit"
 alembic upgrade head
 ```
+#### Load fixtures
+```bash
+python manage.py fixtures
+```
 
 > [!WARNING]
 > After adding a new application in the `apps/` module,
