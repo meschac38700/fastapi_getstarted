@@ -7,7 +7,7 @@ rm -rf tox.ini
 until alembic upgrade head 2> /dev/null;
 do
   sleep 2
-  echo "Try apply migrations again.."
+  echo "Trying to apply migrations again.."
 done
 
 fastapi run main.py --app=app --host="${APP_HOST:-0.0.0.0}" --port="${APP_PORT:-80}"
