@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Remove unused file copied for test environment
-rm -rf tox.ini
-
 # shellcheck disable=SC1009
 until alembic upgrade head 2> /dev/null;
 do
