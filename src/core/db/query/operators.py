@@ -24,6 +24,17 @@ class QueryExpressionManager:
         }
 
     @classmethod
+    def get_attribute(cls, name: str):
+        try:
+            return col(getattr(cls, name))
+        except AttributeError as e:
+            msg = (
+                f"Model {cls.__name__} does not have any field named: '{name}'."
+                f"\nPlease retry with one of: {tuple(cls.model_fields.keys())}'"
+            )
+            raise AttributeError(msg) from e
+
+    @classmethod
     def resolve_filters(cls, **filters):
         _filters = []
         for key, value in filters.items():
@@ -39,31 +50,31 @@ class QueryExpressionManager:
     def _equals(
         cls, **filters: dict[str, Any]
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
-        return [col(getattr(cls, name)) == value for name, value in filters.items()]
+        return [cls.get_attribute(name) == value for name, value in filters.items()]
 
     @classmethod
     def _contains(
         cls, *, case_insensitive: bool = False, **filters
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [
-            col(getattr(cls, name)).icontains(value)
+            cls.get_attribute(name).icontains(value)
             if case_insensitive
-            else col(getattr(cls, name)).contains(value)
+            else cls.get_attribute(name).contains(value)
             for name, value in filters.items()
         ]
 
     @classmethod
     def _in(cls, **filters) -> Sequence[ColumnExpressionArgument[bool] | bool]:
-        return [col(getattr(cls, name)).in_(value) for name, value in filters.items()]
+        return [cls.get_attribute(name).in_(value) for name, value in filters.items()]
 
     @classmethod
     def _gt(
         cls, *, or_equals: bool = False, **filters
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [
-            col(getattr(cls, name)) >= value
+            cls.get_attribute(name) >= value
             if or_equals
-            else col(getattr(cls, name)) > value
+            else cls.get_attribute(name) > value
             for name, value in filters.items()
         ]
 
@@ -72,9 +83,9 @@ class QueryExpressionManager:
         cls, *, or_equals: bool = False, **filters
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [
-            col(getattr(cls, name)) <= value
+            cls.get_attribute(name) <= value
             if or_equals
-            else col(getattr(cls, name)) < value
+            else cls.get_attribute(name) < value
             for name, value in filters.items()
         ]
 
@@ -83,9 +94,9 @@ class QueryExpressionManager:
         cls, *, case_insensitive: bool = False, **filters
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [
-            col(getattr(cls, name)).istartswith(value)
+            cls.get_attribute(name).istartswith(value)
             if case_insensitive
-            else col(getattr(cls, name)).startswith(value)
+            else cls.get_attribute(name).startswith(value)
             for name, value in filters.items()
         ]
 
@@ -94,8 +105,8 @@ class QueryExpressionManager:
         cls, *, case_insensitive: bool = False, **filters
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [
-            col(getattr(cls, name)).iendswith(value)
+            cls.get_attribute(name).iendswith(value)
             if case_insensitive
-            else col(getattr(cls, name)).endswith(value)
+            else cls.get_attribute(name).endswith(value)
             for name, value in filters.items()
         ]
