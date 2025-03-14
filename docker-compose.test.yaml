@@ -13,7 +13,7 @@ services:
       timeout: 3s
       retries: 5
   redis_test:
-    image: meschac38000/redis
+    image: meschac38000/redis-fastapi
     container_name: redis_test
     restart: always
     env_file:

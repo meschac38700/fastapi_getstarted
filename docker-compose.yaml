@@ -35,7 +35,7 @@ services:
     command: ["bash", "./scripts/entrypoint.sh"]
 
   redis_server:
-    image: meschac38000/redis
+    image: meschac38000/redis-fastapi
     container_name: redis_server
     restart: always
     env_file:

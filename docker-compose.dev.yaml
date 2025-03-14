@@ -15,7 +15,7 @@ services:
       timeout: 3s
       retries: 5
   redis_dev:
-    image: meschac38000/redis
+    image: meschac38000/redis-fastapi
     container_name: redis_dev
     restart: always
     env_file:
