@@ -17,11 +17,7 @@ services:
   api:
     container_name: api
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile
-      args:
-        PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
+    image: registry.digitalocean.com/meschac38000/fastapi-starter
     healthcheck:
       test: curl --fail http://localhost:$$APP_PORT/ || exit 1
       interval: 5s
@@ -37,5 +33,45 @@ services:
     env_file:
       - envs/prod/.env
     command: ["bash", "./scripts/entrypoint.sh"]
+
+  redis_server:
+    image: meschac38000/redis
+    container_name: redis_server
+    restart: always
+    env_file:
+      - ./envs/dev/.env
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf.example:/usr/local/etc/redis/redis.conf
+    privileged: true
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli", "--no-auth-warning", "--pass $$REDIS_PASSWORD", "--raw ping | grep PONG" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    command: sh -c "./entrypoint.sh"
+
+  celery_server:
+    image: registry.digitalocean.com/meschac38000/fastapi-starter
+    container_name: celery_server
+    restart: on-failure
+    env_file:
+      - ./envs/prod/.env
+    command: bash -c "celery -A main.celery worker --concurrency=1 -n default@%h -Q default --loglevel=DEBUG"
+    depends_on:
+      redis_server:
+        condition: service_healthy
+        restart: true
+
+  celery_beat:
+    image: registry.digitalocean.com/meschac38000/fastapi-starter
+    container_name: celery_beat
+    restart: on-failure
+    env_file:
+      - ./envs/prod/.env
+    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
 volumes:
   data: {}
+  redis_data: {}

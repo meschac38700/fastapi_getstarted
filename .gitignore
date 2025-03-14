@@ -186,4 +186,5 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/django
 
 # Redis
-redis/redis.conf
+redis/redis.conf.example
+celerybeat-schedule*
