@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     env:
+      IMAGE_REGISTRY: registry.digitalocean.com
       IMAGE: fastapi-starter
       TAG: latest
 
@@ -55,7 +56,7 @@ jobs:
           file: dockerfiles/Dockerfile
           push: true
           tags: |
-            ${{secrets.DOCKERHUB_USERNAME}}/${{ env.IMAGE }}:${{ steps.prep.outputs.BUILD_ID }}
+            ${IMAGE_REGISTRY}/${{secrets.DOCKERHUB_USERNAME}}/${{ env.IMAGE }}:${{ steps.prep.outputs.BUILD_ID }}
 
       - name: Build Production Image
         if: ${{ steps.check-tag.outputs.match != '' }}
@@ -64,4 +65,4 @@ jobs:
           context: .
           file: dockerfiles/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE }}:${{ env.RELEASE_VERSION }}
+          tags: ${IMAGE_REGISTRY}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE }}:${{ env.RELEASE_VERSION }}
