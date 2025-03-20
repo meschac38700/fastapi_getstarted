@@ -58,7 +58,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A main.celery worker --concurrency=1 -n default@%h -Q default --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery worker -n default@%h -Q default --loglevel=INFO"
 
   celery_beat_test:
     container_name: celery_beat_test
@@ -68,4 +68,4 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery beat --loglevel=INFO"

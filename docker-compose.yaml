@@ -59,7 +59,7 @@ services:
     restart: on-failure
     env_file:
       - ./envs/prod/.env
-    command: bash -c "celery -A main.celery worker --concurrency=1 -n default@%h -Q default --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery worker -n default@%h -Q default --loglevel=INFO"
     depends_on:
       redis_server:
         condition: service_healthy
@@ -71,7 +71,7 @@ services:
     restart: on-failure
     env_file:
       - ./envs/prod/.env
-    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery beat --loglevel=INFO"
 volumes:
   data: {}
   redis_data: {}

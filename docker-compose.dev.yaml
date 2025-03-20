@@ -41,7 +41,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A main.celery worker --concurrency=1 -n default@%h -Q default --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery worker -n default@%h -Q default --loglevel=DEBUG"
     network_mode: host
     volumes:
       - ./src/:/home/appuser/app/www
@@ -54,7 +54,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery beat --loglevel=DEBUG"
     network_mode: host
     volumes:
       - ./src/:/home/appuser/app/www

@@ -13,7 +13,9 @@ services:
       timeout: 3s
       retries: 5
   redis_test:
-    image: meschac38000/redis-fastapi
+    build:
+      context: .
+      dockerfile: dockerfiles/redis.Dockerfile
     container_name: redis_test
     restart: always
     env_file:
@@ -38,7 +40,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A main.celery worker --concurrency=1 -n default@%h -Q default --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery worker -n default@%h -Q default --loglevel=INFO"
     network_mode: host
 
   celery_beat_test:
@@ -49,5 +51,5 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
+    command: bash -c "celery -A apps.celery beat --loglevel=INFO"
     network_mode: host
