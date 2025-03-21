@@ -40,7 +40,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A apps.celery worker -n default@%h -Q default --loglevel=INFO"
+    command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=DEBUG"
     network_mode: host
 
   celery_beat_test:
@@ -51,5 +51,5 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    command: bash -c "celery -A apps.celery beat --loglevel=INFO"
+    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
     network_mode: host

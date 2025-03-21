@@ -1,8 +1,7 @@
-# from celery import shared_task
-from core.services.celery import celery
+from core.services.celery import app
 
 
-@celery.task
+@app.task()
 def create_user_task(**user_data):
     import asyncio
 

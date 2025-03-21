@@ -1,7 +1,5 @@
 from sqlmodel import SQLModel
 
-from core.services.celery import celery  # noqa: F403, F401
-
 from .authentication.models import JWTToken  # noqa: F403, F401
 from .authorization.models.group import Group  # noqa: F403, F401
 from .authorization.models.permission import Permission  # noqa: F403, F401
