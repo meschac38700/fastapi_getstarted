@@ -29,7 +29,20 @@ def _update_conf(celery_instance: Celery):
         enable_utc=True,
         timezone="UTC",
         task_default_queue="default",
+        task_serializer="json",
+        accept_content=["json"],
+        result_serializer="json",
+        beat_scheduler="redbeat.RedBeatScheduler",  # Use Redis for schedule storage
     )
+
+
+def _scheduler_configs(celery_instance: Celery):
+    celery_instance.conf.beat_schedule = {
+        "print-message-every-10-seconds": {
+            "task": "core.tasks.basic.print_message",
+            "schedule": 10.0,  # Run every 10 seconds
+        }
+    }
 
 
 @lru_cache
@@ -37,4 +50,6 @@ def main(p_main: str = __name__):
     celery = current_celery_app or Celery(p_main)
     _update_conf(celery)
     _set_autodiscover_tasks(celery)
+    _scheduler_configs(celery)
+
     return celery

@@ -148,6 +148,21 @@ redis = [
 ]
 
 [[package]]
+name = "celery-redbeat"
+version = "2.3.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "celery" },
+    { name = "python-dateutil" },
+    { name = "redis" },
+    { name = "tenacity" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/9d/7112d5454aba17857f4d30b12d9bfdd2daa66e0561e7f00906700d9db987/celery_redbeat-2.3.2.tar.gz", hash = "sha256:7d6e41e4b807fafba5d88b98e3d3863f0df95ac3ed1692d70b134c079b936b8b", size = 22022 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/97/e9c6147a2cf2bee08bd8f87d7b5af4a4359e82e7829e714bab25ed762a3f/celery_redbeat-2.3.2-py2.py3-none-any.whl", hash = "sha256:9d61ab6e29f59d676621a846c778a347d5acad22e90fb4386343a4852d4f7ac3", size = 15058 },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.1.31"
 source = { registry = "https://pypi.org/simple" }
@@ -302,6 +317,7 @@ dependencies = [
     { name = "asyncpg" },
     { name = "bcrypt" },
     { name = "celery", extra = ["redis"] },
+    { name = "celery-redbeat" },
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "psycopg2-binary" },
@@ -327,6 +343,7 @@ requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "bcrypt", specifier = ">=4.2.1" },
     { name = "celery", extras = ["redis"], specifier = ">=5.4.0" },
+    { name = "celery-redbeat", specifier = ">=2.3.2" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.6" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
@@ -859,6 +876,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6e/98/05d9d773d020bed8a16abba0d2de5d193289fc53627df9f199823cb7a79f/syncpg-1.1.3.tar.gz", hash = "sha256:5604f0b5cf3d9b7c3ffa33289aa7d8ae45ddfaeba97023921f68f30ff07aa950", size = 3194 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f8/b4/1f1e10928c836c42614046395f083538b7aeb4f470f65482eb2e8cd17763/syncpg-1.1.3-py3-none-any.whl", hash = "sha256:151bf10514ebf183e574bc42f3575f547ba805befec2b200a4b2cf8704253147", size = 3335 },
+]
+
+[[package]]
+name = "tenacity"
+version = "9.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/94/91fccdb4b8110642462e653d5dcb27e7b674742ad68efd146367da7bdb10/tenacity-9.0.0.tar.gz", hash = "sha256:807f37ca97d62aa361264d497b0e31e92b8027044942bfa756160d908320d73b", size = 47421 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b6/cb/b86984bed139586d01532a587464b5805f12e397594f19f931c4c2fbfa61/tenacity-9.0.0-py3-none-any.whl", hash = "sha256:93de0c98785b27fcf659856aa9f54bfbd399e29969b0621bc7f762bd441b4539", size = 28169 },
 ]
 
 [[package]]
