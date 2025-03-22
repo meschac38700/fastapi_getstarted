@@ -4,6 +4,9 @@ from celery import Celery
 from celery import current_app as current_celery_app
 
 from core import file_manager
+from core.services.celery.serializers.pydantic import (
+    register_pydantic_serializer,
+)
 from settings import settings
 
 
@@ -18,6 +21,8 @@ def _set_autodiscover_tasks(celery_instance: Celery):
 
 
 def _update_conf(celery_instance: Celery):
+    pydantic_serializer = register_pydantic_serializer()
+
     celery_instance.conf.update(
         broker_url=settings.celery_broker,
         result_backend=settings.celery_backend,
@@ -29,9 +34,9 @@ def _update_conf(celery_instance: Celery):
         enable_utc=True,
         timezone="UTC",
         task_default_queue="default",
-        task_serializer="json",
-        accept_content=["json"],
-        result_serializer="json",
+        task_serializer=pydantic_serializer,
+        accept_content=[pydantic_serializer],
+        result_serializer=pydantic_serializer,
         beat_scheduler="redbeat.RedBeatScheduler",  # Use Redis for schedule storage
     )
 
