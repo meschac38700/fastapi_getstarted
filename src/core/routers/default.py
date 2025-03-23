@@ -15,10 +15,6 @@ async def load_fake_data():
     return {"Loaded": True}
 
 
-async def sentry_debug():
-    return 1 / 0
-
-
 def register_default_endpoints(app: FastAPI):
     default_tags = ["Default"]
     default_endpoints = [
@@ -34,13 +30,6 @@ def register_default_endpoints(app: FastAPI):
             "endpoint": load_fake_data,
             "methods": ["POST"],
             "name": "fixtures",
-            "tags": default_tags,
-        },
-        {
-            "path": "/sentry-debug",
-            "endpoint": sentry_debug,
-            "methods": ["GET"],
-            "name": "sentry",
             "tags": default_tags,
         },
     ]
