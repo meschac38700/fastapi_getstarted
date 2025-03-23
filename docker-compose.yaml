@@ -18,6 +18,7 @@ services:
     container_name: api
     restart: unless-stopped
     image: registry.digitalocean.com/meschac38000/fastapi-starter
+    pull_policy: always
     healthcheck:
       test: curl --fail http://localhost:$$APP_PORT/ || exit 1
       interval: 5s
@@ -28,6 +29,9 @@ services:
       database:
         condition: service_healthy
         restart: true
+      redis_server:
+        condition: service_healthy
+        restart: true
     ports:
       - "8001:8001"
     env_file:
@@ -36,6 +40,7 @@ services:
 
   redis_server:
     image: meschac38000/redis-fastapi
+    pull_policy: always
     container_name: redis_server
     restart: always
     env_file:
@@ -55,23 +60,29 @@ services:
 
   celery_server:
     image: registry.digitalocean.com/meschac38000/fastapi-starter
+    pull_policy: always
     container_name: celery_server
     restart: on-failure
     env_file:
       - ./envs/prod/.env
-    command: bash -c "celery -A apps.celery worker -n default@%h -Q default --loglevel=INFO"
+    command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=INFO"
     depends_on:
-      redis_server:
+      api:
         condition: service_healthy
         restart: true
 
   celery_beat:
     image: registry.digitalocean.com/meschac38000/fastapi-starter
+    pull_policy: always
     container_name: celery_beat
     restart: on-failure
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true
     env_file:
       - ./envs/prod/.env
-    command: bash -c "celery -A apps.celery beat --loglevel=INFO"
+    command: bash -c "celery -A main.celery beat --loglevel=INFO"
 volumes:
   data: {}
   redis_data: {}
