@@ -21,6 +21,48 @@ services:
       database_test:
         condition: service_healthy
         restart: true
+      redis_test:
+        condition: service_healthy
+        restart: true
     env_file:
       - envs.example/test/.env
+    environment:
+      CELERY_BROKER: redis://:requirepass@redis_test:6379/0
+      CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     command: ["bash", "./scripts/entrypoint.sh"]
+
+  redis_test:
+    image: meschac38000/redis-fastapi
+    container_name: redis_test
+    restart: always
+    env_file:
+      - ./envs.example/test/.env
+    environment:
+      CELERY_BROKER: redis://:requirepass@redis_test:6379/0
+      CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+    ports:
+      - "63791:6379"
+    privileged: true
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli", "--no-auth-warning", "--pass $$REDIS_PASSWORD", "--raw ping | grep PONG" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    command: sh -c "./entrypoint.sh"
+
+  celery_test:
+    container_name: celery_test
+    restart: on-failure
+    env_file:
+      - ./envs.example/test/.env
+    depends_on:
+      api_test:
+        condition: service_healthy
+        restart: true
+    environment:
+      CELERY_BROKER: redis://:requirepass@redis_test:6379/0
+      CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=INFO"

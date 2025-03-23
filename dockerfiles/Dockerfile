@@ -62,3 +62,5 @@ USER ${USER}
 COPY --chown=${USER}:${USER} ./src .
 
 RUN chmod +x ./scripts/entrypoint.sh
+RUN chmod +x ./scripts/entrypoint-celery.sh
+RUN chmod +x ./scripts/entrypoint-beat.sh

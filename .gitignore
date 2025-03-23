@@ -187,3 +187,4 @@ cython_debug/
 
 # Redis
 redis/redis.conf
+celerybeat-schedule*

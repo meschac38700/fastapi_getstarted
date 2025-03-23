@@ -14,5 +14,68 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
+  redis_dev:
+    image: meschac38000/redis-fastapi
+    container_name: redis_dev
+    restart: always
+    env_file:
+      - ./envs/dev/.env
+    ports:
+      - "63790:6379"
+    volumes:
+      - dev_redis:/data
+      - ./redis/redis.conf.example:/usr/local/etc/redis/redis.conf
+    privileged: true
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli", "--no-auth-warning", "--pass $$REDIS_PASSWORD", "--raw ping | grep PONG" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    command: sh -c "./entrypoint.sh"
+
+  celery_dev:
+    container_name: celery_dev
+    restart: on-failure
+    env_file:
+      - ./envs/dev/.env
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    depends_on:
+      redis_dev:
+        condition: service_healthy
+        restart: true
+      database_dev:
+        condition: service_healthy
+        restart: true
+    environment:
+      - CELERY_LOG_LEVEL=DEBUG
+    command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=DEBUG"
+    network_mode: host
+    volumes:
+      - ./src/:/home/appuser/app/www
+
+  celery_beat_dev:
+    container_name: celery_beat_dev
+    restart: on-failure
+    env_file:
+      - ./envs/dev/.env
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    depends_on:
+      redis_dev:
+        condition: service_healthy
+        restart: true
+      database_dev:
+        condition: service_healthy
+        restart: true
+    environment:
+      - CELERY_LOG_LEVEL=DEBUG
+    command: bash -c "celery -A main.celery beat --loglevel=DEBUG"
+    network_mode: host
+    volumes:
+      - ./src/:/home/appuser/app/www
 volumes:
   dev_data: {}
+  dev_redis: {}
