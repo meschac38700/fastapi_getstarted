@@ -26,7 +26,9 @@ async def get_user(pk: int):
     name="Update user",
     status_code=HTTPStatus.OK,
     dependencies=[
-        Depends(permission_required(["update_user"], groups=["update_user"]))
+        Depends(
+            permission_required(permissions=["update_user"], groups=["update_user"])
+        )
     ],
 )
 async def update_user(
@@ -55,7 +57,9 @@ async def update_user(
     status_code=HTTPStatus.OK,
     name="Patch user",
     dependencies=[
-        Depends(permission_required(["update_user"], groups=["update_user"]))
+        Depends(
+            permission_required(permissions=["update_user"], groups=["update_user"])
+        )
     ],
 )
 async def patch_user(
@@ -95,7 +99,7 @@ async def post_user(user: UserCreate):
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
         Depends(
-            permission_required(["delete_user"], groups=["delete_user"]),
+            permission_required(permissions=["delete_user"], groups=["delete_user"]),
         )
     ],
 )

@@ -32,7 +32,9 @@ async def get_heroes(
     response_model=Hero,
     status_code=HTTPStatus.CREATED,
     dependencies=[
-        Depends(permission_required(["create_hero"], groups=["create_hero"]))
+        Depends(
+            permission_required(permissions=["create_hero"], groups=["create_hero"])
+        )
     ],
 )
 async def create_hero(hero: HeroCreate):
@@ -46,7 +48,9 @@ async def create_hero(hero: HeroCreate):
     response_model=Hero,
     status_code=HTTPStatus.OK,
     dependencies=[
-        Depends(permission_required(["update_hero"], groups=["update_hero"]))
+        Depends(
+            permission_required(permissions=["update_hero"], groups=["update_hero"])
+        )
     ],
 )
 async def update_hero(pk: int, hero: HeroCreate):
@@ -71,7 +75,9 @@ async def update_hero(pk: int, hero: HeroCreate):
     response_model=Hero,
     status_code=HTTPStatus.OK,
     dependencies=[
-        Depends(permission_required(["update_hero"], groups=["update_hero"]))
+        Depends(
+            permission_required(permissions=["update_hero"], groups=["update_hero"])
+        )
     ],
 )
 async def patch_hero(pk: int, hero: HeroPatch):
@@ -95,7 +101,9 @@ async def patch_hero(pk: int, hero: HeroPatch):
     name="Delete hero",
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
-        Depends(permission_required(["delete_hero"], groups=["delete_hero"]))
+        Depends(
+            permission_required(permissions=["delete_hero"], groups=["delete_hero"])
+        )
     ],
 )
 async def delete_hero(pk: int):
