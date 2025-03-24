@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     secret_key: str = None
     algorithm: str = "HS256"
 
+    # sentry config
+    sentry_dsn: str = ""
+    sentry_send_pii: bool = False
+
     # Celery
     celery_broker: str = None
     celery_backend: str = None
