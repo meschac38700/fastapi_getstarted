@@ -145,8 +145,6 @@ class DBService:
         await session.execute(delete(instance))
         await session.commit()
 
-    # TODO(Complete with others functions)
-
 
 async def get_db_service():
     async with DBService() as db:

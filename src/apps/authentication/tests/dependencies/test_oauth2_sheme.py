@@ -14,7 +14,6 @@ class TestOAuth2Scheme(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.user = await User.get(username="test")
-        # TODO(Eliam): remove once test in docker task done
         await Permission.generate_crud_objects(User.table_name())
 
     async def test_deleted_token_should_invalid_authentication(self):
