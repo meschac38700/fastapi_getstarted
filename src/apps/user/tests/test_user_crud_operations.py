@@ -97,6 +97,7 @@ class TestUserCRUD(AsyncTestCase):
             "age": date.today().year - 1970,
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
+            "role": "active",
         }
         response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
