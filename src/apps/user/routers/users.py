@@ -44,6 +44,8 @@ async def update_user(
             detail="this action is prohibited with this user currently logged in",
         )
 
+    user.role_guard(stored_user, auth_user)
+
     user.check_all_required_fields_updated(stored_user.model_dump())
     if not user.is_updated:
         return stored_user
@@ -74,6 +76,8 @@ async def patch_user(
             status_code=HTTPStatus.FORBIDDEN,
             detail="this action is prohibited with this user currently logged in.",
         )
+
+    user.role_guard(stored_user, auth_user)
 
     if user.check_all_fields_updated(stored_user.model_dump()):
         detail = "Cannot use PATCH to update entire object, use PUT instead."
