@@ -103,13 +103,13 @@ class TestUserPermission(AsyncTestCase):
 
         await self.client.user_login(user)
 
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/users/{user.id}/permissions/add/", json=data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.user_login(self.admin)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/users/{user.id}/permissions/add/", json=data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -134,17 +134,18 @@ class TestUserPermission(AsyncTestCase):
 
         await self.client.user_login(user)
 
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/users/{user.id}/permissions/remove/", json=data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.user_login(self.admin)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/users/{user.id}/permissions/remove/", json=data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
         user = await user.refresh()
         self.assertFalse(user.has_permissions(perms))
-        self.assertListEqual(response.json(), [])
+        perm_names = [perm["name"] for perm in response.json()]
+        self.assertListEqual(perm_names, data["permissions"])
