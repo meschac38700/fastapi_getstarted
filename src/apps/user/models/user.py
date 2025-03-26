@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
 from sqlmodel import Field, Relationship
 
-from apps.authorization.mixins import PermissionMixin
+from apps.authorization.models.mixins import PermissionMixin
 from apps.authorization.models.permission import Permission
 from apps.authorization.models.relation_links import (
     GroupUserLink,
