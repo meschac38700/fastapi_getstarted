@@ -2,8 +2,8 @@ from typing import Sequence
 
 from pydantic import BaseModel
 
+from apps.authorization.models import Permission
 from apps.authorization.models._base import PermissionBase
-from apps.authorization.models.permission import Permission
 
 
 class PermissionCreate(PermissionBase):

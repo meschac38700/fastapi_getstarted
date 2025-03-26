@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Permission
 from apps.authorization.models.pydantic.permission import (
     PermissionCreate,
     PermissionUpdate,

@@ -2,8 +2,7 @@ from unittest.async_case import IsolatedAsyncioTestCase
 
 from httpx import ASGITransport
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 from apps.user.models import User
 from core.db import create_db_and_tables, delete_db_and_tables
 from core.db.dependency import DBService

@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from apps.authentication.models import JWTToken
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Permission
 from apps.user.models import User
 from core.testing.async_case import AsyncTestCase
 

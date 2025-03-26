@@ -1,8 +1,7 @@
 import asyncio
 from http import HTTPStatus
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 from apps.user.models import User
 from apps.user.utils.types import UserRole
 from core.testing.async_case import AsyncTestCase

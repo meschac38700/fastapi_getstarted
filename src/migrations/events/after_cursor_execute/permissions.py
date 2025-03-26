@@ -7,9 +7,7 @@ from sqlalchemy.dialects.postgresql.asyncpg import (
 )
 from sqlalchemy.engine.base import Connection
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
-from apps.authorization.models.relation_links import PermissionGroupLink
+from apps.authorization.models import Group, Permission, PermissionGroupLink
 from migrations.sql import utils as migration_utils
 
 Data = list[dict[str, Any]]

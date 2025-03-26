@@ -4,19 +4,19 @@ from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
 from sqlmodel import Field, Relationship
 
-from apps.authorization.models.mixins import PermissionMixin
-from apps.authorization.models.permission import Permission
-from apps.authorization.models.relation_links import (
+from apps.authorization.models import (
     GroupUserLink,
+    Permission,
     PermissionUserLink,
 )
+from apps.authorization.models.mixins import PermissionMixin
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
 
 from ._base import UserSQLBaseModel
 
 if TYPE_CHECKING:
-    from apps.authorization.models.group import Group
+    from apps.authorization.models import Group
 _EMPTY = type("Empty", (), {})
 
 
