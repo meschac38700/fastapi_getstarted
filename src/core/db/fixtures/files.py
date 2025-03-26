@@ -7,7 +7,7 @@ from typing import Any, Generator, TypedDict
 
 import settings
 from core.db import SQLTable
-from core.file_manager import YAMLReader
+from core.services.files import YAMLReader
 
 
 class ModelDataType(TypedDict):

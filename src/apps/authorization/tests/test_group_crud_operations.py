@@ -5,7 +5,7 @@ from apps.authorization.models.group import Group
 from apps.authorization.models.permission import Permission
 from apps.user.models import User
 from apps.user.utils.types import UserRole
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestGroupCRUD(AsyncTestCase):

@@ -8,7 +8,7 @@ from apps.user.models import User
 from core.db import create_db_and_tables, delete_db_and_tables
 from core.db.dependency import DBService
 from core.db.fixtures import LoadFixtures
-from core.test.client import AsyncClientTest
+from core.testing.client import AsyncClientTest
 from main import app
 from settings import settings
 

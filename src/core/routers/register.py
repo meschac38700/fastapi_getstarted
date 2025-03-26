@@ -3,7 +3,10 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from core.file_manager import get_application_paths, linux_path_to_module_path
+from core.services.files import (
+    get_application_paths,
+    linux_path_to_module_path,
+)
 
 
 class AppRouter:

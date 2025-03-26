@@ -3,7 +3,7 @@ from functools import lru_cache
 from celery import Celery
 from celery import current_app as current_celery_app
 
-from core import file_manager
+from core.services import files
 from core.services.celery.serializers.pydantic import (
     register_pydantic_serializer,
 )
@@ -11,7 +11,7 @@ from settings import settings
 
 
 def _set_autodiscover_tasks(celery_instance: Celery):
-    app_paths = file_manager.get_application_paths()
+    app_paths = files.get_application_paths()
     celery_instance.autodiscover_tasks(
         packages=[
             "core",
