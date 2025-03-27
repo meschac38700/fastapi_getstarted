@@ -5,7 +5,10 @@ from types import ModuleType
 import typer
 
 import settings
-from core.file_manager import get_application_paths, linux_path_to_module_path
+from core.services.files import (
+    get_application_paths,
+    linux_path_to_module_path,
+)
 
 
 class AppCommandRegisterManager[T = typer.Typer]:  # noqa: E251

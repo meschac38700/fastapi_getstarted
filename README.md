@@ -103,8 +103,3 @@ alembic upgrade head
 ```bash
 python manage.py fixtures
 ```
-
-> [!WARNING]
-> After adding a new application in the `apps/` module,
-> you have to import the new model in the `apps/__init__.py`
-> This will permit alembic to consider the new model during its migration process.

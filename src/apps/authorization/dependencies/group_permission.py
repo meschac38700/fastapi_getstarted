@@ -5,8 +5,7 @@ from typing import Any, Callable
 from fastapi import HTTPException
 
 from apps.authentication.models import JWTToken
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 
 Fn = Callable[..., Any]
 _logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from apps.authorization.models.group import Group
+from apps.authorization.models import Group
 from apps.authorization.models.pydantic.group import GroupCreate, GroupUpdate
 from apps.authorization.models.pydantic.permission import PermissionList
 from apps.user.dependencies.roles import AdminAccess

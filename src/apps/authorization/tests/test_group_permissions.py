@@ -1,11 +1,10 @@
 from http import HTTPStatus
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 from apps.hero.models import Hero
 from apps.user.models import User
 from apps.user.utils.types import UserRole
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestGroupPermissions(AsyncTestCase):
@@ -16,7 +15,6 @@ class TestGroupPermissions(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        # TODO(Eliam): Remove the following line of code once the test in docker container task completed
         await Permission.generate_crud_objects(Hero.table_name())
         await Permission.generate_crud_objects(User.table_name())
         await Group.generate_crud_objects(Hero.table_name())
@@ -27,7 +25,6 @@ class TestGroupPermissions(AsyncTestCase):
 
     async def test_group_has_no_right_permissions_cannot_edit(self):
         read_group = await Group.get(name="read_hero")
-        # TODO(Eliam): remove after test in docker Done
         await self.add_permissions(read_group, ["read_hero"])
         await read_group.add_user(self.user)
 
@@ -43,7 +40,6 @@ class TestGroupPermissions(AsyncTestCase):
 
     async def test_group_permission_to_edit_resource(self):
         edit_group = await Group.get(name="update_hero")
-        # TODO(Eliam): remove after test in docker Done
         await self.add_permissions(edit_group, ["update_hero"])
         await edit_group.add_user(self.user)
 

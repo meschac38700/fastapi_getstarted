@@ -1,7 +1,7 @@
 from apps.hero.models import Hero
 from apps.user.models import User
 from core.db.fixtures import LoadFixtures
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestLoadFixture(AsyncTestCase):

@@ -5,7 +5,7 @@ from typing import Any, Callable
 from fastapi import HTTPException
 
 from apps.authentication.models import JWTToken
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Permission
 
 Fn = Callable[..., Any]
 

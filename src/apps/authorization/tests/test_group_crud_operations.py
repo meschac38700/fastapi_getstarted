@@ -1,11 +1,10 @@
 import asyncio
 from http import HTTPStatus
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 from apps.user.models import User
 from apps.user.utils.types import UserRole
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestGroupCRUD(AsyncTestCase):
@@ -51,7 +50,7 @@ class TestGroupCRUD(AsyncTestCase):
             "name": "read_permission",
             "target_table": "permission",
             "display_name": "Read permission",
-            "description": "This permission_group allows user to read any Permission instance.",
+            "description": "This permission_group allows user to read the Permission model.",
         }
         data = response.json()
         self.assertTrue(len(data) == 1)
@@ -80,7 +79,7 @@ class TestGroupCRUD(AsyncTestCase):
             "name": "create_permission",
             "target_table": "permission",
             "display_name": "Create permission",
-            "description": "This permission_group allows user to create any Permission instance.",
+            "description": "This permission_group allows user to create the Permission model.",
         }
         data = response.json()
         self.assertTrue(len(data) == 1)

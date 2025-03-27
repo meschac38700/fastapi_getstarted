@@ -1,10 +1,9 @@
 from datetime import date
 from http import HTTPStatus
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 from apps.user.models import User
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestUserCRUD(AsyncTestCase):
@@ -97,6 +96,7 @@ class TestUserCRUD(AsyncTestCase):
             "age": date.today().year - 1970,
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
+            "role": "active",
         }
         response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)

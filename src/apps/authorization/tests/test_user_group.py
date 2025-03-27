@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
-from apps.authorization.models.group import Group
+from apps.authorization.models import Group
 from apps.user.models import User
 from apps.user.utils.types import UserRole
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestUserGroup(AsyncTestCase):

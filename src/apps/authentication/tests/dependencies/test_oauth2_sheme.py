@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
 from apps.authentication.models import JWTToken
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Permission
 from apps.user.models import User
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestOAuth2Scheme(AsyncTestCase):
@@ -14,7 +14,6 @@ class TestOAuth2Scheme(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.user = await User.get(username="test")
-        # TODO(Eliam): remove once test in docker task done
         await Permission.generate_crud_objects(User.table_name())
 
     async def test_deleted_token_should_invalid_authentication(self):

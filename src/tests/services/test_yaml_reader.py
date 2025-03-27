@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest import TestCase
 
-from core.file_manager import YAMLReader
+from core.services.files import YAMLReader
 
 
 class TestYAMLReader(TestCase):

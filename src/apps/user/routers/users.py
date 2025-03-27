@@ -26,7 +26,9 @@ async def get_user(pk: int):
     name="Update user",
     status_code=HTTPStatus.OK,
     dependencies=[
-        Depends(permission_required(["update_user"], groups=["update_user"]))
+        Depends(
+            permission_required(permissions=["update_user"], groups=["update_user"])
+        )
     ],
 )
 async def update_user(
@@ -42,6 +44,8 @@ async def update_user(
             detail="this action is prohibited with this user currently logged in",
         )
 
+    user.role_guard(stored_user, auth_user)
+
     user.check_all_required_fields_updated(stored_user.model_dump())
     if not user.is_updated:
         return stored_user
@@ -55,7 +59,9 @@ async def update_user(
     status_code=HTTPStatus.OK,
     name="Patch user",
     dependencies=[
-        Depends(permission_required(["update_user"], groups=["update_user"]))
+        Depends(
+            permission_required(permissions=["update_user"], groups=["update_user"])
+        )
     ],
 )
 async def patch_user(
@@ -70,6 +76,8 @@ async def patch_user(
             status_code=HTTPStatus.FORBIDDEN,
             detail="this action is prohibited with this user currently logged in.",
         )
+
+    user.role_guard(stored_user, auth_user)
 
     if user.check_all_fields_updated(stored_user.model_dump()):
         detail = "Cannot use PATCH to update entire object, use PUT instead."
@@ -95,7 +103,7 @@ async def post_user(user: UserCreate):
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
         Depends(
-            permission_required(["delete_user"], groups=["delete_user"]),
+            permission_required(permissions=["delete_user"], groups=["delete_user"]),
         )
     ],
 )

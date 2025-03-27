@@ -1,11 +1,10 @@
 from http import HTTPStatus
 from typing import Any
 
-from apps.authorization.models.group import Group
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Group, Permission
 from apps.hero.models import Hero
 from apps.user.models import User
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestHeroCRUD(AsyncTestCase):
@@ -16,7 +15,6 @@ class TestHeroCRUD(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        # TODO(Eliam): not necessary if we test in a Docker container
         await Permission.generate_crud_objects(Hero.table_name())
         await Group.generate_crud_objects(Hero.table_name())
         self.user = await User.get(username="test")

@@ -15,7 +15,7 @@ class CRUDModelMixin:
     ) -> list[dict[str, Any]] | str:
         crud_methods = ["create", "read", "update", "delete"]
 
-        description = "This {0} allows user to {1} any {2} instance."
+        description = "This {0} allows user to {1} the {2} model."
         kwargs_list = [
             {
                 "name": f"{method}_{target_table}",

@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Permission
 from apps.hero.models import Hero
 from apps.user.models import User
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestUserPermission(AsyncTestCase):
@@ -15,7 +15,6 @@ class TestUserPermission(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.user = await User.get(username="test")
-        # TODO(Eliam): Remove the following line of code once the test in docker container task completed
         await Permission.generate_crud_objects(Hero.table_name())
 
     async def test_user_has_no_rights_to_edit_resource(self):

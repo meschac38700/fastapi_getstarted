@@ -1,10 +1,10 @@
 import asyncio
 from http import HTTPStatus
 
-from apps.authorization.models.permission import Permission
+from apps.authorization.models import Permission
 from apps.user.models import User
 from apps.user.utils.types import UserRole
-from core.test.async_case import AsyncTestCase
+from core.testing.async_case import AsyncTestCase
 
 
 class TestUserRoles(AsyncTestCase):
@@ -14,7 +14,6 @@ class TestUserRoles(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        # TODO(Eliam): You already know the song. to be removed
         _, self.admin, self.staff, self.active = await asyncio.gather(
             Permission.generate_crud_objects(User.table_name()),
             User.get(role=UserRole.admin),
@@ -77,3 +76,93 @@ class TestUserRoles(AsyncTestCase):
         response = await self.client.delete(f"/users/{self.admin.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(id=self.admin.id))
+
+    async def test_user_active_cannot_update_role_field(self):
+        update_data = {
+            "username": "jean",
+            "first_name": "Jean",
+            "last_name": "DUPONT",
+            "password": "jean",
+            "role": "admin",
+        }
+        await self.active.add_permission(await Permission.get(name="update_user"))
+        await self.client.user_login(self.active)
+
+        response = await self.client.put(f"/users/{self.active.id}/", json=update_data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        self.assertEqual(UserRole.active.value, response.json()["role"])
+        await self.active.refresh()
+        self.assertEqual(UserRole.active, self.active.role)
+
+    async def test_user_active_cannot_patch_role_field(self):
+        update_data = {"role": "admin"}
+        await self.active.add_permission(await Permission.get(name="update_user"))
+        await self.client.user_login(self.active)
+
+        response = await self.client.patch(
+            f"/users/{self.active.id}/", json=update_data
+        )
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        self.assertEqual(UserRole.active.value, response.json()["role"])
+        await self.active.refresh()
+        self.assertEqual(UserRole.active, self.active.role)
+
+    async def test_user_staff_cannot_update_role_field(self):
+        update_data = {
+            "username": "jean",
+            "first_name": "Jean",
+            "last_name": "DUPONT",
+            "password": "jean",
+            "role": "admin",
+        }
+        await self.staff.add_permission(await Permission.get(name="update_user"))
+        await self.client.user_login(self.staff)
+
+        response = await self.client.put(f"/users/{self.staff.id}/", json=update_data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        self.assertEqual(UserRole.staff.value, response.json()["role"])
+        await self.staff.refresh()
+        self.assertEqual(UserRole.staff, self.staff.role)
+
+    async def test_user_staff_cannot_patch_role_field(self):
+        update_data = {"role": "admin"}
+        await self.staff.add_permission(await Permission.get(name="update_user"))
+        await self.client.user_login(self.staff)
+
+        response = await self.client.patch(f"/users/{self.staff.id}/", json=update_data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        self.assertEqual(UserRole.staff.value, response.json()["role"])
+        await self.staff.refresh()
+        self.assertEqual(UserRole.staff, self.staff.role)
+
+    async def test_user_admin_can_update_role_field(self):
+        update_data = {
+            "username": "jean",
+            "first_name": "Jean",
+            "last_name": "DUPONT",
+            "password": "jean",
+            "role": "admin",
+        }
+        await self.client.user_login(self.admin)
+
+        response = await self.client.put(f"/users/{self.staff.id}/", json=update_data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        self.assertEqual(UserRole.admin.value, response.json()["role"])
+        await self.staff.refresh()
+        self.assertEqual(UserRole.admin, self.staff.role)
+
+    async def test_user_admin_can_patch_role_field(self):
+        update_data = {"role": "admin"}
+        await self.client.user_login(self.admin)
+
+        response = await self.client.patch(f"/users/{self.staff.id}/", json=update_data)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+
+        self.assertEqual(UserRole.admin.value, response.json()["role"])
+        await self.staff.refresh()
+        self.assertEqual(UserRole.admin, self.staff.role)
