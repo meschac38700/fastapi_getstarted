@@ -1,5 +1,5 @@
 from .main import main
 
-app = main()
+celery_app = main()
 
-__all__ = ["app"]
+__all__ = ["celery_app"]
