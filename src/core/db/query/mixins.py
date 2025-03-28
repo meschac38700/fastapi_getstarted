@@ -1,4 +1,5 @@
 from collections.abc import Iterable, Sequence
+from functools import lru_cache
 from typing import Any, Self
 
 from sqlmodel import SQLModel
@@ -9,6 +10,7 @@ from core.db.query.operators import QueryExpressionManager
 
 class ModelQuery(QueryExpressionManager):
     @classmethod
+    @lru_cache
     def objects(cls) -> ModelManager:
         return ModelManager(cls)
 

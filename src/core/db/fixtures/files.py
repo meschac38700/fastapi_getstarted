@@ -3,9 +3,10 @@ from dataclasses import dataclass
 from importlib import import_module
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Generator, TypedDict
+from typing import Any, AsyncIterable, Generator, TypedDict
 
 import settings
+from apps.authorization.models import Permission
 from core.db import SQLTable
 from core.services.files import YAMLReader
 
@@ -32,6 +33,22 @@ class FixtureFileReader(YAMLReader):
             _properties["id"] = pk
         return _properties
 
+    async def _fix_permissions(self, properties: dict[str, Any]):
+        """Replace permission names to permission instances."""
+
+        _properties = properties.copy()
+        if permission_names := set(_properties.get("permissions", [])):
+            permissions = await Permission.filter(name__in=permission_names)
+            if len(permissions) != len(permission_names):
+                missing_perms = [
+                    perm.name for perm in permissions if perm.name in permission_names
+                ] or permission_names
+                self.logger.info(f"Permissions not found: {missing_perms}.")
+                raise ValueError(f"Permissions not found: {missing_perms}")
+
+            _properties["permissions"] = permissions
+        return _properties
+
     def _module_and_class(self, model_str: str) -> tuple[ModuleType, type[SQLTable]]:
         """Extract from the given string, the module of the model and model's class.
 
@@ -46,7 +63,7 @@ class FixtureFileReader(YAMLReader):
         model_class = getattr(model_module, model_name)
         return model_module, model_class
 
-    def _dict_to_instance(self, model_data: ModelDataType):
+    async def _dict_to_instance(self, model_data: ModelDataType):
         """Transform a dict to the correct model instance.
         Expected yaml structure:
             - model: hero.Hero
@@ -58,6 +75,7 @@ class FixtureFileReader(YAMLReader):
         model_module, model_class = self._module_and_class(model_data["model"])
         properties: dict[str, Any] = model_data["properties"]
         properties = self._fill_primary_key(model_data, properties)
+        properties = await self._fix_permissions(properties)
 
         if model_class is None:
             raise ValueError(
@@ -66,7 +84,8 @@ class FixtureFileReader(YAMLReader):
 
         return model_class(**properties)
 
-    async def models(self) -> Generator[SQLTable, Any, None]:
+    async def models(self) -> AsyncIterable[SQLTable] | Generator[SQLTable, Any, None]:
         return (
-            self._dict_to_instance(model_data) for model_data in await self.read_async()
+            await self._dict_to_instance(model_data)
+            for model_data in await self.read_async()
         )

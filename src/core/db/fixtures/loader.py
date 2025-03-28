@@ -25,14 +25,14 @@ class LoadFixtures:
     async def _extract_models(self, file_path: Path):
         """Extract model instances from the given yaml file path."""
         fixture_file_reader = FixtureFileReader(file_path=file_path)
-        return await fixture_file_reader.models()
+        return [model async for model in await fixture_file_reader.models()]
 
     async def _load_fixtures(self, fixture_files: Iterable[str]) -> int:
         count = 0
         for fixture_file in fixture_files:
             fixture_file_path = Path(fixture_file)
 
-            models = list(await self._extract_models(fixture_file_path))
+            models = await self._extract_models(fixture_file_path)
             await SQLTable.objects().insert_batch(models)
             count += len(models)
 
@@ -56,7 +56,46 @@ class LoadFixtures:
 
         return fixture_files
 
-    async def load_fixtures(self, fixture_names: Sequence[str] | None = None) -> int:
+    async def _load_app_fixtures(self, fixtures_files: Iterable[str], app_name: str):
+        self.logger.info(f"Loading {app_name} fixtures.")
+        count = await self._load_fixtures(fixtures_files)
+        self.logger.info(
+            f"Loaded a total of {count} fixtures for the {app_name} application."
+        )
+        self.count_created += count
+
+    def _extract_app_name(self, fixture_path: Path):
+        """Extract app name from the given fixture path."""
+        try:
+            return (
+                str(fixture_path)
+                .replace(str(self.app_dir), "")
+                .lstrip("/")
+                .split("/")[0]
+            )
+        except IndexError:
+            return None
+
+    def _filter_fixture_files(
+        self, fixture_files: Sequence[str], desired_fixture_names: Sequence[str]
+    ) -> Iterable[str]:
+        self.logger.info(f"Processing {len(desired_fixture_names)} fixture files.")
+        return (
+            fixture_file
+            for fixture_file in fixture_files
+            if Path(fixture_file).stem in desired_fixture_names
+            or Path(fixture_file).name in desired_fixture_names
+        )
+
+    async def _load_fixtures_by_name(
+        self, fixture_names: Sequence[str] | None = None
+    ) -> int:
+        """Load ths given fixtures names or default one from initial_fixtures.
+
+        example:
+         > self.load_fixtures() # load all specified initial fixtures from settings initial_fixtures
+         > self.load_fixtures(['initial_users']) # load the provided fixtures
+        """
         _fixture_names = fixture_names or settings.initial_fixtures
         for app in fixture_utils.preserve_fixtures_order(
             self._get_app_paths(), _fixture_names
@@ -65,26 +104,32 @@ class LoadFixtures:
             fixtures_files = self._scan_fixture_files(_app)
 
             app_name = _app.stem.title()
-            self.logger.info(f"Loading {app_name} fixtures.")
-            count = await self._load_fixtures(
-                self._filter_fixture_files(fixtures_files, _fixture_names)
-            )
-            self.logger.info(f"Loaded a total of {count} {app_name} elements.")
-            self.count_created += count
+            fixtures_files = self._filter_fixture_files(fixtures_files, _fixture_names)
+            await self._load_app_fixtures(fixtures_files, app_name)
 
         self.logger.info(f"Total of {self.count_created} fixtures loaded.")
         return self.count_created
 
-    def _filter_fixture_files(
-        self, fixture_files: Sequence[str], desired_fixture_names: Sequence[str]
-    ) -> Iterable[str]:
-        if not desired_fixture_names or not isinstance(desired_fixture_names, Iterable):
-            desired_fixture_names = settings.initial_fixtures
+    async def _load_fixtures_by_path(self, fixture_paths: Sequence[Path | str]) -> int:
+        """Load the given fixture paths."""
+        for fixture_path in fixture_paths:
+            _fixture_path = Path(fixture_path).absolute()
+            # get app name
+            app_name = self._extract_app_name(_fixture_path)
+            if app_name is None:
+                self.logger.info(
+                    f"Invalid fixture file: {fixture_path}. Could not retrieve the app name."
+                )
+                continue
 
-        self.logger.info(f"Processing {len(desired_fixture_names)} fixture files.")
-        return (
-            fixture_file
-            for fixture_file in fixture_files
-            if Path(fixture_file).stem in desired_fixture_names
-            or Path(fixture_file).name in desired_fixture_names
-        )
+            await self._load_app_fixtures([str(_fixture_path)], app_name)
+
+        return self.count_created
+
+    async def load_fixtures(
+        self, fixtures: Sequence[str | Path] | None = None, is_path: bool = False
+    ):
+        if is_path:
+            return await self._load_fixtures_by_path(fixtures)
+
+        return await self._load_fixtures_by_name(fixtures)

@@ -7,3 +7,12 @@
     email: contact@eliam-lotonga.fr
     address: Seyssinet-Pariset
     role: admin
+    permissions:
+    - update_user
+    - create_user
+    - read_user
+    - delete_user
+    - read_permission
+    - update_permission
+    - update_permission
+    - delete_permission
