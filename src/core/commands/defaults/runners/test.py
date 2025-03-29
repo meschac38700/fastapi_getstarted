@@ -38,7 +38,7 @@ class TestRunner:
         if all((test_paths, target_apps)):
             raise ValueError("Cannot specify both 'target_app' and 'test_paths'.")
 
-        _test_paths = [str(test_path) for test_path in test_paths]
+        _test_paths = test_paths
         if target_apps:
             _test_paths = [
                 f"{settings.BASE_DIR / "apps" / app_name}" for app_name in target_apps

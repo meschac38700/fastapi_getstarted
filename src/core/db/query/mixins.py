@@ -19,7 +19,7 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().get(**filters)
 
     @classmethod
-    async def values(cls, *attrs, filters: dict[str, Any] | None = None):
+    async def values(cls, *fields, filters: dict[str, Any] | None = None):
         """Select specific columns from database table.
 
         :example
@@ -27,7 +27,7 @@ class ModelQuery(QueryExpressionManager):
           > from apps.user.models import User
           > asyncio.run( User.values("first_name", "last_name", "age", filters={"role": "admin"}) )
         """
-        return await cls.objects().values(*attrs, filters=filters)
+        return await cls.objects().values(*fields, filters=filters)
 
     @classmethod
     async def filter(

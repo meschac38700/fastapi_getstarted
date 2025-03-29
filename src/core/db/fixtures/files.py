@@ -43,7 +43,6 @@ class FixtureFileReader(YAMLReader):
                 missing_perms = [
                     perm.name for perm in permissions if perm.name in permission_names
                 ] or permission_names
-                self.logger.info(f"Permissions not found: {missing_perms}.")
                 raise ValueError(f"Permissions not found: {missing_perms}")
 
             _properties["permissions"] = permissions

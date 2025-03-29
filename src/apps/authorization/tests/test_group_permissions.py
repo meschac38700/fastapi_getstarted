@@ -1,3 +1,4 @@
+import asyncio
 from http import HTTPStatus
 
 from apps.authorization.models import Group, Permission
@@ -15,10 +16,11 @@ class TestGroupPermissions(AsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await Permission.generate_crud_objects(Hero.table_name())
-        await Permission.generate_crud_objects(User.table_name())
-        await Group.generate_crud_objects(Hero.table_name())
-
+        await asyncio.gather(
+            Permission.generate_crud_objects(Hero.table_name()),
+            Permission.generate_crud_objects(User.table_name()),
+            Group.generate_crud_objects(Hero.table_name()),
+        )
         self.admin = await User.get(role=UserRole.admin)
         self.user = await User.get(role=UserRole.staff)
         self.active = await User.get(role=UserRole.active)

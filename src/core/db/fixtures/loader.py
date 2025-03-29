@@ -1,7 +1,8 @@
-import glob
+import asyncio
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal
 
 import settings
 from core.db import SQLTable
@@ -21,115 +22,84 @@ class LoadFixtures:
         self.app_dir: Path = Path(app_dir)
         self.logger = logger or _logger
         self.count_created = 0
+        self._loader_mapping = {
+            "app": self.load_app_fixtures,
+            "path": self.load_fixture_file,
+            "name": self.load_fixture_by_name,
+        }
 
     async def _extract_models(self, file_path: Path):
-        """Extract model instances from the given yaml file path."""
+        """Extract model instances from the given yaml file."""
         fixture_file_reader = FixtureFileReader(file_path=file_path)
         return [model async for model in await fixture_file_reader.models()]
 
-    async def _load_fixtures(self, fixture_files: Iterable[str]) -> int:
-        count = 0
-        for fixture_file in fixture_files:
-            fixture_file_path = Path(fixture_file)
-
-            models = await self._extract_models(fixture_file_path)
-            await SQLTable.objects().insert_batch(models)
-            count += len(models)
-
-        return count
-
-    def _get_app_paths(self):
-        """Scan apps dir to extract all application pathname."""
-        return (
-            potential_app
-            for potential_app in glob.glob(str(self.app_dir / "*"))
-            if (Path(potential_app) / "models").exists()
-            or (Path(potential_app) / "models.py").exists()
-        )
-
-    def _scan_fixture_files(self, app: Path):
-        """Scan the given app path to extract all fixtures paths."""
-        fixture_files = []
-        for ext in self._ALLOWED_FILES:
-            pattern = app / "fixtures" / "**" / f"*{ext}"
-            fixture_files.extend(glob.glob(str(pattern), recursive=True))
-
-        return fixture_files
-
-    async def _load_app_fixtures(self, fixtures_files: Iterable[str], app_name: str):
-        self.logger.info(f"Loading {app_name} fixtures.")
-        count = await self._load_fixtures(fixtures_files)
-        self.logger.info(
-            f"Loaded a total of {count} fixtures for the {app_name} application."
-        )
-        self.count_created += count
-
-    def _extract_app_name(self, fixture_path: Path):
-        """Extract app name from the given fixture path."""
-        try:
-            return (
-                str(fixture_path)
-                .replace(str(self.app_dir), "")
-                .lstrip("/")
-                .split("/")[0]
-            )
-        except IndexError:
-            return None
-
-    def _filter_fixture_files(
-        self, fixture_files: Sequence[str], desired_fixture_names: Sequence[str]
-    ) -> Iterable[str]:
-        self.logger.info(f"Processing {len(desired_fixture_names)} fixture files.")
-        return (
-            fixture_file
-            for fixture_file in fixture_files
-            if Path(fixture_file).stem in desired_fixture_names
-            or Path(fixture_file).name in desired_fixture_names
-        )
-
-    async def _load_fixtures_by_name(
-        self, fixture_names: Sequence[str] | None = None
-    ) -> int:
-        """Load ths given fixtures names or default one from initial_fixtures.
+    async def load_fixture_file(self, fixture_file: Path | str) -> int:
+        """Process and load the provided fixture files.
 
         example:
-         > self.load_fixtures() # load all specified initial fixtures from settings initial_fixtures
-         > self.load_fixtures(['initial_users']) # load the provided fixtures
+         > self.load_fixture_file("/src/apps/user/fixtures/users.yaml").
         """
-        _fixture_names = fixture_names or settings.initial_fixtures
-        for app in fixture_utils.preserve_fixtures_order(
-            self._get_app_paths(), _fixture_names
-        ):
-            _app = Path(app)
-            fixtures_files = self._scan_fixture_files(_app)
+        _fixture_file = Path(fixture_file)
+        self.logger.info(f"Start processing file '{_fixture_file.name}'.")
+        if not _fixture_file.exists():
+            raise ValueError(
+                f"Invalid fixture file: {_fixture_file}. File does not exists."
+            )
 
-            app_name = _app.stem.title()
-            fixtures_files = self._filter_fixture_files(fixtures_files, _fixture_names)
-            await self._load_app_fixtures(fixtures_files, app_name)
+        models = await self._extract_models(_fixture_file)
+        self.logger.info(
+            f"{len(models)} entities are about to be saved in the database."
+        )
+        await SQLTable.objects().insert_batch(models)
+        return len(models)
 
-        self.logger.info(f"Total of {self.count_created} fixtures loaded.")
-        return self.count_created
+    async def load_app_fixtures(self, app_name: str):
+        """Load all fixtures found in the provided app.
 
-    async def _load_fixtures_by_path(self, fixture_paths: Sequence[Path | str]) -> int:
-        """Load the given fixture paths."""
-        for fixture_path in fixture_paths:
-            _fixture_path = Path(fixture_path).absolute()
-            # get app name
-            app_name = self._extract_app_name(_fixture_path)
-            if app_name is None:
-                self.logger.info(
-                    f"Invalid fixture file: {fixture_path}. Could not retrieve the app name."
-                )
-                continue
+        example:
+         > self.load_app_fixture('user')
+        """
+        self.logger.info(f"Start loading {app_name} fixtures.")
+        fixture_files = fixture_utils.collect_app_fixtures(app_name)
+        self.logger.info(
+            f"{len(fixture_files)} fixture files found in the {app_name.title()} application."
+        )
+        tasks = [self.load_fixture_file(fixture_file) for fixture_file in fixture_files]
+        self.count_created += sum(await asyncio.gather(*tasks))
+        self.logger.info(
+            f"Loaded a total of {self.count_created} fixtures for the {app_name} application."
+        )
 
-            await self._load_app_fixtures([str(_fixture_path)], app_name)
+    async def load_fixture_by_name(self, fixture_name: str) -> int:
+        """Load ths given fixture name.
+
+        example:
+         > self.load_fixture_by_name(['initial_users'])
+        """
+        fixture_path = fixture_utils.retrieve_fixture_absolute_path(fixture_name)
+        self.count_created += await self.load_fixture_file(fixture_path)
 
         return self.count_created
 
     async def load_fixtures(
-        self, fixtures: Sequence[str | Path] | None = None, is_path: bool = False
+        self,
+        fixtures: Sequence[str | Path] | None = None,
+        loader_key: Literal["app", "name", "path"] = "name",
     ):
-        if is_path:
-            return await self._load_fixtures_by_path(fixtures)
+        """Load application fixture data.
 
-        return await self._load_fixtures_by_name(fixtures)
+        If loader_key equals app, it will load all the app's fixtures, fixtures argument should contain a list of apps
+        If loader_key equals name, it will search and load fixtures listed by name
+        if loader_key equals path, it will load the specified fixture paths if exist
+        """
+        loader = self._loader_mapping.get(loader_key)
+        if loader is None:
+            raise ValueError(
+                f"Invalid loader key '{loader_key}'. Expecting {tuple(self._loader_mapping.keys())}."
+            )
+
+        if fixtures is None:
+            fixtures = settings.initial_fixtures
+
+        for fixture in fixtures:
+            await loader(fixture)

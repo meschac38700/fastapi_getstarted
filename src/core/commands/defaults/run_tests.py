@@ -1,10 +1,9 @@
 import logging
-from pathlib import Path
 
 import typer
 
 import settings
-from core.commands.runners.utils.test import TestRunner
+from core.commands.defaults.runners.test import TestRunner
 from core.services.docker.compose import DockerComposeManager
 from core.types.annotations.command_types import (
     TyperListArgument,
@@ -22,12 +21,12 @@ PytestArgsType = TyperListOption(
 )
 TestPathsType = TyperListArgument(
     'Test paths to run, run all application tests by default. cannot be combined with the "app" option.',
-    of_type=Path,
+    of_type=str,
 )
 
 
-@app.command(help="Run application tests.")
-def tests(
+@app.command(name="tests", help="Run application tests.")
+def run_tests(
     apps: AppsType,
     pytest_args: PytestArgsType,
     test_paths: TestPathsType = None,
