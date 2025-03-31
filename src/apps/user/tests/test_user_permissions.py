@@ -45,7 +45,7 @@ class TestUserPermission(AsyncTestCase):
             response.json()["detail"],
         )
 
-    async def test_get_own_user_permissions_denied(self):
+    async def test_get_own_user_permissions_allowed(self):
         response = await self.client.get("/users/permissions/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
@@ -62,7 +62,7 @@ class TestUserPermission(AsyncTestCase):
             all(perm["name"] in expected_permissions for perm in response.json())
         )
 
-    async def test_admin_get_user_permissions_denied(self):
+    async def test_admin_get_user_permissions_allowed(self):
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
