@@ -19,6 +19,7 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
     fixtures: list[str] | None = None
     db_service: DBService = None
     _loaded_once: bool = False
+    fixture_loader = LoadFixtures()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -41,7 +42,7 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
         if not self.fixtures:
             return
 
-        await LoadFixtures().load_fixtures(self.fixtures)
+        await self.fixture_loader.load_fixtures(self.fixtures)
 
     async def _load_once(self):
         if self._loaded_once:

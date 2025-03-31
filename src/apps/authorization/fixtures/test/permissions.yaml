@@ -1,0 +1,5 @@
+- model: authorization.Permission
+  properties:
+    name: test_permission
+    display_name: Test permission
+    target_table: permission
