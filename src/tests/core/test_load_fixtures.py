@@ -1,3 +1,5 @@
+from typer.testing import CliRunner
+
 from apps.authorization.models import Permission
 from apps.user.models import User
 from core.testing.async_case import AsyncTestCase
@@ -7,6 +9,7 @@ class TestLoadFixture(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await User.truncate()
+        self.cli_runner = CliRunner()
 
     async def test_load_hero_fixtures_single_file(self):
         self.assertEqual(0, len(await User.all()))
