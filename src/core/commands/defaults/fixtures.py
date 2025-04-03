@@ -11,10 +11,14 @@ _logger = logging.Logger(__file__)
 app = typer.Typer(rich_markup_mode="rich")
 
 AppsType = TyperListOption(
-    "Specify some applications for which the fixtures should be loaded. Default loading initial_fixtures."
+    description="Specify some applications for which the fixtures should be loaded. Default loading initial_fixtures."
 )
-NamesType = TyperListOption("Name of the fixtures to load. ex: --names initial-users")
-PathsType = TyperListOption("List of fixture file paths to load", of_type=Path)
+NamesType = TyperListOption(
+    description="Name of the fixtures to load. ex: --names initial-users"
+)
+PathsType = TyperListOption(
+    description="List of fixture file paths to load", of_type=Path
+)
 
 
 @app.command(help="Load project fixtures.")

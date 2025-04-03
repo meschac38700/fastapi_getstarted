@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Literal
 
 from sqlalchemy.exc import IntegrityError
 
@@ -22,14 +23,18 @@ class FixtureRunner:
         fixture_names: list[str] | None = None,
     ):
         """Load application fixtures."""
+        loader_key: Literal["name", "path", "app"] = "name"
+        fixtures = fixture_paths or settings.initial_fixtures
         try:
             if fixture_paths:
-                await self.loader.load_fixtures(fixture_paths, "path")
+                loader_key = "path"
+                fixtures = fixture_paths
 
             if app_names:
-                await self.loader.load_fixtures(app_names, "app")
+                loader_key = "app"
+                fixtures = app_names
 
-            await self.loader.load_fixtures(fixture_paths or settings.initial_fixtures)
+            await self.loader.load_fixtures(fixtures, loader_key)
 
         except IntegrityError:
             self.logger.info(

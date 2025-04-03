@@ -17,7 +17,7 @@ AppsType = TyperListOption(
     description="Specify an application name on which to run tests."
 )
 PytestArgsType = TyperListOption(
-    "List of arguments to pass to the pytest module in string format."
+    description="List of arguments to pass to the pytest module in string format."
 )
 TestPathsType = TyperListArgument(
     'Test paths to run, run all application tests by default. cannot be combined with the "app" option.',
