@@ -14,10 +14,12 @@ app = typer.Typer(rich_markup_mode="rich")
 _logger = logging.getLogger(__file__)
 
 AppsType = TyperListOption(
-    description="Specify an application name on which to run tests."
+    "--apps", "-a", description="Specify an application name on which to run tests."
 )
 PytestArgsType = TyperListOption(
-    description="List of arguments to pass to the pytest module in string format."
+    "--pytest-args",
+    "-p",
+    description="List of arguments to pass to the pytest module in string format.",
 )
 TestPathsType = TyperListArgument(
     'Test paths to run, run all application tests by default. cannot be combined with the "app" option.',
