@@ -29,7 +29,7 @@ class SQLTable(SQLModel, ModelQuery):
 
     @property
     def required_fields(self) -> Iterator[str]:
-        for name, field in self.model_fields.items():
+        for name, field in self.__class__.model_fields.items():
             if not field.is_required():
                 continue
             yield name
@@ -40,7 +40,7 @@ class SQLTable(SQLModel, ModelQuery):
         _old_data = old_data.copy()
         _old_data.pop("id", None)
         current_attrs = self.model_dump(exclude_unset=True).keys()
-        all_field_filled = len(self.model_fields) == len(current_attrs)
+        all_field_filled = len(self.__class__.model_fields.keys()) == len(current_attrs)
         if required:
             required_fields = list(self.required_fields)
             all_field_filled = all(k in current_attrs for k in required_fields)
