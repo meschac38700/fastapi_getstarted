@@ -1,7 +1,7 @@
 from sqlmodel import Field
 
 from core.db import SQLTable
-from core.db.models import TimestampedSQLBaseModel
+from core.db.models import TimestampedModelMixin
 
 
 class HeroBase(SQLTable):
@@ -11,5 +11,5 @@ class HeroBase(SQLTable):
     user_id: int | None = Field(default=None, foreign_key="user.id")
 
 
-class HeroSQLBaseModel(HeroBase, TimestampedSQLBaseModel):
+class HeroModelMixin(HeroBase, TimestampedModelMixin):
     pass

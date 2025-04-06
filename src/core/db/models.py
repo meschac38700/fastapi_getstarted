@@ -57,7 +57,7 @@ class SQLTable(SQLModel, ModelQuery):
         return self.check_all_fields_updated(old_data, required=True)
 
 
-class TimestampedSQLBaseModel:
+class TimestampedModelMixin:
     created_at: datetime.datetime | None = Field(
         sa_column_kwargs={
             "server_default": text("CURRENT_TIMESTAMP"),

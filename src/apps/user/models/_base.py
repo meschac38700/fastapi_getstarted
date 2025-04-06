@@ -4,7 +4,7 @@ from sqlmodel import Field
 
 from apps.user.utils.types import UserRole
 from core.db import SQLTable
-from core.db.models import TimestampedSQLBaseModel
+from core.db.models import TimestampedModelMixin
 
 
 class UserBase(SQLTable):
@@ -17,7 +17,7 @@ class UserBase(SQLTable):
     age: int | None = None
 
 
-class UserSQLBaseModel(UserBase, TimestampedSQLBaseModel):
+class UserBaseModel(UserBase, TimestampedModelMixin):
     role: UserRole = Field(
         default=UserRole.active,
         sa_column=sa.Column(
