@@ -4,7 +4,7 @@ from sqlmodel import Field
 
 from apps.user.utils.types import UserRole
 from core.db import SQLTable
-from core.db.models import TimestampedModelMixin
+from core.db.mixins import TimestampedModelMixin
 
 
 class UserBase(SQLTable):
