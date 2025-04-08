@@ -8,10 +8,10 @@ import settings
 from apps.authentication import utils
 from apps.user.models import User
 
-from ._base import JWTTokenModelMixin
+from ._base import JWTTokenModel
 
 
-class JWTToken(JWTTokenModelMixin, table=True):
+class JWTToken(JWTTokenModel, table=True):
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
     user_id: int | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"

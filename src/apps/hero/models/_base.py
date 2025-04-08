@@ -11,5 +11,5 @@ class HeroBase(SQLTable):
     user_id: int | None = Field(default=None, foreign_key="user.id")
 
 
-class HeroModelMixin(HeroBase, TimestampedModelMixin):
+class HeroModel(HeroBase, TimestampedModelMixin):
     pass

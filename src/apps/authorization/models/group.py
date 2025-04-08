@@ -3,10 +3,9 @@ from typing import TYPE_CHECKING, Iterable
 from sqlmodel import Field, Relationship
 
 from ._base import GroupBase
-from .mixins import PermissionMixin
+from .mixins import CRUDModelMixin, PermissionMixin
 from .permission import Permission
 from .relation_links import GroupUserLink, PermissionGroupLink
-from .utils import CRUDModelMixin
 
 if TYPE_CHECKING:
     from apps.user.models import User

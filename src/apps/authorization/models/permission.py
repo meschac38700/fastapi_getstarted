@@ -1,7 +1,7 @@
 from sqlmodel import Field
 
 from ._base import PermissionBase
-from .utils import CRUDModelMixin
+from .mixins import CRUDModelMixin
 
 
 class Permission(CRUDModelMixin, PermissionBase, table=True):

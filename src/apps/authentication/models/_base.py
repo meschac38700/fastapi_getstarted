@@ -9,5 +9,5 @@ class JWTTokenBase(SQLTable):
     token_type: str = Field(default="Bearer")
 
 
-class JWTTokenModelMixin(JWTTokenBase, TimestampedModelMixin):
+class JWTTokenModel(JWTTokenBase, TimestampedModelMixin):
     pass
