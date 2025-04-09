@@ -12,7 +12,7 @@ from main import app
 from settings import settings
 
 BASE_URL = "http://test"
-_engine = settings.get_engine()
+_engine = settings.get_engine(pool_pre_ping=True)
 
 
 class AsyncTestCase(IsolatedAsyncioTestCase):
@@ -27,7 +27,7 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
         self.client = AsyncClientTest(
             transport=ASGITransport(app=app), base_url=BASE_URL
         )
-        self.db_service = DBService()
+        self.db_service = DBService(_engine)
 
     async def add_permissions(self, item: User | Group, permission_names: list[str]):
         _permissions = await Permission.filter(name__in=permission_names)
