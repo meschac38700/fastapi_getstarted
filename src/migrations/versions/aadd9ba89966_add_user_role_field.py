@@ -29,7 +29,7 @@ def upgrade() -> None:
 
     # Add the new column to the user table
     op.add_column(
-        "user", sa.Column("role", role_enum, nullable=True, server_default="user")
+        "user", sa.Column("role", role_enum, nullable=True, server_default="active")
     )
 
     op.create_index(op.f("ix_user_role"), "user", ["role"], unique=False)
