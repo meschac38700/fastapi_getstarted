@@ -1,10 +1,9 @@
-import asyncio
 import logging
 from pathlib import Path
 
 import typer
 
-from core.commands.defaults.runners.fixture import FixtureRunner
+from core.tasks import task_load_fixtures
 from core.types.annotations.command_types import TyperListOption
 
 _logger = logging.Logger(__file__)
@@ -32,8 +31,5 @@ def fixtures(
     paths: PathsType,
 ):
     """Load project fixtures."""
-    runner = FixtureRunner(logger=_logger)
-
-    # TODO(Eliam): Typer does not yet support async command
-    #  Issue: https://github.com/fastapi/typer/issues/950
-    asyncio.run(runner(app_names=apps, fixture_names=names, fixture_paths=paths))
+    _logger.info("Load fixtures command starting...")
+    task_load_fixtures.delay(apps, names, paths)
