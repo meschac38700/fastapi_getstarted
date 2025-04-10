@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 import typer
+from celery.result import AsyncResult
 
 from core.tasks import task_load_fixtures
 from core.types.annotations.command_types import TyperListOption
@@ -32,4 +33,9 @@ def fixtures(
 ):
     """Load project fixtures."""
     _logger.info("Load fixtures command starting...")
-    task_load_fixtures.delay(apps, names, paths)
+    result: AsyncResult = task_load_fixtures.delay(apps, names, paths)
+    if not result.successful():
+        _logger.info("Load fixtures terminated successfully.")
+        return
+
+    _logger.info("Something goes wrong while loading fixtures.")

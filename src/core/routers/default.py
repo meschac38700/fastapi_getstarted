@@ -1,8 +1,9 @@
 import secrets
 
+from celery.result import AsyncResult
 from fastapi import FastAPI
 
-from core.db.fixtures import LoadFixtures
+from core.tasks import task_load_fixtures
 
 
 def secret_key(length: int = 65):
@@ -11,8 +12,8 @@ def secret_key(length: int = 65):
 
 
 async def load_fake_data():
-    await LoadFixtures().load_fixtures()
-    return {"Loaded": True}
+    result: AsyncResult = task_load_fixtures.delay()
+    return {"Loaded": result.successful()}
 
 
 def register_default_endpoints(app: FastAPI):

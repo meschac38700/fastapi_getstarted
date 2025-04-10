@@ -9,7 +9,11 @@ _logger = logging.Logger(__file__)
 
 
 @celery_app.task()
-def task_load_fixtures(apps: list[str], names: list[str], paths: list[Path]) -> None:
+def task_load_fixtures(
+    apps: list[str] | None = None,
+    names: list[str] | None = None,
+    paths: list[Path] | None = None,
+) -> None:
     """Load project fixtures in celery."""
 
     runner = FixtureRunner(logger=_logger)
