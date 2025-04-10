@@ -8,13 +8,13 @@ import settings
 from apps.authentication import utils
 from apps.user.models import User
 
-from ._base import JWTTokenSQLBaseModel
+from ._base import JWTTokenModel
 
 
-class JWTToken(JWTTokenSQLBaseModel, table=True):
+class JWTToken(JWTTokenModel, table=True):
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
     user_id: int | None = Field(
-        default=None, foreign_key="user.id", ondelete="SET NULL"
+        default=None, foreign_key="users.id", ondelete="SET NULL"
     )
     user: User = Relationship(sa_relationship_kwargs={"lazy": "joined"})
 

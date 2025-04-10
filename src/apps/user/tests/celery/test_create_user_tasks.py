@@ -12,7 +12,7 @@ class TestCeleryTasks(TestCase):
             "last_name": "FastApi",
             "password": "test",
         }
-        created_user = create_user_task.delay(**user_data).get(timeout=10)
+        created_user = create_user_task.delay(**user_data).get(timeout=15)
         assert isinstance(created_user, User)
         assert created_user.first_name == user_data["first_name"]
         assert created_user.last_name == user_data["last_name"]

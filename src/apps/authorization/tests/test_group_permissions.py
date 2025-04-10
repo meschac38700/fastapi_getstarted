@@ -21,9 +21,11 @@ class TestGroupPermissions(AsyncTestCase):
             Permission.generate_crud_objects(User.table_name()),
             Group.generate_crud_objects(Hero.table_name()),
         )
-        self.admin = await User.get(role=UserRole.admin)
-        self.user = await User.get(role=UserRole.staff)
-        self.active = await User.get(role=UserRole.active)
+        self.admin, self.user, self.active = await asyncio.gather(
+            User.get(role=UserRole.admin),
+            User.get(role=UserRole.staff),
+            User.get(role=UserRole.active),
+        )
 
     async def test_group_has_no_right_permissions_cannot_edit(self):
         read_group = await Group.get(name="read_hero")
@@ -103,7 +105,7 @@ class TestGroupPermissions(AsyncTestCase):
         self.assertEqual(group.get_permissions(), perms)
 
         data = {
-            "permissions": [perm.name for perm in perms if perm.name != "read_user"]
+            "permissions": [perm.name for perm in perms if perm.name != "read_users"]
         }
 
         response = await self.client.post(
@@ -123,7 +125,7 @@ class TestGroupPermissions(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        read_perm = await Permission.get(name="read_user")
+        read_perm = await Permission.get(name="read_users")
         expected_response = [read_perm.model_dump(mode="json")]
         self.assertEqual(response.json(), expected_response)
         group = await group.refresh()

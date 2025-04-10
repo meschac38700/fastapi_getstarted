@@ -39,7 +39,7 @@ class TestUserGroup(AsyncTestCase):
 
         await self.client.user_login(self.staff)
 
-        expected_groups = ["read_user", "create_user", "update_user"]
+        expected_groups = ["read_users", "create_users", "update_users"]
         await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get("/users/groups/")
@@ -57,7 +57,7 @@ class TestUserGroup(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         # Get groups of active user
-        expected_groups = ["read_user", "create_user", "update_user"]
+        expected_groups = ["read_users", "create_users", "update_users"]
         await self.active.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get(f"/users/{self.active.id}/groups/")

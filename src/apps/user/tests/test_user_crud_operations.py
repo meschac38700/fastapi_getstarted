@@ -72,7 +72,7 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(user, ["update_user"])
+        await self.add_permissions(user, ["update_users"])
         response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -105,7 +105,7 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(user, ["update_user"])
+        await self.add_permissions(user, ["update_users"])
         response = await self.client.patch(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
 
@@ -136,7 +136,7 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(user, ["update_user"])
+        await self.add_permissions(user, ["update_users"])
         response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
@@ -153,7 +153,7 @@ class TestUserCRUD(AsyncTestCase):
         response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        await self.add_permissions(self.user, ["delete_user"])
+        await self.add_permissions(self.user, ["delete_users"])
         response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(id=self.user.id))
@@ -165,7 +165,7 @@ class TestUserCRUD(AsyncTestCase):
             last_name="Pytest",
             password="test123",
         ).save()
-        await self.add_permissions(user, ["delete_user"])
+        await self.add_permissions(user, ["delete_users"])
         await self.client.user_login(user)
         await user.delete()
 

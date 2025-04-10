@@ -13,14 +13,16 @@ from apps.authorization.models.mixins import PermissionMixin
 from core.auth.hashers import PasswordHasher
 from settings import PASSWORD_HASHER
 
-from ._base import UserSQLBaseModel
+from ._base import UserBaseModel
 
 if TYPE_CHECKING:
     from apps.authorization.models import Group
 _EMPTY = type("Empty", (), {})
 
 
-class User(PermissionMixin, UserSQLBaseModel, table=True):
+class User(PermissionMixin, UserBaseModel, table=True):
+    __tablename__ = "users"
+
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
     permissions: list[Permission] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionUserLink

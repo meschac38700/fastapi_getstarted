@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Annotated, Any, ParamSpec, TypeVar
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel, delete, select
 
@@ -30,8 +30,8 @@ def session_decorator(func: Fn) -> Fn:
 class DBService:
     """Group some utility functions for db queries."""
 
-    def __init__(self):
-        self.engine = settings.get_engine()
+    def __init__(self, engine: AsyncEngine = None):
+        self.engine = engine or settings.get_engine()
 
     async def __aenter__(self):
         return self

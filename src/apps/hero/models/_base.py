@@ -1,15 +1,15 @@
 from sqlmodel import Field
 
 from core.db import SQLTable
-from core.db.models import TimestampedSQLBaseModel
+from core.db.mixins import TimestampedModelMixin
 
 
 class HeroBase(SQLTable):
     name: str = Field(index=True)
     secret_name: str
     age: int | None = None
-    user_id: int | None = Field(default=None, foreign_key="user.id")
+    user_id: int | None = Field(default=None, foreign_key="users.id")
 
 
-class HeroSQLBaseModel(HeroBase, TimestampedSQLBaseModel):
+class HeroModel(HeroBase, TimestampedModelMixin):
     pass
