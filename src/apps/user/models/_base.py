@@ -21,7 +21,7 @@ class UserBaseModel(UserBase, TimestampedModelMixin):
     role: UserRole = Field(
         default=UserRole.active,
         sa_column=sa.Column(
-            postgresql.ENUM(UserRole), default=UserRole.active, index=True
+            postgresql.ENUM(UserRole, name="role"), default=UserRole.active, index=True
         ),
     )
 
