@@ -49,7 +49,8 @@ class Settings(BaseSettings):
     celery_worker_heartbeat: int = 120  # Send a heartbeat every 120 seconds by default
 
     def get_engine(self, **kwargs):
-        engine = create_async_engine(self.uri, **kwargs)
+        kw = {"pool_pre_ping": True, **kwargs}
+        engine = create_async_engine(self.uri, **kw)
         return engine
 
     @property

@@ -12,7 +12,7 @@ from main import app
 from settings import settings
 
 BASE_URL = "http://test"
-_engine = settings.get_engine(pool_pre_ping=True)
+_engine = settings.get_engine()
 
 
 class AsyncTestCase(IsolatedAsyncioTestCase):
