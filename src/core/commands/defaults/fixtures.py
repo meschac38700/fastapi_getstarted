@@ -1,13 +1,13 @@
-import logging
 from pathlib import Path
 
 import typer
 from celery.result import AsyncResult
 
+from core.monitoring.logger import get_logger
 from core.tasks import task_load_fixtures
 from core.types.annotations.command_types import TyperListOption
 
-_logger = logging.Logger(__file__)
+_logger = get_logger(__file__)
 app = typer.Typer(rich_markup_mode="rich")
 
 AppsType = TyperListOption(
@@ -34,8 +34,14 @@ def fixtures(
     """Load project fixtures."""
     _logger.info("Load fixtures command starting...")
     result: AsyncResult = task_load_fixtures.delay(apps, names, paths)
-    if not result.successful():
-        _logger.info("Load fixtures terminated successfully.")
-        return
 
-    _logger.info("Something goes wrong while loading fixtures.")
+    try:
+        count_created = result.get(timeout=2)
+    except RuntimeError as e:
+        count_created = 0
+        _logger.error(f"Something goes wrong while loading fixtures.\n{e}\n")
+        _logger.info(
+            "This issue is usually caused by an attempt to duplicate data. Check if the data is already stored in the database."
+        )
+
+    _logger.info(f"Loaded {count_created} fixtures successfully.")

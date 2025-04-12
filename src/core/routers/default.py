@@ -13,7 +13,11 @@ def secret_key(length: int = 65):
 
 async def load_fake_data():
     result: AsyncResult = task_load_fixtures.delay()
-    return {"Loaded": result.successful()}
+    return {
+        "status": result.state,
+        "msg": "Loading fixtures process started.",
+        "success": result.successful(),
+    }
 
 
 def register_default_endpoints(app: FastAPI):
