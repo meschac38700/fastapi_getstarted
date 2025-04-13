@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from celery import Celery
 from celery import current_app as current_celery_app
+from kombu import serialization as kombu_serialization
 
 from core.services import files
 from core.services.celery.serializers.pydantic import (
@@ -35,10 +36,12 @@ def _update_conf(celery_instance: Celery):
         timezone="UTC",
         task_default_queue="default",
         task_serializer=pydantic_serializer,
-        accept_content=[pydantic_serializer],
+        accept_content=["json", "application/text", pydantic_serializer],
         result_serializer=pydantic_serializer,
         beat_scheduler="redbeat.RedBeatScheduler",  # Use Redis for schedule storage
     )
+    kombu_serialization.registry.enable("json")
+    kombu_serialization.registry.enable("application/text")
 
 
 def _scheduler_configs(celery_instance: Celery):
