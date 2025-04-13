@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from celery import Celery
 from celery import current_app as current_celery_app
+from celery.schedules import crontab
 from kombu import serialization as kombu_serialization
 
 from core.services import files
@@ -48,7 +49,7 @@ def _scheduler_configs(celery_instance: Celery):
     celery_instance.conf.beat_schedule = {
         "debug-task-every-5-minutes": {
             "task": "core.tasks.basic.debug_task",
-            "schedule": 60.0 * 5,  # Run every 5 minutes
+            "schedule": crontab(minute=5),  # Run every 5 minutes
         }
     }
 
