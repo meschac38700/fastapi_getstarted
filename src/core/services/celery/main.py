@@ -43,9 +43,9 @@ def _update_conf(celery_instance: Celery):
 
 def _scheduler_configs(celery_instance: Celery):
     celery_instance.conf.beat_schedule = {
-        "print-message-every-10-seconds": {
-            "task": "core.tasks.basic.print_message",
-            "schedule": 10.0,  # Run every 10 seconds
+        "debug-task-every-5-minutes": {
+            "task": "core.tasks.basic.debug_task",
+            "schedule": 60.0 * 5,  # Run every 5 minutes
         }
     }
 
