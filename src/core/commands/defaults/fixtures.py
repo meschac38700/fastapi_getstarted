@@ -1,13 +1,13 @@
-import asyncio
-import logging
 from pathlib import Path
 
 import typer
+from celery.result import AsyncResult
 
-from core.commands.defaults.runners.fixture import FixtureRunner
+from core.monitoring.logger import get_logger
+from core.tasks import task_load_fixtures
 from core.types.annotations.command_types import TyperListOption
 
-_logger = logging.Logger(__file__)
+_logger = get_logger(__file__)
 app = typer.Typer(rich_markup_mode="rich")
 
 AppsType = TyperListOption(
@@ -32,8 +32,16 @@ def fixtures(
     paths: PathsType,
 ):
     """Load project fixtures."""
-    runner = FixtureRunner(logger=_logger)
+    _logger.info("Load fixtures command starting...")
+    result: AsyncResult = task_load_fixtures.delay(apps, names, paths)
 
-    # TODO(Eliam): Typer does not yet support async command
-    #  Issue: https://github.com/fastapi/typer/issues/950
-    asyncio.run(runner(app_names=apps, fixture_names=names, fixture_paths=paths))
+    try:
+        count_created = result.get(timeout=2)
+    except RuntimeError as e:
+        count_created = 0
+        _logger.error(f"Something goes wrong while loading fixtures.\n{e}\n")
+        _logger.info(
+            "This issue is usually caused by an attempt to duplicate data. Check if the data is already stored in the database."
+        )
+
+    _logger.info(f"Loaded {count_created} fixtures successfully.")

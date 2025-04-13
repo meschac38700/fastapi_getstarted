@@ -3,8 +3,8 @@ import logging
 import typer
 
 import settings
-from core.commands.defaults.runners.test import TestRunner
 from core.services.docker.compose import DockerComposeManager
+from core.services.runners import TestRunner
 from core.types.annotations.command_types import (
     TyperListArgument,
     TyperListOption,

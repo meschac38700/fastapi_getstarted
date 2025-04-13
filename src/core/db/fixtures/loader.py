@@ -48,7 +48,7 @@ class LoadFixtures:
 
         models = await self._extract_models(_fixture_file)
         self.logger.info(
-            f"{len(models)} entities are about to be saved in the database."
+            f"{len(models)} object(s) found in the {_fixture_file.name} file and will be saved in the database."
         )
         await SQLTable.objects().insert_batch(models)
         return len(models)

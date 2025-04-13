@@ -6,8 +6,9 @@ from sqlalchemy.exc import IntegrityError
 
 import settings
 from core.db.fixtures import LoadFixtures
+from core.monitoring.logger import get_logger
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger(__name__)
 
 
 class FixtureRunner:
@@ -36,9 +37,9 @@ class FixtureRunner:
 
             await self.loader.load_fixtures(fixtures, loader_key)
 
-        except IntegrityError:
-            self.logger.info(
-                "It looks like loading fixtures might cause data integrity issues."
-            )
+        except IntegrityError as e:
+            self.logger.error(f"{e}")
             return
-        self.logger.info("All fixtures loaded successfully.")
+        self.logger.info(
+            f"Total of {self.loader.count_created} fixtures loaded successfully."
+        )

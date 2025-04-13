@@ -3,8 +3,8 @@ from typing import Annotated
 import typer
 
 import settings
-from core.commands.defaults.runners.server import ServerRunner
 from core.services.docker.compose import DockerComposeManager
+from core.services.runners import ServerRunner
 
 app = typer.Typer(rich_markup_mode="rich")
 
