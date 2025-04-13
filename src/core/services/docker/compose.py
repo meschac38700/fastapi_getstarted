@@ -1,4 +1,3 @@
-import logging
 import re
 import subprocess
 import time
@@ -10,9 +9,10 @@ from typing import Any, Literal
 import yaml
 
 import settings
+from core.monitoring.logger import get_logger
 
 Fn = Callable[..., Any]
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DockerComposeManager:

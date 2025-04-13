@@ -1,4 +1,3 @@
-import logging
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
@@ -6,9 +5,11 @@ import pydantic_core
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 
+from core.monitoring.logger import get_logger
+
 BaseModelT = TypeVar("BaseModelT", bound=BaseModel)
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Context: https://github.com/pydantic/pydantic/issues/3120#issuecomment-1528030416
 

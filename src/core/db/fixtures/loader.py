@@ -8,9 +8,10 @@ import settings
 from core.db import SQLTable
 from core.db.fixtures import utils as fixture_utils
 from core.db.fixtures.files import FixtureFileReader
+from core.monitoring.logger import get_logger
 
 _APP_DIR = settings.BASE_DIR / "apps"
-_logger = logging.getLogger(__name__)
+_logger = get_logger(__name__)
 
 
 class LoadFixtures:

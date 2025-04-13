@@ -6,9 +6,10 @@ from fastapi import HTTPException
 
 from apps.authentication.models import JWTToken
 from apps.authorization.models import Group, Permission
+from core.monitoring.logger import get_logger
 
 Fn = Callable[..., Any]
-_logger = logging.getLogger(__name__)
+_logger = get_logger(__name__)
 
 
 def group_permission_required(
