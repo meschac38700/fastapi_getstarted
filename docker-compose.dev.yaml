@@ -76,6 +76,23 @@ services:
     network_mode: host
     volumes:
       - ./src/:/home/appuser/app/www
+
+  celery_flower_dev:
+    container_name: flower_dev
+    restart: always
+    image: mher/flower:2.0
+    volumes:
+      - flower_data_dev:/data
+    env_file:
+      - envs/dev/.env
+    depends_on:
+      redis_dev:
+        condition: service_healthy
+        restart: true
+    network_mode: host
+    command: sh -c "celery --broker=$$CELERY_BROKER flower"
+
 volumes:
   dev_data: {}
   dev_redis: {}
+  flower_data_dev: {}
