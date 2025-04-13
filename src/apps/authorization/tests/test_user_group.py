@@ -36,7 +36,7 @@ class TestUserGroup(AsyncTestCase):
         response = await self.client.post(
             f"/authorizations/groups/{group.id}/users/add/", json=data
         )
-        print(response.json())
+
         self.assertEqual(HTTPStatus.OK, response.status_code)
         expected_response = [
             self.admin.model_dump(mode="json"),
