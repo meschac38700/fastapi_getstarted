@@ -3,7 +3,7 @@ import secrets
 from celery.result import AsyncResult
 from fastapi import FastAPI
 
-from core.tasks import task_load_fixtures
+from core.tasks import load_fixtures_task
 
 
 def secret_key(length: int = 65):
@@ -12,7 +12,7 @@ def secret_key(length: int = 65):
 
 
 async def load_fake_data():
-    result: AsyncResult = task_load_fixtures.delay()
+    result: AsyncResult = load_fixtures_task.delay()
     return {
         "status": result.state,
         "msg": "Loading fixtures process started.",

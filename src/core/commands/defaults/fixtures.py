@@ -4,7 +4,7 @@ import typer
 from celery.result import AsyncResult
 
 from core.monitoring.logger import get_logger
-from core.tasks import task_load_fixtures
+from core.tasks import load_fixtures_task
 from core.types.annotations.command_types import TyperListOption
 
 _logger = get_logger(__file__)
@@ -33,7 +33,7 @@ def fixtures(
 ):
     """Load project fixtures."""
     _logger.info("Load fixtures command starting...")
-    result: AsyncResult = task_load_fixtures.delay(apps, names, paths)
+    result: AsyncResult = load_fixtures_task.delay(apps, names, paths)
 
     try:
         count_created = result.get(timeout=2)
