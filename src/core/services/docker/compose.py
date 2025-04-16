@@ -1,4 +1,3 @@
-import logging
 import re
 import subprocess
 import time
@@ -10,9 +9,10 @@ from typing import Any, Literal
 import yaml
 
 import settings
+from core.monitoring.logger import get_logger
 
 Fn = Callable[..., Any]
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DockerComposeManager:
@@ -199,7 +199,6 @@ class DockerComposeManager:
         """Wait for all services to up."""
         while pending_svc := self._has_pending_services():
             self.logger.info(f'Waiting for services "{pending_svc}"" to be up...')
-            print(f"waiting for: {pending_svc} to start...")
             time.sleep(2)
 
     def _apply_callback(self, callback: Fn, stop_after: bool = False) -> None:

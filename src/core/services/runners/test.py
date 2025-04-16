@@ -5,9 +5,10 @@ import subprocess
 import typer
 
 import settings
+from core.monitoring.logger import get_logger
 
 app = typer.Typer(rich_markup_mode="rich")
-_logger = logging.getLogger(__file__)
+_logger = get_logger(__file__)
 
 
 class TestRunner:

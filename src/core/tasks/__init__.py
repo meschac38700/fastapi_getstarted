@@ -1,7 +1,7 @@
-from .basic import print_message
-from .fixtures import task_load_fixtures
+from .basic import debug_task
+from .fixtures import load_fixtures_task
 
 __all__ = [
-    "print_message",
-    "task_load_fixtures",
+    "debug_task",
+    "load_fixtures_task",
 ]

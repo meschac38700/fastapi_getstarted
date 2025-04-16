@@ -6,10 +6,11 @@ from fastapi import HTTPException
 
 from apps.authentication.models import JWTToken
 from apps.authorization.models import Permission
+from core.monitoring.logger import get_logger
 
 Fn = Callable[..., Any]
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger(__name__)
 
 
 def user_permission_required(

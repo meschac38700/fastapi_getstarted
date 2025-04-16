@@ -5,7 +5,9 @@ from pathlib import Path
 import aiofiles
 import yaml
 
-_logger = logging.getLogger(__name__)
+from core.monitoring.logger import get_logger
+
+_logger = get_logger(__name__)
 
 
 @dataclass

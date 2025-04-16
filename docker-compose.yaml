@@ -83,6 +83,23 @@ services:
     env_file:
       - ./envs/prod/.env
     command: bash -c "celery -A main.celery beat --loglevel=INFO"
+
+  celery_flower:
+    container_name: flower
+    restart: always
+    image: mher/flower:2.0
+    ports:
+      - "5556:5555"
+    volumes:
+      - flower_data:/data
+    env_file:
+      - envs/prod/.env
+    depends_on:
+      redis_server:
+        condition: service_healthy
+        restart: true
+    command: sh -c "celery --broker=$$CELERY_BROKER flower"
 volumes:
   data: {}
   redis_data: {}
+  flower_data: {}

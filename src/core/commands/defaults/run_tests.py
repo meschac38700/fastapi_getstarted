@@ -1,8 +1,7 @@
-import logging
-
 import typer
 
 import settings
+from core.monitoring.logger import get_logger
 from core.services.docker.compose import DockerComposeManager
 from core.services.runners import TestRunner
 from core.types.annotations.command_types import (
@@ -11,7 +10,7 @@ from core.types.annotations.command_types import (
 )
 
 app = typer.Typer(rich_markup_mode="rich")
-_logger = logging.getLogger(__file__)
+_logger = get_logger(__file__)
 
 AppsType = TyperListOption(
     "--apps", "-a", description="Specify an application name on which to run tests."

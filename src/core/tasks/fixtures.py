@@ -9,7 +9,7 @@ _logger = get_logger(__name__)
 
 
 @celery_app.task()
-def task_load_fixtures(
+def load_fixtures_task(
     apps: list[str] | None = None,
     names: list[str] | None = None,
     paths: list[Path] | None = None,
