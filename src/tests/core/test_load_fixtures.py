@@ -11,7 +11,7 @@ class TestLoadFixture(AsyncTestCase):
         await User.truncate()
         self.cli_runner = CliRunner()
 
-    async def test_load_hero_fixtures_single_file(self):
+    async def test_load_fixtures_single_file(self):
         self.assertEqual(0, len(await User.all()))
 
         await self.fixture_loader.load_fixtures(["users"])
@@ -19,7 +19,7 @@ class TestLoadFixture(AsyncTestCase):
         self.assertGreaterEqual(len(await User.all()), 1)
         self.assertGreaterEqual(self.fixture_loader.count_created, 1)
 
-    async def test_load_hero_fixtures_multiple_files(self):
+    async def test_load_multiple_fixtures_files(self):
         self.assertEqual(0, len(await Permission.all()))
         self.assertEqual(0, len(await User.all()))
 
@@ -29,7 +29,7 @@ class TestLoadFixture(AsyncTestCase):
         self.assertGreaterEqual(len(await User.all()), 1)
         self.assertGreaterEqual(self.fixture_loader.count_created, 1)
 
-    async def test_load_hero_fixtures_with_extension(self):
+    async def test_load_fixtures_file_with_extension(self):
         self.assertEqual(0, len(await User.all()))
 
         await self.fixture_loader.load_fixtures(["users.yaml"])
