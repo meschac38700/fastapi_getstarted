@@ -49,7 +49,7 @@ def _scheduler_configs(celery_instance: Celery):
     celery_instance.conf.beat_schedule = {
         "debug-task-every-5-minutes": {
             "task": "core.tasks.basic.debug_task",
-            "schedule": crontab(minute=5),  # Run every 5 minutes
+            "schedule": crontab(minute=5),
         }
     }
 
