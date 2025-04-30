@@ -34,7 +34,7 @@ def get_application_paths(
 
 
 def get_app_models(app_path: Path | str):
-    """Retrieve all app model classes from models apps.{app_name}.models module."""
+    """Retrieve all models defined in apps/{app_name}/models module."""
     _app_path = Path(app_path)
 
     models_module_path = linux_path_to_module_path(_app_path / "models")
