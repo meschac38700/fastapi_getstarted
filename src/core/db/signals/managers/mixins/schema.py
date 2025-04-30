@@ -8,27 +8,39 @@ Fn = Callable[P, Any]
 
 
 class SchemaEventMixin:
-    """Handle all signals related to a user-defined class to a Table object."""
+    """Define event listeners for schema objects, that is, SchemaItem and other
+    SchemaEventTarget subclasses, including MetaData, Table, Column, etc.
+
+    Docs: https://docs.sqlalchemy.org/en/20/core/events.html#schema-events
+    """
 
     def before_create(self, model: SQLModel):
+        """Handle event before CREATE sql command is emitted to the database."""
+
         def wrapper(callback: Fn):
             self.register("before_create", callback, target=model)
 
         return wrapper
 
     def before_drop(self, model: SQLModel):
+        """Handle event before DROP sql command is emitted to the database."""
+
         def wrapper(callback: Fn):
             self.register("before_drop", callback, target=model)
 
         return wrapper
 
     def after_create(self, model: SQLModel):
+        """Handle event after CREATE sql command is emitted to the database."""
+
         def wrapper(callback: Fn):
             self.register("after_create", callback, target=model)
 
         return wrapper
 
     def after_drop(self, model: SQLModel):
+        """Handle event after DROP sql command is emitted to the database."""
+
         def wrapper(callback: Fn):
             self.register("after_drop", callback, target=model)
 

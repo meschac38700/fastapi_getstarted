@@ -8,7 +8,10 @@ Fn = Callable[P, Any]
 
 
 class MapperEventMixin:
-    """Handle all signals related to a user-defined class to a Table object."""
+    """Handle all signals related to a user-defined class to a Table object.
+
+    Docs: https://docs.sqlalchemy.org/en/20/orm/events.html#mapper-events
+    """
 
     def before_delete(self, model: SQLModel):
         def wrapper(fn: Fn):
