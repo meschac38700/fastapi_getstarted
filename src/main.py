@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from core.db.signals.main import setup_signals
 from core.lifespan import setup, teardown
 from core.monitoring.sentry import sentry_init
 from core.routers import register_default_endpoints
@@ -15,6 +16,7 @@ _engine = settings.get_engine()
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     sentry_init()
+    setup_signals()
     await setup(_engine)
     yield
     await teardown(_engine)

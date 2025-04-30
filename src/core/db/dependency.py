@@ -22,6 +22,7 @@ def session_decorator(func: Fn) -> Fn:
         async with AsyncSession(self_obj.engine) as session:
             kwargs["session"] = session
             res = await func(*args, **kwargs)
+            await session.flush()
         return res
 
     return wrapper
