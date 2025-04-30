@@ -23,3 +23,15 @@ class TestMapperSignal(AsyncTestCase):
         await self.user.save()
 
         self.assertEqual(new_age * 2, self.user.age)
+
+    async def test_after_update_signal(self):
+        def double_user_age(_: Mapper[User], __: Connection, user: User):
+            user.age *= 2
+
+        new_age = 10
+        signal_manager.after_update(User)(double_user_age)
+        self.user.age = new_age
+        await self.user.save()
+
+        self.assertEqual(new_age, self.user.age)
+        self.assertNotEqual(new_age * 2, self.user.age)
