@@ -1,12 +1,9 @@
 from importlib import import_module
 
-from core.monitoring.logger import get_logger
 from core.services.files import (
     get_application_paths,
     linux_path_to_module_path,
 )
-
-_logger = get_logger(__name__)
 
 
 def setup_signals():
