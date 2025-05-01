@@ -40,3 +40,16 @@ def test_register_signal(target: Any, event_name: str, callback: Fn):
 def test_unregister_signal(target: Any, event_name: str, callback: Fn):
     signal_manager.unregister(event_name, callback, target=target)
     assert sa_event.contains(target, event_name, callback) is False
+
+
+@pytest.mark.parametrize(
+    "target,event_name,callback",
+    (
+        (User, "on_update", foo),
+        (User, "soon_after_delete", foo),
+    ),
+)
+def test_unknown_signal_event_name(target: Any, event_name: str, callback: Fn):
+    with pytest.raises(ValueError) as e:
+        signal_manager.register(event_name, callback, target=target)
+    assert f"Not supported event: {event_name}." in str(e.value)
