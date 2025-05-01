@@ -38,7 +38,7 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         self.event_handlers: list[EventModel] = []
         self.logger = logger
 
-    def register(self, event_name: EventName, callback: Fn, *, target: Any = None):
+    def register(self, event_name: EventName, callback: Fn, *, target: Any):
         event = EventModel(name=event_name, target=target, callback=callback)
         self.logger.info(f"Signal registering {event}")
         if sa_event.contains(target, event_name, callback):
@@ -47,7 +47,7 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         self.event_handlers.append(event)
         sa_event.listens_for(target, event_name)(callback)
 
-    def unregister(self, event_name: EventName, callback: Fn, *, target: Any = None):
+    def unregister(self, event_name: EventName, callback: Fn, *, target: Any):
         event = EventModel(name=event_name, target=target, callback=callback)
         self.logger.info(f"Signal unregistering {event}")
         if not sa_event.contains(target, event_name, callback):
