@@ -1,3 +1,5 @@
+import asyncio
+
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.orm import Mapper
 
@@ -9,9 +11,11 @@ from core.testing.async_case import AsyncTestCase
 class TestMapperSignal(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self, *args, **kwargs):
         await super().asyncSetUp()
-        self.user = await User.get(id=1)
+        self.user, self.second_user = await asyncio.gather(
+            User.get(id=1), User.get(id=2)
+        )
 
     async def test_before_update_signal(self):
         def double_user_age(_: Mapper[User], __: Connection, user: User):
@@ -24,14 +28,20 @@ class TestMapperSignal(AsyncTestCase):
 
         self.assertEqual(new_age * 2, self.user.age)
 
+        # Unregister to avoid any conflict on the next tests
+        signal_manager.unregister("before_update", double_user_age, target=User)
+
     async def test_after_update_signal(self):
-        def double_user_age(_: Mapper[User], __: Connection, user: User):
-            user.age *= 2
+        def set_second_user_age(_: Mapper[User], __: Connection, user: User):
+            self.second_user.age = user.age * -1
 
         new_age = 10
-        signal_manager.after_update(User)(double_user_age)
+        signal_manager.after_update(User)(set_second_user_age)
         self.user.age = new_age
         await self.user.save()
 
         self.assertEqual(new_age, self.user.age)
-        self.assertNotEqual(new_age * 2, self.user.age)
+        self.assertEqual(self.second_user.age, new_age * -1)
+
+        # Unregister to avoid any conflict on the next tests
+        signal_manager.unregister("after_update", set_second_user_age, target=User)
