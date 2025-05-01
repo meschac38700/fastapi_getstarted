@@ -62,3 +62,23 @@ class TestMapperSignal(AsyncTestCase):
 
         # Unregister to avoid distorting next tests
         signal_manager.unregister("before_insert", set_permissions, target=User)
+
+    async def test_after_insert_signal(self):
+        permissions = list(await Permission.filter(target_table=User.table_name()))
+
+        def copy_permissions(_: Mapper[User], __: Connection, user: User):
+            self.user.permissions = user.permissions
+
+        signal_manager.after_insert(User)(copy_permissions)
+        new_user = await User(
+            username="foo",
+            first_name="bar",
+            last_name="DOE",
+            password="pytest",
+            permissions=permissions,
+        ).save()
+
+        self.assertEqual(self.user.permissions, new_user.permissions)
+
+        # Unregister to avoid distorting next tests
+        signal_manager.unregister("after_insert", copy_permissions, target=User)
