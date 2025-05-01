@@ -28,7 +28,7 @@ class TestMapperSignal(AsyncTestCase):
 
         self.assertEqual(new_age * 2, self.user.age)
 
-        # Unregister to avoid any conflict on the next tests
+        # Unregister to avoid distorting next tests
         signal_manager.unregister("before_update", double_user_age, target=User)
 
     async def test_after_update_signal(self):
@@ -43,5 +43,5 @@ class TestMapperSignal(AsyncTestCase):
         self.assertEqual(new_age, self.user.age)
         self.assertEqual(self.second_user.age, new_age * -1)
 
-        # Unregister to avoid any conflict on the next tests
+        # Unregister to avoid distorting next tests
         signal_manager.unregister("after_update", set_second_user_age, target=User)
