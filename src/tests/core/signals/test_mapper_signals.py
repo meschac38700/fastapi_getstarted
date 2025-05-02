@@ -1,5 +1,4 @@
-import asyncio
-
+import pytest
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.orm import Mapper
 
@@ -10,14 +9,17 @@ from core.db.signals.utils.types import EventCategory
 from core.testing.async_case import AsyncTestCase
 
 
+class DeletionProhibitedError(Exception):
+    pass
+
+
 class TestMapperSignal(AsyncTestCase):
     fixtures = ["users"]
 
     async def asyncSetUp(self, *_, **__):
         await super().asyncSetUp()
-        self.user, self.second_user = await asyncio.gather(
-            User.get(id=1), User.get(id=2)
-        )
+        self.user = await User.get(id=1)
+        self.second_user = await User.get(id=2)
 
     async def test_before_update_signal(self):
         def double_user_age(_: Mapper[User], __: Connection, user: User):
@@ -94,3 +96,28 @@ class TestMapperSignal(AsyncTestCase):
         signal_manager.unregister(
             "after_insert", copy_permissions, target=User, category=EventCategory.MAPPER
         )
+
+    async def test_before_delete_signal(self):
+        def deny_deletion(_: Mapper[User], __: Connection, user: User):
+            raise DeletionProhibitedError(f"Cannot delete user {user.id}.")
+
+        signal_manager.before_delete(User)(deny_deletion)
+        with pytest.raises(DeletionProhibitedError) as e:
+            await self.second_user.delete()
+
+        await self.second_user.refresh()
+        self.assertIsNotNone(self.second_user)
+        self.assertEqual(f"Cannot delete user {self.second_user.id}.", str(e.value))
+
+    async def test_after_delete_signal(self):
+        called = False
+
+        def check_called(_: Mapper[User], __: Connection, ___: User):
+            nonlocal called
+            called = True
+
+        pk = self.second_user.id
+        signal_manager.after_delete(User)(check_called)
+        await self.second_user.delete()
+        self.assertTrue(called)
+        self.assertIsNone(await User.get(id=pk))
