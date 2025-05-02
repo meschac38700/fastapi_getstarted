@@ -27,9 +27,10 @@ def foo(*_, **__):
 def test_register_signal(
     target: Any, event_name: str, callback: Fn, category: EventCategory
 ):
+    prev_len = len(signal_manager.event_handlers)
     signal_manager.register(event_name, callback, target=target, category=category)
+    assert prev_len + 1 == len(signal_manager.event_handlers)
     assert sa_event.contains(target, event_name, callback)
-    assert len(signal_manager.event_handlers) >= 1
 
 
 @pytest.mark.parametrize(
@@ -43,7 +44,9 @@ def test_register_signal(
 def test_unregister_signal(
     target: Any, event_name: str, callback: Fn, category: EventCategory
 ):
+    prev_len = len(signal_manager.event_handlers)
     signal_manager.unregister(event_name, callback, target=target, category=category)
+    assert prev_len - 1 == len(signal_manager.event_handlers)
     assert sa_event.contains(target, event_name, callback) is False
 
 
