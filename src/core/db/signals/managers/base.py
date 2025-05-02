@@ -9,7 +9,7 @@ from core.db.signals.managers.mixins import (
     SchemaEventMixin,
     SessionEventMixin,
 )
-from core.db.signals.utils.types import EventModel
+from core.db.signals.utils.types import EventCategory, EventModel
 from core.monitoring.logger import get_logger
 
 P = ParamSpec("P")
@@ -46,10 +46,19 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         if event_name not in self.EVENT_NAMES:
             raise ValueError(f"Not supported event: {event_name}.")
 
-    def register(self, event_name: EventName, callback: Fn, *, target: Any):
+    def register(
+        self,
+        event_name: EventName,
+        callback: Fn,
+        *,
+        target: Any,
+        category: EventCategory,
+    ):
         self._guard_event_name(event_name)
 
-        event = EventModel(name=event_name, target=target, callback=callback)
+        event = EventModel(
+            name=event_name, target=target, callback=callback, category=category
+        )
         self.logger.info(f"Signal registering {event}")
         if sa_event.contains(target, event_name, callback):
             return
@@ -57,10 +66,19 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         self.event_handlers.append(event)
         sa_event.listens_for(target, event_name)(callback)
 
-    def unregister(self, event_name: EventName, callback: Fn, *, target: Any):
+    def unregister(
+        self,
+        event_name: EventName,
+        callback: Fn,
+        *,
+        target: Any,
+        category: EventCategory,
+    ):
         self._guard_event_name(event_name)
 
-        event = EventModel(name=event_name, target=target, callback=callback)
+        event = EventModel(
+            name=event_name, target=target, callback=callback, category=category
+        )
         self.logger.info(f"Signal unregistering {event}")
         if not sa_event.contains(target, event_name, callback):
             return

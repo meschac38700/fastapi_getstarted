@@ -3,6 +3,8 @@ from typing import Callable
 from sqlmodel import SQLModel
 from typing_extensions import Any, ParamSpec
 
+from core.db.signals.utils.types import EventCategory
+
 P = ParamSpec("P")
 Fn = Callable[P, Any]
 
@@ -18,7 +20,9 @@ class SchemaEventMixin:
         """Handle event before CREATE sql command is emitted to the database."""
 
         def wrapper(callback: Fn):
-            self.register("before_create", callback, target=model)
+            self.register(
+                "before_create", callback, target=model, category=EventCategory.SCHEMA
+            )
 
         return wrapper
 
@@ -26,7 +30,9 @@ class SchemaEventMixin:
         """Handle event before DROP sql command is emitted to the database."""
 
         def wrapper(callback: Fn):
-            self.register("before_drop", callback, target=model)
+            self.register(
+                "before_drop", callback, target=model, category=EventCategory.SCHEMA
+            )
 
         return wrapper
 
@@ -34,7 +40,9 @@ class SchemaEventMixin:
         """Handle event after CREATE sql command is emitted to the database."""
 
         def wrapper(callback: Fn):
-            self.register("after_create", callback, target=model)
+            self.register(
+                "after_create", callback, target=model, category=EventCategory.SCHEMA
+            )
 
         return wrapper
 
@@ -42,6 +50,8 @@ class SchemaEventMixin:
         """Handle event after DROP sql command is emitted to the database."""
 
         def wrapper(callback: Fn):
-            self.register("after_drop", callback, target=model)
+            self.register(
+                "after_drop", callback, target=model, category=EventCategory.SCHEMA
+            )
 
         return wrapper

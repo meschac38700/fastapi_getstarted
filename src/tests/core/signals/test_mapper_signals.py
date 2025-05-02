@@ -6,13 +6,14 @@ from sqlalchemy.orm import Mapper
 from apps.authorization.models import Permission
 from apps.user.models import User
 from core.db.signals.managers import signal_manager
+from core.db.signals.utils.types import EventCategory
 from core.testing.async_case import AsyncTestCase
 
 
 class TestMapperSignal(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self, *args, **kwargs):
+    async def asyncSetUp(self, *_, **__):
         await super().asyncSetUp()
         self.user, self.second_user = await asyncio.gather(
             User.get(id=1), User.get(id=2)
@@ -30,7 +31,9 @@ class TestMapperSignal(AsyncTestCase):
         self.assertEqual(new_age * 2, self.user.age)
 
         # Unregister to avoid distorting next tests
-        signal_manager.unregister("before_update", double_user_age, target=User)
+        signal_manager.unregister(
+            "before_update", double_user_age, target=User, category=EventCategory.MAPPER
+        )
 
     async def test_after_update_signal(self):
         def set_second_user_age(_: Mapper[User], __: Connection, user: User):
@@ -45,7 +48,12 @@ class TestMapperSignal(AsyncTestCase):
         self.assertEqual(self.second_user.age, new_age * -1)
 
         # Unregister to avoid distorting next tests
-        signal_manager.unregister("after_update", set_second_user_age, target=User)
+        signal_manager.unregister(
+            "after_update",
+            set_second_user_age,
+            target=User,
+            category=EventCategory.MAPPER,
+        )
 
     async def test_before_insert_signal(self):
         permissions = await Permission.filter(target_table=User.table_name())
@@ -61,7 +69,9 @@ class TestMapperSignal(AsyncTestCase):
         self.assertEqual(new_user.permissions, permissions)
 
         # Unregister to avoid distorting next tests
-        signal_manager.unregister("before_insert", set_permissions, target=User)
+        signal_manager.unregister(
+            "before_insert", set_permissions, target=User, category=EventCategory.MAPPER
+        )
 
     async def test_after_insert_signal(self):
         permissions = list(await Permission.filter(target_table=User.table_name()))
@@ -81,4 +91,6 @@ class TestMapperSignal(AsyncTestCase):
         self.assertEqual(self.user.permissions, new_user.permissions)
 
         # Unregister to avoid distorting next tests
-        signal_manager.unregister("after_insert", copy_permissions, target=User)
+        signal_manager.unregister(
+            "after_insert", copy_permissions, target=User, category=EventCategory.MAPPER
+        )

@@ -3,6 +3,8 @@ from typing import Callable
 from sqlmodel import Session
 from typing_extensions import Any, ParamSpec
 
+from core.db.signals.utils.types import EventCategory
+
 P = ParamSpec("P")
 Fn = Callable[P, Any]
 
@@ -21,7 +23,12 @@ class SessionEventMixin:
         """
 
         def wrapper(callback: Fn):
-            self.register("after_bulk_delete", callback, target=session)
+            self.register(
+                "after_bulk_delete",
+                callback,
+                target=session,
+                category=EventCategory.SESSION,
+            )
 
         return wrapper
 
@@ -32,6 +39,11 @@ class SessionEventMixin:
         """
 
         def wrapper(callback: Fn):
-            self.register("after_bulk_update", callback, target=session)
+            self.register(
+                "after_bulk_update",
+                callback,
+                target=session,
+                category=EventCategory.SESSION,
+            )
 
         return wrapper
