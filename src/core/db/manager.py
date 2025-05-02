@@ -2,7 +2,6 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
-from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel
 
 from .dependency import DBService
@@ -76,8 +75,8 @@ class ModelManager:
         )
 
     @session_decorator
-    async def exists(self, filters: ColumnExpressionArgument[bool] | bool) -> bool:
-        return await self.db_service.exists(self.model_class, filters)
+    async def exists(self, item: SQLModel) -> bool:
+        return await self.db_service.exists(self.model_class, item)
 
     @session_decorator
     async def delete(self, item: SQLModel):

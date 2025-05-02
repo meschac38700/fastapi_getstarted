@@ -5,7 +5,6 @@ from typing import Annotated, Any, ParamSpec, TypeVar
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
-from sqlalchemy.sql._typing import ColumnExpressionArgument
 from sqlmodel import SQLModel, delete, select
 
 from settings import settings
@@ -120,11 +119,12 @@ class DBService:
     async def exists(
         self,
         model: SQLModel,
+        instance: SQLModel,
         *,
         session: AsyncSession = None,
-        filters: ColumnExpressionArgument[bool] | bool,
     ) -> bool:
-        data_list = await session.scalars(select(model).where(filters))
+        filter_by = model.resolve_filters(id=instance.id)
+        data_list = await session.scalars(select(model).where(*filter_by))
         return data_list.first() is not None
 
     @session_decorator

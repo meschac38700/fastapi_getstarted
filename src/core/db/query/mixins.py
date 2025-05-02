@@ -45,14 +45,17 @@ class ModelQuery(QueryExpressionManager):
     async def delete(self) -> None:
         return await self.objects().delete(self)
 
+    async def refresh(self) -> Self:
+        return await self.objects().refresh(self)
+
+    async def exists(self) -> bool:
+        return await self.objects().exists(self)
+
     @classmethod
     async def batch_create(
         cls, items: Iterable[SQLModel], *, batch_size: int = 50
     ) -> None:
         await cls.objects().insert_batch(items, batch_size=batch_size)
-
-    async def refresh(self) -> Self:
-        return await self.objects().refresh(self)
 
     @classmethod
     async def truncate(cls) -> Self:
