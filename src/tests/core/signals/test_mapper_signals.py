@@ -109,6 +109,11 @@ class TestMapperSignal(AsyncTestCase):
         self.assertIsNotNone(self.second_user)
         self.assertEqual(f"Cannot delete user {self.second_user.id}.", str(e.value))
 
+        # Unregister to avoid distorting next tests
+        signal_manager.unregister(
+            "before_delete", deny_deletion, target=User, category=EventCategory.MAPPER
+        )
+
     async def test_after_delete_signal(self):
         called = False
 
@@ -121,3 +126,7 @@ class TestMapperSignal(AsyncTestCase):
         await self.second_user.delete()
         self.assertTrue(called)
         self.assertIsNone(await User.get(id=pk))
+        # Unregister to avoid distorting next tests
+        signal_manager.unregister(
+            "after_delete", check_called, target=User, category=EventCategory.MAPPER
+        )
