@@ -1,11 +1,12 @@
 import itertools
 from collections.abc import Callable
 from functools import wraps
-from typing import Annotated, Any, ParamSpec, TypeVar
+from typing import Iterable
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlmodel import SQLModel, delete, select
+from typing_extensions import Annotated, Any, ParamSpec, TypeVar
 
 from settings import settings
 
@@ -140,6 +141,24 @@ class DBService:
         session.add(instance)
         await session.delete(instance)
         await session.commit()
+
+    @session_decorator
+    async def bulk_delete(
+        self,
+        instances: Iterable[SQLModel],
+        *,
+        session: AsyncSession | None = None,
+        batch_size: int = 50,
+    ):
+        """Delete all given instances.
+
+        Docs: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#deleting"""
+        batches = itertools.batched(instances, batch_size)
+        for batch in batches:
+            for item in batch:
+                await session.delete(item)
+            await session.commit()
+            await session.flush()
 
     @session_decorator
     async def truncate(self, instance: SQLModel, *, session: AsyncSession):

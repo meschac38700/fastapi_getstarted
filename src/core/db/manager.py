@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, ParamSpec, TypeVar
+from typing import Any, Iterable, ParamSpec, TypeVar
 
 from sqlmodel import SQLModel
 
@@ -81,6 +81,10 @@ class ModelManager:
     @session_decorator
     async def delete(self, item: SQLModel):
         await self.db_service.delete(item)
+
+    @session_decorator
+    async def bulk_delete(self, items: Iterable[SQLModel]):
+        await self.db_service.bulk_delete(items)
 
     @session_decorator
     async def refresh(self, item: SQLModel) -> SQLModel:

@@ -72,3 +72,12 @@ class TestDBService(AsyncTestCase):
         )
         data = await self.db_service.all(User)
         self.assertGreaterEqual(len(data), len(self.user_list()))
+
+    async def test_bulk_delete(self):
+        list_item = self.user_list()
+        await self.db_service.insert_batch(list_item)
+
+        await self.db_service.bulk_delete(list_item)
+
+        items = await self.db_service.all(User)
+        self.assertEqual([], items)
