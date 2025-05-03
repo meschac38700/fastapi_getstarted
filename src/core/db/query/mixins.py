@@ -45,6 +45,10 @@ class ModelQuery(QueryExpressionManager):
     async def delete(self) -> None:
         return await self.objects().delete(self)
 
+    @classmethod
+    async def bulk_delete(cls, items: Iterable[SQLModel]):
+        return await cls.objects().bulk_delete(items)
+
     async def refresh(self) -> Self:
         return await self.objects().refresh(self)
 
