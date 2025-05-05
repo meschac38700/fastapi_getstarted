@@ -3,6 +3,7 @@ from typing import Annotated, Literal
 
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from .constants import DATABASE_ENV_FILE
@@ -49,7 +50,11 @@ class Settings(BaseSettings):
     celery_worker_heartbeat: int = 120  # Send a heartbeat every 120 seconds by default
 
     def get_engine(self, **kwargs):
-        kw = {"pool_pre_ping": True, **kwargs}
+        """Return Async db Engine.
+
+        Docs: https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html
+        """
+        kw = {"pool_pre_ping": True, "poolclass": NullPool, **kwargs}
         engine = create_async_engine(self.uri, **kw)
         return engine
 
