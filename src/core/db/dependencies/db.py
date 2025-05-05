@@ -22,7 +22,6 @@ def inject_session(func: Fn) -> Fn:
         async with AsyncSession(self_obj.engine) as session:
             kwargs["session"] = session
             res = await func(*args, **kwargs)
-            await session.flush()
         return res
 
     return wrapper
@@ -59,10 +58,11 @@ class DBService:
         session: AsyncSession = None,
     ):
         """Insert a batch of SQLModel instances."""
-        batches = itertools.batched(instances, batch_size)
-        for batch in batches:
-            session.add_all(batch)
-            await session.commit()
+        async with session.begin():
+            batches = itertools.batched(instances, batch_size)
+            for batch in batches:
+                session.add_all(batch)
+                await session.commit()
 
     @inject_session
     async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
@@ -153,12 +153,12 @@ class DBService:
         """Delete all given instances.
 
         Docs: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#deleting"""
-        batches = itertools.batched(instances, batch_size)
-        for batch in batches:
-            for item in batch:
-                await session.delete(item)
-            await session.commit()
-            await session.flush()
+        async with session.begin():
+            batches = itertools.batched(instances, batch_size)
+            for batch in batches:
+                for item in batch:
+                    await session.delete(item)
+                await session.commit()
 
     @inject_session
     async def truncate(self, instance: SQLModel, *, session: AsyncSession):
