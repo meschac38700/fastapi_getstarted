@@ -1,4 +1,4 @@
-import itertools
+import asyncio
 from collections.abc import Callable
 from functools import wraps
 from typing import Iterable
@@ -22,6 +22,7 @@ def inject_session(func: Fn) -> Fn:
         async with AsyncSession(self_obj.engine) as session:
             kwargs["session"] = session
             res = await func(*args, **kwargs)
+        await session.flush()
         return res
 
     return wrapper
@@ -59,10 +60,8 @@ class DBService:
     ):
         """Insert a batch of SQLModel instances."""
         async with session.begin():
-            batches = itertools.batched(instances, batch_size)
-            for batch in batches:
-                session.add_all(batch)
-                await session.commit()
+            session.add_all(instances)
+        await session.commit()
 
     @inject_session
     async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
@@ -154,11 +153,8 @@ class DBService:
 
         Docs: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#deleting"""
         async with session.begin():
-            batches = itertools.batched(instances, batch_size)
-            for batch in batches:
-                for item in batch:
-                    await session.delete(item)
-                await session.commit()
+            await asyncio.gather(*[session.delete(instance) for instance in instances])
+        await session.commit()
 
     @inject_session
     async def truncate(self, instance: SQLModel, *, session: AsyncSession):
