@@ -15,14 +15,12 @@ Fn = Callable[P, Any]
 T = TypeVar("T", bound=SQLModel)
 
 
-def inject_session(func: Fn) -> Fn:
+def flush_session(func: Fn) -> Fn:
     @wraps(func)
     async def wrapper(*args, **kwargs) -> Any:
         self_obj = args[0]
-        async with AsyncSession(self_obj.engine) as session:
-            kwargs["session"] = session
-            res = await func(*args, **kwargs)
-        await session.flush()
+        res = await func(*args, **kwargs)
+        await self_obj.session.flush()
         return res
 
     return wrapper
@@ -33,6 +31,15 @@ class DBService:
 
     def __init__(self, engine: AsyncEngine = None):
         self.engine = engine or settings.get_engine()
+        self._session: AsyncSession | None = None
+
+    @property
+    def session(self) -> AsyncSession:
+        if self._session is not None and self._session.is_active:
+            return self._session
+
+        self._session = AsyncSession(self.engine)
+        return self._session
 
     async def __aenter__(self):
         return self
@@ -43,33 +50,30 @@ class DBService:
     async def dispose(self):
         await self.engine.dispose()
 
-    @inject_session
-    async def insert(self, item: T, *, session: AsyncSession):
-        session.add(item)
-        await session.commit()
-        await session.refresh(item)
+    @flush_session
+    async def insert(self, item: T):
+        self.session.add(item)
+        await self.session.commit()
+        await self.session.refresh(item)
         return item
 
-    @inject_session
+    @flush_session
     async def insert_batch(
         self,
         instances: list[SQLModel],
-        *,
-        batch_size: int = 50,
-        session: AsyncSession = None,
     ):
         """Insert a batch of SQLModel instances."""
-        async with session.begin():
-            session.add_all(instances)
-        await session.commit()
+        async with self.session.begin_nested():
+            self.session.add_all(instances)
+        await self.session.commit()
 
-    @inject_session
-    async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
+    @flush_session
+    async def get(self, model: SQLModel, **filters):
         filter_by = model.resolve_filters(**filters)
-        res = await session.scalars(select(model).where(*filter_by))
+        res = await self.session.scalars(select(model).where(*filter_by))
         return res.first()
 
-    @inject_session
+    @flush_session
     async def values(self, model: SQLModel, *attrs, **kwargs):
         session = kwargs.get("session")
         filters = kwargs.get("filters", {})
@@ -83,83 +87,76 @@ class DBService:
 
         return res.all()
 
-    @inject_session
+    @flush_session
     async def all(
         self,
         model: SQLModel,
         *,
-        session: AsyncSession = None,
         offset: int = 0,
         limit: int = 100,
     ):
         """Get all items of the given model."""
 
         # based on https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#dynamic-asyncio
-        data = await session.scalars(select(model).offset(offset).limit(limit))
+        data = await self.session.scalars(select(model).offset(offset).limit(limit))
 
         return data.unique().all()
 
-    @inject_session
+    @flush_session
     async def filter(
         self,
         model: SQLModel,
         *,
-        session: AsyncSession = None,
         offset: int = 0,
         limit: int = 100,
         **filters,
     ):
         filter_by = model.resolve_filters(**filters)
-        data_list = await session.scalars(
+        data_list = await self.session.scalars(
             select(model).where(*filter_by).offset(offset).limit(limit)
         )
         return data_list.unique().all()
 
-    @inject_session
+    @flush_session
     async def exists(
         self,
         model: SQLModel,
         instance: SQLModel,
-        *,
-        session: AsyncSession = None,
     ) -> bool:
         filter_by = model.resolve_filters(id=instance.id)
-        data_list = await session.scalars(select(model).where(*filter_by))
+        data_list = await self.session.scalars(select(model).where(*filter_by))
         return data_list.first() is not None
 
-    @inject_session
-    async def refresh(
-        self, instance: SQLModel, *args, session: AsyncSession, **kwargs
-    ) -> SQLModel:
-        session.add(instance)
-        await session.refresh(instance, *args, **kwargs)
+    @flush_session
+    async def refresh(self, instance: SQLModel, *args, **kwargs) -> SQLModel:
+        self.session.add(instance)
+        await self.session.refresh(instance, *args, **kwargs)
         return instance
 
-    @inject_session
-    async def delete(self, instance: SQLModel, *, session: AsyncSession):
-        session.add(instance)
-        await session.delete(instance)
-        await session.commit()
+    @flush_session
+    async def delete(self, instance: SQLModel):
+        self.session.add(instance)
+        await self.session.delete(instance)
+        await self.session.commit()
 
-    @inject_session
+    @flush_session
     async def bulk_delete(
         self,
         instances: Iterable[SQLModel],
-        *,
-        session: AsyncSession | None = None,
-        batch_size: int = 50,
     ):
         """Delete all given instances.
 
         Docs: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#deleting"""
-        async with session.begin():
-            await asyncio.gather(*[session.delete(instance) for instance in instances])
-        await session.commit()
+        async with self.session.begin_nested():
+            await asyncio.gather(
+                *[self.session.delete(instance) for instance in instances]
+            )
+        await self.session.commit()
 
-    @inject_session
-    async def truncate(self, instance: SQLModel, *, session: AsyncSession):
-        await session.execute(delete(instance))
-        await session.commit()
+    @flush_session
+    async def truncate(self, instance: SQLModel):
+        await self.session.execute(delete(instance))
+        await self.session.commit()
 
 
 async def get_db_service():

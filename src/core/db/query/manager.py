@@ -11,7 +11,7 @@ Fn = Callable[P, Any]
 T = TypeVar("T", bound=SQLModel)
 
 
-def session_manager(func: Fn) -> Fn:
+def connection_manager(func: Fn) -> Fn:
     @wraps(func)
     async def wrapper(*args, **kwargs) -> Any:
         self_obj: ModelManager = args[0]
@@ -30,29 +30,32 @@ class ModelManager:
         self.model_class = model_class
         self.db_service = DBService()
 
-    @session_manager
+    @property
+    def session(self):
+        return self.db_service.session
+
+    @property
+    def sync_session(self):
+        return self.session.sync_session
+
+    @connection_manager
     async def insert(self, item: SQLModel):
         return await self.db_service.insert(item)
 
-    @session_manager
-    async def insert_batch(
-        self,
-        data: list[SQLModel],
-        *,
-        batch_size: int = 50,
-    ):
+    @connection_manager
+    async def insert_batch(self, data: list[SQLModel]):
         """Insert a batch of SQLModel instances."""
-        await self.db_service.insert_batch(data, batch_size=batch_size)
+        await self.db_service.insert_batch(data)
 
-    @session_manager
+    @connection_manager
     async def get(self, **filters):
         return await self.db_service.get(self.model_class, **filters)
 
-    @session_manager
+    @connection_manager
     async def values(self, *attrs, filters: dict[str, Any] | None = None):
         return await self.db_service.values(self.model_class, *attrs, filters=filters)
 
-    @session_manager
+    @connection_manager
     async def all(
         self,
         *,
@@ -62,7 +65,7 @@ class ModelManager:
         """Get all items of the given model."""
         return await self.db_service.all(self.model_class, offset=offset, limit=limit)
 
-    @session_manager
+    @connection_manager
     async def filter(
         self,
         *,
@@ -74,22 +77,22 @@ class ModelManager:
             self.model_class, **filters, offset=offset, limit=limit
         )
 
-    @session_manager
+    @connection_manager
     async def exists(self, item: SQLModel) -> bool:
         return await self.db_service.exists(self.model_class, item)
 
-    @session_manager
+    @connection_manager
     async def delete(self, item: SQLModel):
         await self.db_service.delete(item)
 
-    @session_manager
+    @connection_manager
     async def bulk_delete(self, items: Iterable[SQLModel]):
         await self.db_service.bulk_delete(items)
 
-    @session_manager
+    @connection_manager
     async def refresh(self, item: SQLModel) -> SQLModel:
         return await self.db_service.refresh(item)
 
-    @session_manager
+    @connection_manager
     async def truncate(self):
         await self.db_service.truncate(self.model_class)
