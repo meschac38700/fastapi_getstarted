@@ -15,7 +15,7 @@ Fn = Callable[P, Any]
 T = TypeVar("T", bound=SQLModel)
 
 
-def session_decorator(func: Fn) -> Fn:
+def inject_session(func: Fn) -> Fn:
     @wraps(func)
     async def wrapper(*args, **kwargs) -> Any:
         self_obj = args[0]
@@ -43,14 +43,14 @@ class DBService:
     async def dispose(self):
         await self.engine.dispose()
 
-    @session_decorator
+    @inject_session
     async def insert(self, item: T, *, session: AsyncSession):
         session.add(item)
         await session.commit()
         await session.refresh(item)
         return item
 
-    @session_decorator
+    @inject_session
     async def insert_batch(
         self,
         instances: list[SQLModel],
@@ -64,13 +64,13 @@ class DBService:
             session.add_all(batch)
             await session.commit()
 
-    @session_decorator
+    @inject_session
     async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
         filter_by = model.resolve_filters(**filters)
         res = await session.scalars(select(model).where(*filter_by))
         return res.first()
 
-    @session_decorator
+    @inject_session
     async def values(self, model: SQLModel, *attrs, **kwargs):
         session = kwargs.get("session")
         filters = kwargs.get("filters", {})
@@ -84,7 +84,7 @@ class DBService:
 
         return res.all()
 
-    @session_decorator
+    @inject_session
     async def all(
         self,
         model: SQLModel,
@@ -100,7 +100,7 @@ class DBService:
 
         return data.unique().all()
 
-    @session_decorator
+    @inject_session
     async def filter(
         self,
         model: SQLModel,
@@ -116,7 +116,7 @@ class DBService:
         )
         return data_list.unique().all()
 
-    @session_decorator
+    @inject_session
     async def exists(
         self,
         model: SQLModel,
@@ -128,7 +128,7 @@ class DBService:
         data_list = await session.scalars(select(model).where(*filter_by))
         return data_list.first() is not None
 
-    @session_decorator
+    @inject_session
     async def refresh(
         self, instance: SQLModel, *args, session: AsyncSession, **kwargs
     ) -> SQLModel:
@@ -136,13 +136,13 @@ class DBService:
         await session.refresh(instance, *args, **kwargs)
         return instance
 
-    @session_decorator
+    @inject_session
     async def delete(self, instance: SQLModel, *, session: AsyncSession):
         session.add(instance)
         await session.delete(instance)
         await session.commit()
 
-    @session_decorator
+    @inject_session
     async def bulk_delete(
         self,
         instances: Iterable[SQLModel],
@@ -160,7 +160,7 @@ class DBService:
             await session.commit()
             await session.flush()
 
-    @session_decorator
+    @inject_session
     async def truncate(self, instance: SQLModel, *, session: AsyncSession):
         await session.execute(delete(instance))
         await session.commit()

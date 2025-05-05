@@ -4,7 +4,7 @@ from typing import Any, Self
 
 from sqlmodel import SQLModel
 
-from core.db.manager import ModelManager
+from core.db.query.manager import ModelManager
 from core.db.query.operators import QueryExpressionManager
 
 

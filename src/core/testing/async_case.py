@@ -5,7 +5,7 @@ from httpx import ASGITransport
 from apps.authorization.models import Group, Permission
 from apps.user.models import User
 from core.db import create_db_and_tables, delete_db_and_tables
-from core.db.dependency import DBService
+from core.db.dependencies import DBService
 from core.db.fixtures import LoadFixtures
 from core.testing.client import AsyncClientTest
 from main import app
