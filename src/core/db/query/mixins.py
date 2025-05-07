@@ -56,8 +56,8 @@ class ModelQuery(QueryExpressionManager):
         return await self.objects().exists(self)
 
     @classmethod
-    async def batch_create(cls, items: Iterable[SQLModel]) -> None:
-        await cls.objects().insert_batch(items)
+    async def bulk_create_or_update(cls, items: Iterable[SQLModel]) -> None:
+        await cls.objects().bulk_create_or_update(items)
 
     @classmethod
     async def truncate(cls) -> Self:

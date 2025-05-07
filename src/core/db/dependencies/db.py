@@ -62,7 +62,7 @@ class DBService:
         return item
 
     @inject_session
-    async def insert_batch(
+    async def bulk_create_or_update(
         self,
         instances: list[SQLModel],
         *,

@@ -43,9 +43,9 @@ class ModelManager:
         return await self.db_service.insert(item)
 
     @connection_manager
-    async def insert_batch(self, data: list[SQLModel]):
+    async def bulk_create_or_update(self, data: list[SQLModel]):
         """Insert a batch of SQLModel instances."""
-        await self.db_service.insert_batch(data)
+        await self.db_service.bulk_create_or_update(data)
 
     @connection_manager
     async def get(self, **filters):

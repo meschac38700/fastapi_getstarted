@@ -51,7 +51,7 @@ class LoadFixtures:
         self.logger.info(
             f"{len(models)} object(s) found in the {_fixture_file.name} file and will be saved in the database."
         )
-        await SQLTable.objects().insert_batch(models)
+        await SQLTable.objects().bulk_create_or_update(models)
         return len(models)
 
     async def load_app_fixtures(self, app_name: str):

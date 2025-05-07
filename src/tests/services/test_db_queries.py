@@ -52,20 +52,20 @@ class TestDBService(AsyncTestCase):
             ),
         ]
 
-    async def test_insert_batch(self):
+    async def test_bulk_create_or_update(self):
         await User.truncate()
         data = await self.db_service.all(User)
         self.assertEqual(0, len(data))
         # load data
-        await self.db_service.insert_batch(self.user_list())
+        await self.db_service.bulk_create_or_update(self.user_list())
         data = await self.db_service.all(User)
         self.assertGreaterEqual(len(data), len(self.user_list()))
 
-    async def test_insert_batch_prevent_duplication(self):
+    async def test_bulk_create_or_update_prevent_duplication(self):
         # load data twice
-        await self.db_service.insert_batch(self.user_list())
+        await self.db_service.bulk_create_or_update(self.user_list())
         with pytest.raises(IntegrityError) as e:
-            await self.db_service.insert_batch(self.user_list())
+            await self.db_service.bulk_create_or_update(self.user_list())
         self.assertIn(
             'duplicate key value violates unique constraint "ix_users_username"',
             str(e.value),
@@ -75,7 +75,7 @@ class TestDBService(AsyncTestCase):
 
     async def test_bulk_delete(self):
         list_item = self.user_list()
-        await self.db_service.insert_batch(list_item)
+        await self.db_service.bulk_create_or_update(list_item)
 
         await self.db_service.bulk_delete(list_item)
 
