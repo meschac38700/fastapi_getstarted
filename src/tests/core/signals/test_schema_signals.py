@@ -12,6 +12,16 @@ from settings import settings
 Fn = Callable[..., Any]
 
 
+class BeforeDropModel(SQLTable, table=True):
+    id: int = Field(primary_key=True, allow_mutation=False)
+    name: str
+
+
+class AfterDropModel(SQLTable, table=True):
+    id: int = Field(primary_key=True, allow_mutation=False)
+    name: str
+
+
 class TestSchemaSignals(AsyncTestCase):
     async def _db_exec(self, callback: Fn, **kwargs):
         engine = settings.get_engine()
@@ -51,3 +61,27 @@ class TestSchemaSignals(AsyncTestCase):
 
         await self._db_exec(table.create)
         self.assertTrue(after_create_table_called)
+
+    async def test_before_drop_signal(self):
+        table = BeforeDropModel.table()
+        before_drop_table_called = False
+
+        @signal_manager.before_drop(table)
+        def before_drop_table(target: Table, _: Connection, **__):
+            nonlocal before_drop_table_called
+            before_drop_table_called = target.name == BeforeDropModel.table_name()
+
+        await self._db_exec(table.drop)
+        self.assertTrue(before_drop_table_called)
+
+    async def test_after_drop_signal(self):
+        table = AfterDropModel.table()
+        after_drop_table_called = False
+
+        @signal_manager.after_drop(table)
+        def after_drop_table(target: Table, _: Connection, **__):
+            nonlocal after_drop_table_called
+            after_drop_table_called = target.name == AfterDropModel.table_name()
+
+        await self._db_exec(table.drop)
+        self.assertTrue(after_drop_table_called)
