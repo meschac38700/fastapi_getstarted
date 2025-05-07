@@ -1,4 +1,5 @@
 from typing import Callable
+from warnings import deprecated
 
 from sqlmodel import Session
 from typing_extensions import Any, ParamSpec
@@ -15,7 +16,7 @@ class SessionEventMixin:
     Docs: https://docs.sqlalchemy.org/en/20/orm/events.html#session-events
     """
 
-    # SessionEvents
+    @deprecated("Use mapper event 'after_delete instead.'")
     def after_bulk_delete(self, session: Session):
         """Event for after the legacy Query.delete() method has been called.
 
@@ -32,6 +33,7 @@ class SessionEventMixin:
 
         return wrapper
 
+    @deprecated("Use mapper event 'after_update instead.'")
     def after_bulk_update(self, session: Session):
         """Event for after the legacy Query.update() method has been called.
 
@@ -39,6 +41,8 @@ class SessionEventMixin:
         """
 
         def wrapper(callback: Fn):
+            nonlocal session
+
             self.register(
                 "after_bulk_update",
                 callback,
