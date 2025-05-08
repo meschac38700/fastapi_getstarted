@@ -81,3 +81,18 @@ class TestDBService(AsyncTestCase):
 
         items = await self.db_service.all(User)
         self.assertEqual([], items)
+
+    async def test_count(self):
+        list_item = self.user_list()
+        await self.db_service.bulk_create_or_update(list_item)
+        expected_count = len(list_item)
+        actual_count = await User.count()
+
+        self.assertEqual(actual_count, expected_count)
+
+        self.assertEqual(1, await User.count(username="u_deadpond"))
+
+        self.assertGreaterEqual(await User.count(username__istartswith="u_"), 1)
+
+        await self.db_service.bulk_delete(list_item)
+        self.assertEqual(0, await User.count())
