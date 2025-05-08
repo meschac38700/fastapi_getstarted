@@ -39,14 +39,16 @@ class TestPermissionCRUD(AsyncTestCase):
 
     async def test_get_permission_filter_by_name(self):
         await self.client.user_login(self.admin)
-
+        read_permission_name = Permission.format_permission_name(
+            "read", Permission.table_name()
+        )
         response = await self.client.get(
-            "authorizations/permissions/", params={"name": "read_permission"}
+            "authorizations/permissions/", params={"name": read_permission_name}
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
         expected = {
-            "name": "read_permission",
-            "target_table": "permission",
+            "name": read_permission_name,
+            "target_table": Permission.table_name(),
             "display_name": "Read permission",
             "description": "This permission allows user to read the Permission model.",
         }
@@ -60,22 +62,28 @@ class TestPermissionCRUD(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.get(
-            "authorizations/permissions/", params={"target_table": "permission"}
+            "authorizations/permissions/",
+            params={"target_table": Permission.table_name()},
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
         self.assertTrue(len(response.json()) >= 4)
 
     async def test_get_permission_filter_by_name_and_target_table(self):
         await self.client.user_login(self.admin)
-
+        create_permission_name = Permission.format_permission_name(
+            "create", Permission.table_name()
+        )
         response = await self.client.get(
             "authorizations/permissions/",
-            params={"name": "create_permission", "target_table": "permission"},
+            params={
+                "name": create_permission_name,
+                "target_table": Permission.table_name(),
+            },
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
         expected = {
-            "name": "create_permission",
-            "target_table": "permission",
+            "name": create_permission_name,
+            "target_table": Permission.table_name(),
             "display_name": "Create permission",
             "description": "This permission allows user to create the Permission model.",
         }
@@ -88,7 +96,7 @@ class TestPermissionCRUD(AsyncTestCase):
     async def test_add_new_permission(self):
         post_data = {
             "name": "delete_admin_account",
-            "target_table": "user",
+            "target_table": User.table_name(),
             "display_name": "Delete admin account",
         }
         response = await self.client.post(

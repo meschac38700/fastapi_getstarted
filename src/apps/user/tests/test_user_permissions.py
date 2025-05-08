@@ -35,7 +35,11 @@ class TestUserPermission(AsyncTestCase):
 
         await self.client.user_login(self.staff)
 
-        expected_permissions = ["read_users", "create_users", "update_users"]
+        expected_permissions = [
+            Permission.format_permission_name("read", User.table_name()),
+            Permission.format_permission_name("create", User.table_name()),
+            Permission.format_permission_name("update", User.table_name()),
+        ]
         await self.add_permissions(self.staff, expected_permissions)
 
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
@@ -51,7 +55,11 @@ class TestUserPermission(AsyncTestCase):
 
         await self.client.user_login(self.staff)
 
-        expected_permissions = ["read_users", "create_users", "update_users"]
+        expected_permissions = [
+            Permission.format_permission_name("read", User.table_name()),
+            Permission.format_permission_name("create", User.table_name()),
+            Permission.format_permission_name("update", User.table_name()),
+        ]
         await self.add_permissions(self.staff, expected_permissions)
 
         response = await self.client.get("/users/permissions/")
@@ -69,7 +77,11 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         # Get permissions of active user
-        expected_permissions = ["read_users", "create_users", "update_users"]
+        expected_permissions = [
+            Permission.format_permission_name("read", User.table_name()),
+            Permission.format_permission_name("create", User.table_name()),
+            Permission.format_permission_name("update", User.table_name()),
+        ]
         await self.add_permissions(self.active, expected_permissions)
 
         response = await self.client.get(f"/users/{self.active.id}/permissions/")
@@ -97,7 +109,12 @@ class TestUserPermission(AsyncTestCase):
             last_name="Pytest",
             password="test123",
         ).save()
-        data = {"permissions": ["create_users", "read_users"]}
+        data = {
+            "permissions": [
+                Permission.format_permission_name("create", User.table_name()),
+                Permission.format_permission_name("read", User.table_name()),
+            ]
+        }
         perms = await Permission.filter(name__in=data["permissions"])
         self.assertFalse(user.has_permissions(perms))
 
@@ -120,7 +137,12 @@ class TestUserPermission(AsyncTestCase):
         self.assertEqual(response.json(), expected_perms_response)
 
     async def test_remove_permissions_to_user(self):
-        data = {"permissions": ["create_users", "read_users"]}
+        data = {
+            "permissions": [
+                Permission.format_permission_name("create", User.table_name()),
+                Permission.format_permission_name("read", User.table_name()),
+            ]
+        }
         user = await User(
             username="remove_permission",
             first_name="Test",

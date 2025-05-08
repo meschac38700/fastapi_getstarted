@@ -45,8 +45,9 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        group_create = await Group.get(name="create_hero")
-        await self.add_permissions(group_create, ["create_hero"])
+        create_perm = Permission.format_permission_name("create", Hero.table_name())
+        group_create = await Group.get(name=create_perm)
+        await self.add_permissions(group_create, [create_perm])
         await group_create.add_user(self.user)
 
         response = await self.client.post("/heroes/", json=hero.model_dump(mode="json"))
@@ -79,7 +80,8 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        update_hero_perm = await Permission.get(name="update_hero")
+        update_perm = Permission.format_permission_name("update", Hero.table_name())
+        update_hero_perm = await Permission.get(name=update_perm)
         await user.add_permission(update_hero_perm)
 
         response = await self.client.put(f"/heroes/{hero.id}/", json=data)
@@ -107,7 +109,8 @@ class TestHeroCRUD(AsyncTestCase):
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        update_hero_perm = await Permission.get(name="update_hero")
+        update_perm = Permission.format_permission_name("update", Hero.table_name())
+        update_hero_perm = await Permission.get(name=update_perm)
         await user.add_permission(update_hero_perm)
 
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
@@ -127,8 +130,9 @@ class TestHeroCRUD(AsyncTestCase):
 
         await self.client.user_login(self.user)
 
-        group_create = await Group.get(name="update_hero")
-        await self.add_permissions(group_create, ["update_hero"])
+        update_perm = Permission.format_permission_name("update", Hero.table_name())
+        group_create = await Group.get(name=update_perm)
+        await self.add_permissions(group_create, [update_perm])
         await group_create.add_user(self.user)
 
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)
@@ -154,8 +158,9 @@ class TestHeroCRUD(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
-        group_create = await Group.get(name="delete_hero")
-        await self.add_permissions(group_create, ["delete_hero"])
+        delete_perm = Permission.format_permission_name("delete", Hero.table_name())
+        group_create = await Group.get(name=delete_perm)
+        await self.add_permissions(group_create, [delete_perm])
         await group_create.add_user(self.user)
 
         response = await self.client.delete(

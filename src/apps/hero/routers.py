@@ -5,12 +5,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Query
 
 from apps.authorization.dependencies import permission_required
+from apps.authorization.models import Permission
 
 from .models import Hero
 from .models.pydantic.create import HeroCreate
 from .models.pydantic.patch import HeroPatch
 
 routers = APIRouter(tags=["Heroes"], prefix="/heroes")
+perms = {
+    "create": Permission.format_permission_name("create", Hero.table_name()),
+    "read": Permission.format_permission_name("read", Hero.table_name()),
+    "update": Permission.format_permission_name("update", Hero.table_name()),
+    "delete": Permission.format_permission_name("delete", Hero.table_name()),
+}
 
 
 @routers.get("/{pk}/", name="Get hero by id.")
@@ -33,13 +40,12 @@ async def get_heroes(
     status_code=HTTPStatus.CREATED,
     dependencies=[
         Depends(
-            permission_required(permissions=["create_hero"], groups=["create_hero"])
+            permission_required(permissions=[perms["create"]], groups=[perms["create"]])
         )
     ],
 )
 async def create_hero(hero: HeroCreate):
-    _hero = await Hero(**hero.model_dump()).save()
-    return _hero
+    return await Hero(**hero.model_dump()).save()
 
 
 @routers.put(
@@ -49,7 +55,7 @@ async def create_hero(hero: HeroCreate):
     status_code=HTTPStatus.OK,
     dependencies=[
         Depends(
-            permission_required(permissions=["update_hero"], groups=["update_hero"])
+            permission_required(permissions=[perms["update"]], groups=[perms["update"]])
         )
     ],
 )
@@ -76,7 +82,7 @@ async def update_hero(pk: int, hero: HeroCreate):
     status_code=HTTPStatus.OK,
     dependencies=[
         Depends(
-            permission_required(permissions=["update_hero"], groups=["update_hero"])
+            permission_required(permissions=[perms["update"]], groups=[perms["update"]])
         )
     ],
 )
@@ -102,7 +108,7 @@ async def patch_hero(pk: int, hero: HeroPatch):
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
         Depends(
-            permission_required(permissions=["delete_hero"], groups=["delete_hero"])
+            permission_required(permissions=[perms["delete"]], groups=[perms["delete"]])
         )
     ],
 )

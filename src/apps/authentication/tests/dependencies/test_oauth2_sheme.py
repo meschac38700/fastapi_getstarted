@@ -17,7 +17,10 @@ class TestOAuth2Scheme(AsyncTestCase):
         await Permission.generate_crud_objects(User.table_name())
 
     async def test_deleted_token_should_invalid_authentication(self):
-        await self.add_permissions(self.user, ["update_users"])
+        update_permission = Permission.format_permission_name(
+            "update", User.table_name()
+        )
+        await self.add_permissions(self.user, [update_permission])
 
         await self.client.login(self.user.username)
 

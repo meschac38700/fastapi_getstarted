@@ -4,11 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from apps.authentication.dependencies.oauth2 import current_user
 from apps.authorization.dependencies import permission_required
+from apps.authorization.models import Permission
 from apps.user.models import User
 from apps.user.models.pydantic.create import UserCreate
 from apps.user.models.pydantic.patch import UserPatch
 
 routers = APIRouter()
+perms = {
+    "create": Permission.format_permission_name("create", User.table_name()),
+    "read": Permission.format_permission_name("read", User.table_name()),
+    "update": Permission.format_permission_name("update", User.table_name()),
+    "delete": Permission.format_permission_name("delete", User.table_name()),
+}
 
 
 @routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
@@ -27,7 +34,7 @@ async def get_user(pk: int):
     status_code=HTTPStatus.OK,
     dependencies=[
         Depends(
-            permission_required(permissions=["update_users"], groups=["update_users"])
+            permission_required(permissions=[perms["update"]], groups=[perms["update"]])
         )
     ],
 )
@@ -60,7 +67,7 @@ async def update_user(
     name="Patch user",
     dependencies=[
         Depends(
-            permission_required(permissions=["update_users"], groups=["update_users"])
+            permission_required(permissions=[perms["update"]], groups=[perms["update"]])
         )
     ],
 )
@@ -103,7 +110,9 @@ async def post_user(user: UserCreate):
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
         Depends(
-            permission_required(permissions=["delete_users"], groups=["delete_users"]),
+            permission_required(
+                permissions=[perms["delete"]], groups=[perms["delete"]]
+            ),
         )
     ],
 )
