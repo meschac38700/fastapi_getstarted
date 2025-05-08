@@ -23,7 +23,8 @@ class TestUserRoles(AsyncTestCase):
 
     async def test_user_active_can_delete_only_his_own_account(self):
         self.assertIsNotNone(self.active)
-        await self.add_permissions(self.active, ["delete_users"])
+        delete_perm = Permission.format_permission_name("delete", User.table_name())
+        await self.add_permissions(self.active, [delete_perm])
         await self.client.user_login(self.active)
 
         # Try to delete another account than his own
@@ -40,7 +41,8 @@ class TestUserRoles(AsyncTestCase):
         self.assertIsNone(await User.get(id=self.active.id))
 
     async def test_user_staff_can_delete_only_his_own_account(self):
-        await self.add_permissions(self.staff, ["delete_users"])
+        delete_perm = Permission.format_permission_name("delete", User.table_name())
+        await self.add_permissions(self.staff, [delete_perm])
         await self.client.user_login(self.staff)
 
         # Try to delete another account than his own
@@ -64,7 +66,8 @@ class TestUserRoles(AsyncTestCase):
             username="someone", first_name="John", last_name="DOE", password="someone"
         ).save()
         self.assertIsNotNone(self.admin)
-        await self.add_permissions(self.admin, ["delete_users"])
+        delete_perm = Permission.format_permission_name("delete", User.table_name())
+        await self.add_permissions(self.admin, [delete_perm])
         await self.client.user_login(self.admin)
 
         # Try to delete another account than his own
@@ -85,7 +88,8 @@ class TestUserRoles(AsyncTestCase):
             "password": "jean",
             "role": "admin",
         }
-        await self.active.add_permission(await Permission.get(name="update_users"))
+        update_perm = Permission.format_permission_name("update", User.table_name())
+        await self.active.add_permission(await Permission.get(name=update_perm))
         await self.client.user_login(self.active)
 
         response = await self.client.put(f"/users/{self.active.id}/", json=update_data)
@@ -97,7 +101,8 @@ class TestUserRoles(AsyncTestCase):
 
     async def test_user_active_cannot_patch_role_field(self):
         update_data = {"role": "admin"}
-        await self.active.add_permission(await Permission.get(name="update_users"))
+        update_perm = Permission.format_permission_name("update", User.table_name())
+        await self.active.add_permission(await Permission.get(name=update_perm))
         await self.client.user_login(self.active)
 
         response = await self.client.patch(
@@ -117,7 +122,8 @@ class TestUserRoles(AsyncTestCase):
             "password": "jean",
             "role": "admin",
         }
-        await self.staff.add_permission(await Permission.get(name="update_users"))
+        update_perm = Permission.format_permission_name("update", User.table_name())
+        await self.staff.add_permission(await Permission.get(name=update_perm))
         await self.client.user_login(self.staff)
 
         response = await self.client.put(f"/users/{self.staff.id}/", json=update_data)
@@ -129,7 +135,8 @@ class TestUserRoles(AsyncTestCase):
 
     async def test_user_staff_cannot_patch_role_field(self):
         update_data = {"role": "admin"}
-        await self.staff.add_permission(await Permission.get(name="update_users"))
+        update_perm = Permission.format_permission_name("update", User.table_name())
+        await self.staff.add_permission(await Permission.get(name=update_perm))
         await self.client.user_login(self.staff)
 
         response = await self.client.patch(f"/users/{self.staff.id}/", json=update_data)

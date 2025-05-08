@@ -28,8 +28,11 @@ class TestGroupPermissions(AsyncTestCase):
         )
 
     async def test_group_has_no_right_permissions_cannot_edit(self):
-        read_group = await Group.get(name="read_hero")
-        await self.add_permissions(read_group, ["read_hero"])
+        read_permission_name = Permission.format_permission_name(
+            "read", Hero.table_name()
+        )
+        read_group = await Group.get(name=read_permission_name)
+        await self.add_permissions(read_group, [read_permission_name])
         await read_group.add_user(self.user)
 
         await self.client.user_login(self.user)
@@ -43,8 +46,11 @@ class TestGroupPermissions(AsyncTestCase):
         )
 
     async def test_group_permission_to_edit_resource(self):
-        edit_group = await Group.get(name="update_hero")
-        await self.add_permissions(edit_group, ["update_hero"])
+        update_permission_name = Permission.format_permission_name(
+            "update", Hero.table_name()
+        )
+        edit_group = await Group.get(name=update_permission_name)
+        await self.add_permissions(edit_group, [update_permission_name])
         await edit_group.add_user(self.user)
 
         await self.client.user_login(self.user)
@@ -104,8 +110,9 @@ class TestGroupPermissions(AsyncTestCase):
         await group.extend_permissions(perms)
         self.assertEqual(group.get_permissions(), perms)
 
+        read_permission = Permission.format_permission_name("read", User.table_name())
         data = {
-            "permissions": [perm.name for perm in perms if perm.name != "read_users"]
+            "permissions": [perm.name for perm in perms if perm.name != read_permission]
         }
 
         response = await self.client.post(
@@ -125,7 +132,10 @@ class TestGroupPermissions(AsyncTestCase):
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        read_perm = await Permission.get(name="read_users")
+        read_permission_name = Permission.format_permission_name(
+            "read", User.table_name()
+        )
+        read_perm = await Permission.get(name=read_permission_name)
         expected_response = [read_perm.model_dump(mode="json")]
         self.assertEqual(response.json(), expected_response)
         group = await group.refresh()

@@ -1,7 +1,7 @@
 import asyncio
 from http import HTTPStatus
 
-from apps.authorization.models import Group
+from apps.authorization.models import Group, Permission
 from apps.user.models import User
 from apps.user.utils.types import UserRole
 from core.testing.async_case import AsyncTestCase
@@ -39,7 +39,11 @@ class TestUserGroup(AsyncTestCase):
 
         await self.client.user_login(self.staff)
 
-        expected_groups = ["read_users", "create_users", "update_users"]
+        expected_groups = [
+            Permission.format_permission_name("read", User.table_name()),
+            Permission.format_permission_name("create", User.table_name()),
+            Permission.format_permission_name("update", User.table_name()),
+        ]
         await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get("/users/groups/")
@@ -57,7 +61,11 @@ class TestUserGroup(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         # Get groups of active user
-        expected_groups = ["read_users", "create_users", "update_users"]
+        expected_groups = [
+            Permission.format_permission_name("read", User.table_name()),
+            Permission.format_permission_name("create", User.table_name()),
+            Permission.format_permission_name("update", User.table_name()),
+        ]
         await self.active.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get(f"/users/{self.active.id}/groups/")

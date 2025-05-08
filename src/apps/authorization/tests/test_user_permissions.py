@@ -32,8 +32,10 @@ class TestUserPermission(AsyncTestCase):
     async def test_user_has_rights_to_edit_resource(self):
         hero_id = 1
         await self.client.user_login(self.user)
-
-        await self.add_permissions(self.user, ["update_hero"])
+        update_permission_name = Permission.format_permission_name(
+            "update", Hero.table_name()
+        )
+        await self.add_permissions(self.user, [update_permission_name])
 
         data = {"secret_name": "test edit"}
         response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
