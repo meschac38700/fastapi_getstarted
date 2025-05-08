@@ -25,6 +25,8 @@ def group_permission_required(
     async def dependency():
         detail = "You do not have sufficient rights to this resource."
         user = token.user
+        if user.is_admin:
+            return user
 
         group_list = await Group.filter(name__in=groups)
         if not group_list:

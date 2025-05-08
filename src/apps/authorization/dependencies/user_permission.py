@@ -23,6 +23,9 @@ def user_permission_required(
     log = logger or _logger
 
     async def dependency():
+        if token.user.is_admin:
+            return token.user
+
         detail = "You do not have sufficient rights to this resource."
         permission_list = await Permission.filter(name__in=permissions)
 

@@ -1,6 +1,7 @@
 from collections.abc import Iterator
 from typing import Any
 
+from sqlalchemy import Table
 from sqlmodel import SQLModel
 
 from core.db.query import ModelQuery
@@ -14,6 +15,10 @@ class SQLTable(SQLModel, ModelQuery):
     @classmethod
     def table_name(cls):
         return cls.__tablename__
+
+    @classmethod
+    def table(cls) -> Table:
+        return cls.metadata.tables[cls.table_name()]
 
     def update_from_dict(self, data: dict[str, Any]):
         for key, value in data.items():
