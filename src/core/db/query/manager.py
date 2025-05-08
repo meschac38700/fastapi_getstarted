@@ -78,6 +78,13 @@ class ModelManager:
         )
 
     @connection_manager
+    async def count(
+        self,
+        **filters,
+    ) -> int:
+        return await self.db_service.count(self.model_class, **filters)
+
+    @connection_manager
     async def exists(self, item: SQLModel) -> bool:
         return await self.db_service.exists(self.model_class, item)
 

@@ -36,6 +36,10 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().filter(**filters, offset=offset, limit=limit)
 
     @classmethod
+    async def count(cls, **filters) -> int:
+        return await cls.objects().count(**filters)
+
+    @classmethod
     async def all(cls, *, offset: int = 0, limit: int = 100) -> Sequence[Self]:
         return await cls.objects().all(offset=offset, limit=limit)
 

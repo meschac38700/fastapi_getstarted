@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Iterable
 
 from fastapi import Depends
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.sql.selectable import ForUpdateArg
 from sqlmodel import SQLModel, delete, select
@@ -124,6 +125,18 @@ class DBService:
             select(model).where(*filter_by).offset(offset).limit(limit)
         )
         return data_list.unique().all()
+
+    @inject_session
+    async def count(
+        self,
+        model: SQLModel,
+        *,
+        session: AsyncSession = None,
+        **filters,
+    ) -> int:
+        filter_by = model.resolve_filters(**filters)
+        result = await session.scalars(select(func.count(model.id)).where(*filter_by))
+        return result.unique().one()
 
     @inject_session
     async def exists(
