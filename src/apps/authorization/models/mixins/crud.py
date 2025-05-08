@@ -1,7 +1,16 @@
-from typing import Any
+from typing import Any, Literal
+
+CRUDPermissions = Literal["create", "read", "update", "delete"]
 
 
 class CRUDModelMixin:
+    # permission name format: {http verb}{separator}{model name}
+    _PERMISSION_NAME_SEPARATOR = ":"
+
+    @classmethod
+    def format_permission_name(cls, method: str | CRUDPermissions, target_table: str):
+        return f"{method}{cls._PERMISSION_NAME_SEPARATOR}{target_table}"
+
     @classmethod
     def get_object_crud_names(cls, target_table: str):
         return (
@@ -18,7 +27,7 @@ class CRUDModelMixin:
         description = "This {0} allows user to {1} the {2} model."
         kwargs_list = [
             {
-                "name": f"{method}_{target_table}",
+                "name": cls.format_permission_name(method, target_table),
                 "description": description.format(
                     cls.table_name(), method, target_table.title()
                 ),
@@ -49,7 +58,8 @@ class CRUDModelMixin:
     @classmethod
     async def generate_crud_objects(cls, table: str):
         """Create items for the given table based of CRUD methods."""
-        if await cls.get(name=f"read_{table}"):
+        perm_name = cls.format_permission_name("read", table)
+        if await cls.get(name=perm_name):
             return
 
         data_list = cls.get_crud_data_list(table)
