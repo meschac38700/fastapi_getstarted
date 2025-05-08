@@ -130,3 +130,16 @@ class TestMapperSignal(AsyncTestCase):
         signal_manager.unregister(
             "after_delete", check_called, target=User, category=EventCategory.MAPPER
         )
+
+    async def test_signal_after_bulk_delete(self):
+        called_count = 0
+
+        @signal_manager.after_delete(User)
+        def count_called(_: Mapper[User], __: Connection, ___: User):
+            nonlocal called_count
+            called_count += 1
+
+        users = await User.all()
+        expected_called_count = len(users)
+        await User.bulk_delete(users)
+        self.assertEqual(expected_called_count, called_count)

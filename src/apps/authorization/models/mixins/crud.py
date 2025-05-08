@@ -54,4 +54,4 @@ class CRUDModelMixin:
 
         data_list = cls.get_crud_data_list(table)
         model_list = [cls(**kw) for kw in data_list]
-        return await cls.batch_create(model_list)
+        return await cls.bulk_create_or_update(model_list)

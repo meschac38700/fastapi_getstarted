@@ -4,7 +4,7 @@ from typing import Any, Self
 
 from sqlmodel import SQLModel
 
-from core.db.manager import ModelManager
+from core.db.query.manager import ModelManager
 from core.db.query.operators import QueryExpressionManager
 
 
@@ -36,6 +36,10 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().filter(**filters, offset=offset, limit=limit)
 
     @classmethod
+    async def count(cls, **filters) -> int:
+        return await cls.objects().count(**filters)
+
+    @classmethod
     async def all(cls, *, offset: int = 0, limit: int = 100) -> Sequence[Self]:
         return await cls.objects().all(offset=offset, limit=limit)
 
@@ -45,6 +49,10 @@ class ModelQuery(QueryExpressionManager):
     async def delete(self) -> None:
         return await self.objects().delete(self)
 
+    @classmethod
+    async def bulk_delete(cls, items: Iterable[SQLModel]):
+        return await cls.objects().bulk_delete(items)
+
     async def refresh(self) -> Self:
         return await self.objects().refresh(self)
 
@@ -52,10 +60,8 @@ class ModelQuery(QueryExpressionManager):
         return await self.objects().exists(self)
 
     @classmethod
-    async def batch_create(
-        cls, items: Iterable[SQLModel], *, batch_size: int = 50
-    ) -> None:
-        await cls.objects().insert_batch(items, batch_size=batch_size)
+    async def bulk_create_or_update(cls, items: Iterable[SQLModel]) -> None:
+        await cls.objects().bulk_create_or_update(items)
 
     @classmethod
     async def truncate(cls) -> Self:

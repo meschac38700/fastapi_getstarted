@@ -1,11 +1,14 @@
-import itertools
+import asyncio
 from collections.abc import Callable
 from functools import wraps
-from typing import Annotated, Any, ParamSpec, TypeVar
+from typing import Iterable
 
 from fastapi import Depends
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.sql.selectable import ForUpdateArg
 from sqlmodel import SQLModel, delete, select
+from typing_extensions import Annotated, Any, ParamSpec, TypeVar
 
 from settings import settings
 
@@ -14,14 +17,16 @@ Fn = Callable[P, Any]
 T = TypeVar("T", bound=SQLModel)
 
 
-def session_decorator(func: Fn) -> Fn:
+def inject_session(func: Fn) -> Fn:
     @wraps(func)
     async def wrapper(*args, **kwargs) -> Any:
         self_obj = args[0]
         async with AsyncSession(self_obj.engine) as session:
             kwargs["session"] = session
+            setattr(self_obj, "_current_session", session)
             res = await func(*args, **kwargs)
-            await session.flush()
+        await session.flush()
+        setattr(self_obj, "_current_session", None)
         return res
 
     return wrapper
@@ -32,6 +37,14 @@ class DBService:
 
     def __init__(self, engine: AsyncEngine = None):
         self.engine = engine or settings.get_engine()
+        self._current_session: AsyncSession | None = None
+
+    @property
+    def session(self) -> AsyncSession:
+        if self._current_session is None:
+            self._current_session = AsyncSession(self.engine)
+
+        return self._current_session
 
     async def __aenter__(self):
         return self
@@ -42,34 +55,32 @@ class DBService:
     async def dispose(self):
         await self.engine.dispose()
 
-    @session_decorator
+    @inject_session
     async def insert(self, item: T, *, session: AsyncSession):
         session.add(item)
         await session.commit()
         await session.refresh(item)
         return item
 
-    @session_decorator
-    async def insert_batch(
+    @inject_session
+    async def bulk_create_or_update(
         self,
         instances: list[SQLModel],
         *,
-        batch_size: int = 50,
         session: AsyncSession = None,
     ):
         """Insert a batch of SQLModel instances."""
-        batches = itertools.batched(instances, batch_size)
-        for batch in batches:
-            session.add_all(batch)
-            await session.commit()
+        async with session.begin_nested():
+            session.add_all(instances)
+        await session.commit()
 
-    @session_decorator
+    @inject_session
     async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
         filter_by = model.resolve_filters(**filters)
         res = await session.scalars(select(model).where(*filter_by))
         return res.first()
 
-    @session_decorator
+    @inject_session
     async def values(self, model: SQLModel, *attrs, **kwargs):
         session = kwargs.get("session")
         filters = kwargs.get("filters", {})
@@ -83,7 +94,7 @@ class DBService:
 
         return res.all()
 
-    @session_decorator
+    @inject_session
     async def all(
         self,
         model: SQLModel,
@@ -99,7 +110,7 @@ class DBService:
 
         return data.unique().all()
 
-    @session_decorator
+    @inject_session
     async def filter(
         self,
         model: SQLModel,
@@ -115,7 +126,19 @@ class DBService:
         )
         return data_list.unique().all()
 
-    @session_decorator
+    @inject_session
+    async def count(
+        self,
+        model: SQLModel,
+        *,
+        session: AsyncSession = None,
+        **filters,
+    ) -> int:
+        filter_by = model.resolve_filters(**filters)
+        result = await session.scalars(select(func.count(model.id)).where(*filter_by))
+        return result.unique().one()
+
+    @inject_session
     async def exists(
         self,
         model: SQLModel,
@@ -127,21 +150,42 @@ class DBService:
         data_list = await session.scalars(select(model).where(*filter_by))
         return data_list.first() is not None
 
-    @session_decorator
+    @inject_session
     async def refresh(
-        self, instance: SQLModel, *args, session: AsyncSession, **kwargs
+        self,
+        instance: SQLModel,
+        *,
+        session: AsyncSession,
+        attribute_names: Iterable[str] | None = None,
+        with_for_update: ForUpdateArg | None | bool | dict[str, Any] = None,
     ) -> SQLModel:
         session.add(instance)
-        await session.refresh(instance, *args, **kwargs)
+        await session.refresh(
+            instance, attribute_names=attribute_names, with_for_update=with_for_update
+        )
         return instance
 
-    @session_decorator
+    @inject_session
     async def delete(self, instance: SQLModel, *, session: AsyncSession):
         session.add(instance)
         await session.delete(instance)
         await session.commit()
 
-    @session_decorator
+    @inject_session
+    async def bulk_delete(
+        self,
+        instances: Iterable[SQLModel],
+        *,
+        session: AsyncSession | None = None,
+    ):
+        """Delete all given instances.
+
+        Docs: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#deleting"""
+        async with session.begin():
+            await asyncio.gather(*[session.delete(instance) for instance in instances])
+        await session.commit()
+
+    @inject_session
     async def truncate(self, instance: SQLModel, *, session: AsyncSession):
         await session.execute(delete(instance))
         await session.commit()
