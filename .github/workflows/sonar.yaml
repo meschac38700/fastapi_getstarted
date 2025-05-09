@@ -20,4 +20,4 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-        SONAR_SCANNER_OPTS: "-Dsonar.exclusions=src/tests/**,src/apps/**/tests/**"
+        SONAR_SCANNER_OPTS: "-Dsonar.exclusions=src/tests/**,src/apps/**/tests/**,!src/core/models/utils.py"
