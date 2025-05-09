@@ -1,5 +1,12 @@
 #### FastAPI template project
 
+> [!NOTE]
+> This web application serves as a starter kit for building robust APIs using
+> the FastAPI framework. It provides a foundational structure that includes
+> built-in authentication, a permission management system, and other useful features.
+> The goal is to offer developers a streamlined starting point, 
+> simplifying the initial setup and promoting a better development experience.
+
 #### Python Version:
 
 ###### *_python >= 3.13.X_*
