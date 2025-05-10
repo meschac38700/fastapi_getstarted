@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 
 import settings
@@ -31,6 +33,14 @@ def run_tests(
     apps: AppsType,
     pytest_args: PytestArgsType,
     test_paths: TestPathsType = None,
+    coverage: Annotated[
+        bool,
+        typer.Option(
+            "--cov",
+            "-c",
+            help="Measure, collect, and report on code coverage in the app.",
+        ),
+    ] = False,
 ):
     """Execute application tests.
 
@@ -45,10 +55,15 @@ def run_tests(
     )
 
     test_command = TestRunner()
+    if not coverage:
+        return
 
     def _run_test():
         test_command(
-            target_apps=apps, test_paths=test_paths or [], pytest_args=pytest_args
+            target_apps=apps,
+            test_paths=test_paths or [],
+            pytest_args=pytest_args,
+            coverage=coverage,
         )
 
     dk_compose.run_process(_run_test, stop_after=True, force_recreate=True)
