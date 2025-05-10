@@ -1,4 +1,5 @@
 name: Build
+run-name: Build App image
 
 on:
   workflow_run:

@@ -35,7 +35,7 @@ class TestPermissionCRUD(AsyncTestCase):
 
         response = await self.client.get("authorizations/permissions/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertTrue(len(response.json()) >= 4)
+        self.assertGreaterEqual(len(response.json()), 4)
 
     async def test_get_permission_filter_by_name(self):
         await self.client.user_login(self.admin)
@@ -53,7 +53,7 @@ class TestPermissionCRUD(AsyncTestCase):
             "description": "This permission allows user to read the Permission model.",
         }
         data = response.json()
-        self.assertTrue(len(data) == 1)
+        self.assertEqual(len(data), 1)
         actual = data[0]
         actual.pop("id", None)
         self.assertEqual(actual, expected)
@@ -66,7 +66,7 @@ class TestPermissionCRUD(AsyncTestCase):
             params={"target_table": Permission.table_name()},
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertTrue(len(response.json()) >= 4)
+        self.assertGreaterEqual(len(response.json()), 4)
 
     async def test_get_permission_filter_by_name_and_target_table(self):
         await self.client.user_login(self.admin)
@@ -88,7 +88,7 @@ class TestPermissionCRUD(AsyncTestCase):
             "description": "This permission allows user to create the Permission model.",
         }
         data = response.json()
-        self.assertTrue(len(data) == 1)
+        self.assertEqual(len(data), 1)
         actual = data[0]
         actual.pop("id", None)
         self.assertEqual(actual, expected)
@@ -122,7 +122,7 @@ class TestPermissionCRUD(AsyncTestCase):
         created_permission_id = actual_data.pop("id", None)
         self.assertIsNotNone(created_permission_id)
         self.assertIsNotNone(await Permission.get(id=created_permission_id))
-        self.assertTrue(actual_data[k] == v for k, v in post_data.items())
+        self.assertTrue(all(actual_data[k] == v for k, v in post_data.items()))
 
     async def test_patch_permission(self):
         update_data = {
@@ -153,7 +153,7 @@ class TestPermissionCRUD(AsyncTestCase):
 
         actual_data = response.json()
         self.assertIsNotNone(actual_data.pop("id", None))
-        self.assertTrue(actual_data[k] == v for k, v in update_data.items())
+        self.assertTrue(all(actual_data[k] == v for k, v in update_data.items()))
 
     async def test_put_permission(self):
         update_data = {
@@ -184,7 +184,7 @@ class TestPermissionCRUD(AsyncTestCase):
 
         actual_data = response.json()
         self.assertIsNotNone(actual_data.pop("id", None))
-        self.assertTrue(actual_data[k] == v for k, v in update_data.items())
+        self.assertTrue(all(actual_data[k] == v for k, v in update_data.items()))
 
     async def test_delete_permission(self):
         permission = await Permission(
