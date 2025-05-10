@@ -65,7 +65,7 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.get("/users/permissions/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        self.assertTrue(len(response.json()) >= len(expected_permissions))
+        self.assertGreaterEqual(len(response.json()), len(expected_permissions))
         self.assertTrue(
             all(perm["name"] in expected_permissions for perm in response.json())
         )
@@ -87,7 +87,7 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.get(f"/users/{self.active.id}/permissions/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        self.assertTrue(len(response.json()) >= len(expected_permissions))
+        self.assertGreaterEqual(len(response.json()), len(expected_permissions))
         self.assertTrue(
             all(perm["name"] in expected_permissions for perm in response.json())
         )
@@ -97,7 +97,7 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        self.assertTrue(len(response.json()) >= len(expected_permissions))
+        self.assertGreaterEqual(len(response.json()), len(expected_permissions))
         self.assertTrue(
             all(perm["name"] in expected_permissions for perm in response.json())
         )

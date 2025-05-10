@@ -49,7 +49,7 @@ class TestUserGroup(AsyncTestCase):
         response = await self.client.get("/users/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        self.assertTrue(len(response.json()) >= len(expected_groups))
+        self.assertGreaterEqual(len(response.json()), len(expected_groups))
         self.assertTrue(
             all(perm["name"] in expected_groups for perm in response.json())
         )
@@ -70,7 +70,7 @@ class TestUserGroup(AsyncTestCase):
 
         response = await self.client.get(f"/users/{self.active.id}/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertTrue(len(response.json()) >= len(expected_groups))
+        self.assertGreaterEqual(len(response.json()), len(expected_groups))
         self.assertTrue(
             all(group["name"] in expected_groups for group in response.json())
         )
@@ -80,7 +80,7 @@ class TestUserGroup(AsyncTestCase):
         response = await self.client.get(f"/users/{self.staff.id}/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
 
-        self.assertTrue(len(response.json()) >= len(expected_groups))
+        self.assertGreaterEqual(len(response.json()), len(expected_groups))
         self.assertTrue(
             all(group["name"] in expected_groups for group in response.json())
         )
