@@ -42,6 +42,7 @@ class TestSchemaSignals(AsyncTestCase):
             nonlocal before_create_table_called
             before_create_table_called = target.name == BeforeCreateModel.table_name()
 
+        await self._db_exec(table.drop, checkfirst=True)
         await self._db_exec(table.create)
         self.assertTrue(before_create_table_called)
 
@@ -59,6 +60,7 @@ class TestSchemaSignals(AsyncTestCase):
             nonlocal after_create_table_called
             after_create_table_called = target.name == AfterCreateModel.table_name()
 
+        await self._db_exec(table.drop, checkfirst=True)
         await self._db_exec(table.create)
         self.assertTrue(after_create_table_called)
 
