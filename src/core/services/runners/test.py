@@ -20,6 +20,10 @@ class TestRunner:
 
     @property
     def coverage_options(self):
+        """Coverage options.
+
+        Should match the CI: Tests workflow
+        """
         return ["--cov=.", "--cov-report=xml", "--cov-fail-under=90"]
 
     def _run_tests(
