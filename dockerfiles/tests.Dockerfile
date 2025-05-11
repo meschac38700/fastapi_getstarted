@@ -51,15 +51,13 @@ RUN apt-get update -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy the environment, but not the source code
-COPY --from=virtualenv --chown=${USER}:${USER} $VIRTUAL_ENV $VIRTUAL_ENV
+COPY --from=virtualenv $VIRTUAL_ENV $VIRTUAL_ENV
 ENV PATH="$VBIN:$PATH"
 
 WORKDIR ${APP_DIR}
 
-USER ${USER}
-
-COPY --chown=${USER}:${USER} ./src .
+COPY ./src .
 # util to run test inside container
-COPY --chown=${USER}:${USER} ./tox.ini .
+COPY ./tox.ini .
 
 RUN chmod +x ./scripts/entrypoint.sh
