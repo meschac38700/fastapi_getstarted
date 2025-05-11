@@ -21,8 +21,6 @@ _EMPTY = type("Empty", (), {})
 
 
 class User(PermissionMixin, UserBaseModel, table=True):
-    __tablename__ = "users"
-
     id: int = Field(default=None, primary_key=True, allow_mutation=False)
     permissions: list[Permission] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionUserLink

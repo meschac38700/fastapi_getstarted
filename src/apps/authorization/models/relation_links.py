@@ -5,7 +5,7 @@ from core.db import SQLTable
 
 class PermissionUserLink(SQLTable, table=True):
     user_id: int | None = Field(
-        default=None, foreign_key="users.id", primary_key=True, ondelete="CASCADE"
+        default=None, foreign_key="user.id", primary_key=True, ondelete="CASCADE"
     )
     permission_name: str | None = Field(
         default=None,
@@ -32,7 +32,7 @@ class PermissionGroupLink(SQLTable, table=True):
 
 class GroupUserLink(SQLTable, table=True):
     user_id: int | None = Field(
-        default=None, foreign_key="users.id", primary_key=True, ondelete="CASCADE"
+        default=None, foreign_key="user.id", primary_key=True, ondelete="CASCADE"
     )
     group_name: str | None = Field(
         default=None,

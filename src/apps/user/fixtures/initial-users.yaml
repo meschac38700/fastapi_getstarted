@@ -8,10 +8,10 @@
     address: Seyssinet-Pariset
     role: admin
     permissions:
-    - update:users
-    - create:users
-    - read:users
-    - delete:users
+    - update:user
+    - create:user
+    - read:user
+    - delete:user
     - read:permission
     - update:permission
     - update:permission
