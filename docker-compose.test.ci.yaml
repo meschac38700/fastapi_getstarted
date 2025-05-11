@@ -29,6 +29,8 @@ services:
     environment:
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+    volumes:
+      - ./src:/home/appuser/app/www
     command: ["bash", "./scripts/entrypoint.sh"]
 
   redis_test:
