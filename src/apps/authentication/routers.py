@@ -34,14 +34,5 @@ async def login(
     "/token/refresh", name="Refresh JWT token", dependencies=[Depends(oauth2_scheme())]
 )
 async def refresh(token: JWTToken = Depends(oauth2_scheme())):
-    if token is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Login session not found."
-        )
-
-    if not token.can_be_refreshed:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED, detail="Your session has expired."
-        )
     await token.refresh()
     return JWTTokenRead.model_validate(token)
