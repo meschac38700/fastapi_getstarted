@@ -37,6 +37,11 @@ jobs:
           # Synchronize with the test command: core/services/runners/test.py
           docker exec -t api_test pytest --cov=. --cov-report=xml --cov-fail-under=90
 
+      - name: Check coverage file generated
+        run: |
+          pwd
+          ls -R
+          cat coverage.xml
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.2.0
         env:
