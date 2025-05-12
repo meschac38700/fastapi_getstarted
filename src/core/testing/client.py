@@ -29,3 +29,16 @@ class AsyncClientTest(AsyncClient):
         await self._token.delete()
         self.headers.pop("Authorization", None)
         self._token = None
+
+    @property
+    def user(self):
+        """Return the current authenticated user."""
+        if self._token is None:
+            return None
+
+        return self._token.user
+
+    @property
+    def token(self):
+        """Return the current authenticated JWT token."""
+        return self._token
