@@ -49,3 +49,14 @@ class TestAuthenticationEndpoints(AsyncTestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         data = response.json()
         self.assertListEqual(list(data.keys()), ["access_token", "token_type"])
+
+    async def test_refresh_token(self):
+        await self.client.login(username="fastapi")
+        self.assertIsNotNone(self.client.token)
+        old_access_token = self.client.token.access_token
+        self.assertTrue(self.client.token.can_be_refreshed)
+
+        response = await self.client.post(f"{settings.AUTH_PREFIX_URL}/token/refresh")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        self.assertNotEqual(response.json()["access_token"], old_access_token)
