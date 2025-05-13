@@ -35,7 +35,7 @@ jobs:
       - name: Run Tests
         run: |
           # Synchronize with the test command: core/services/runners/test.py
-          docker exec -t api_test pytest --cov=. --cov-report=xml --cov-fail-under=80
+          docker exec -t api_test pytest --cov=. --cov-report=xml --cov-fail-under=80 -cov-branch
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.2.0
