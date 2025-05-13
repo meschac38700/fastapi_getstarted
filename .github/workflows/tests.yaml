@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker-practice/actions-setup-docker@master
+      - uses: docker/setup-docker-action@v4
         with:
           docker_version: ${{ matrix.docker-version }}
           docker_channel: ${{ matrix.docker-channel }}
@@ -37,11 +37,6 @@ jobs:
           # Synchronize with the test command: core/services/runners/test.py
           docker exec -t api_test pytest --cov=. --cov-report=xml --cov-fail-under=80
 
-      - name: Check coverage file generated
-        run: |
-          pwd
-          ls -lha
-          cat src/coverage.xml
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.2.0
         env:
