@@ -55,8 +55,6 @@ def run_tests(
     )
 
     test_command = TestRunner()
-    if not coverage:
-        return
 
     def _run_test():
         test_command(

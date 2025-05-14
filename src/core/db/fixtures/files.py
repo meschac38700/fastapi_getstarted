@@ -39,11 +39,12 @@ class FixtureFileReader(YAMLReader):
         _properties = properties.copy()
         if permission_names := set(_properties.get("permissions", [])):
             permissions = await Permission.filter(name__in=permission_names)
-            if len(permissions) != len(permission_names):
-                missing_perms = [
-                    perm.name for perm in permissions if perm.name in permission_names
-                ] or permission_names
-                raise ValueError(f"Permissions not found: {missing_perms}")
+            found_permission_names = [perm.name for perm in permissions]
+            missing_permissions = permission_names.difference(found_permission_names)
+            if not found_permission_names or missing_permissions:
+                raise ValueError(
+                    f"Permissions not found: {missing_permissions}, {found_permission_names}"
+                )
 
             _properties["permissions"] = permissions
         return _properties
