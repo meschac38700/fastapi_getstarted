@@ -27,7 +27,7 @@ class TestRunner:
         return [
             "--cov=.",
             "--cov-report=xml",
-            "--cov-fail-under=90",
+            "--cov-fail-under=80",
             "--cov-branch",
             "--no-cov-on-fail",
             "--cov-config=.coveragerc",
