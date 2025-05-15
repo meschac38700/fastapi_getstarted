@@ -37,7 +37,7 @@ class TestGroupCRUD(AsyncTestCase):
 
         response = await self.client.get("authorizations/groups/")
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertTrue(len(response.json()) >= 4)
+        self.assertGreaterEqual(len(response.json()), 4)
 
     async def test_get_group_filter_by_name(self):
         await self.client.user_login(self.admin)
@@ -55,7 +55,7 @@ class TestGroupCRUD(AsyncTestCase):
             "description": "This permission_group allows user to read the Permission model.",
         }
         data = response.json()
-        self.assertTrue(len(data) == 1)
+        self.assertEqual(len(data), 1)
         actual = data[0]
         actual.pop("id", None)
         self.assertEqual(actual, expected)
@@ -67,7 +67,7 @@ class TestGroupCRUD(AsyncTestCase):
             "authorizations/groups/", params={"target_table": Permission.table_name()}
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertTrue(len(response.json()) >= 4)
+        self.assertGreaterEqual(len(response.json()), 4)
 
     async def test_get_group_filter_by_name_and_target_table(self):
         await self.client.user_login(self.admin)
@@ -89,7 +89,7 @@ class TestGroupCRUD(AsyncTestCase):
             "description": "This permission_group allows user to create the Permission model.",
         }
         data = response.json()
-        self.assertTrue(len(data) == 1)
+        self.assertEqual(len(data), 1)
         actual = data[0]
         self.assertIsInstance(actual.pop("id", None), int)
         self.assertEqual(actual, expected)
@@ -117,7 +117,7 @@ class TestGroupCRUD(AsyncTestCase):
         created_group_id = actual_data.pop("id", None)
         self.assertIsNotNone(created_group_id)
         self.assertIsNotNone(await Group.get(id=created_group_id))
-        self.assertTrue(actual_data[k] == v for k, v in post_data.items())
+        self.assertTrue(all(actual_data[k] == v for k, v in post_data.items()))
 
     async def test_patch_group(self):
         update_data = {
@@ -148,7 +148,7 @@ class TestGroupCRUD(AsyncTestCase):
 
         actual_data = response.json()
         self.assertIsNotNone(actual_data.pop("id", None))
-        self.assertTrue(actual_data[k] == v for k, v in update_data.items())
+        self.assertTrue(all(actual_data[k] == v for k, v in update_data.items()))
 
     async def test_put_group(self):
         update_data = {
@@ -179,7 +179,7 @@ class TestGroupCRUD(AsyncTestCase):
 
         actual_data = response.json()
         self.assertIsNotNone(actual_data.pop("id", None))
-        self.assertTrue(actual_data[k] == v for k, v in update_data.items())
+        self.assertTrue(all(actual_data[k] == v for k, v in update_data.items()))
 
     async def test_delete_group(self):
         group = await Group(

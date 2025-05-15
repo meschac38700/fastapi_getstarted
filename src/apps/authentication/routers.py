@@ -19,13 +19,13 @@ async def login(
 ) -> JWTTokenRead:
     user = await User.get(username=form_data.username)
     if user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        detail = "Authentication error: user not found."
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=detail)
 
     valid_password = user.check_password(form_data.password)
     if not valid_password:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Incorrect username or password"
-        )
+        detail = "Authentication error: credentials are invalid."
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
     token = await JWTToken.get_or_create(user)
     return JWTTokenRead.model_validate(token)
 
@@ -34,14 +34,5 @@ async def login(
     "/token/refresh", name="Refresh JWT token", dependencies=[Depends(oauth2_scheme())]
 )
 async def refresh(token: JWTToken = Depends(oauth2_scheme())):
-    if token is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Login session not found."
-        )
-
-    if not token.can_be_refreshed:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED, detail="Your session has expired."
-        )
     await token.refresh()
     return JWTTokenRead.model_validate(token)

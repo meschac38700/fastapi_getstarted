@@ -1,4 +1,5 @@
 name: Pre-commit
+run-name: Linter
 
 on:
   pull_request:

@@ -56,14 +56,14 @@ class DockerComposeManager:
             override_files (list[str] | list[Path] | None, optional): User's docker compose file. Defaults to None.
 
         Raises:
-            ValueError: if the provided path not exists or None.
+            ValueError: if the provided path does not exist or None.
         """
         if not isinstance(docker_compose_file, str) and not isinstance(
             docker_compose_file, Path
         ):
             raise ValueError("docker_compose file must be a string or a Path")
 
-        self.docker_compose_file = settings.BASE_DIR.parent / Path(docker_compose_file)
+        self.docker_compose_file = Path(docker_compose_file).absolute()
 
         self.override_compose_files = []
         for compose_file in override_files:
@@ -81,8 +81,8 @@ class DockerComposeManager:
     def _get_not_running_services(self, states: str) -> list[str] | tuple[str, ...]:
         """Return list of services that have not been started yet.
 
-        @params state: The state of the all the current services. Can be 'running', 'stopped'
-            available format: "exited"  "created" "running" "created"
+        @params state: The state of all the current services. Can be 'running', 'stopped'
+            available format: "exited" "created" "running" "created"
         """
         if not states and self.required_services:
             return self.required_services
@@ -156,7 +156,7 @@ class DockerComposeManager:
     def start_services(self, force_recreate: bool = False) -> None:
         """Start docker services.
 
-        if any error force down the services already up.
+        if any error forces down, the services already up.
         """
         self.logger.info("Setting environment...")
 
