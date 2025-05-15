@@ -24,7 +24,16 @@ class TestRunner:
 
         Should match the CI: Tests workflow
         """
-        return ["--cov=.", "--cov-report=xml", "--cov-fail-under=90"]
+        return [
+            "--cov=.",
+            "--cov-report=xml",
+            "--cov-fail-under=90",
+            "--cov-branch",
+            "--no-cov-on-fail",
+            "--cov-config=.coveragerc",
+            "--cache-clear",
+            "--disable-warnings",
+        ]
 
     def _run_tests(
         self, test_paths: list[str] | None = None, coverage: bool = False, *pytest_args
