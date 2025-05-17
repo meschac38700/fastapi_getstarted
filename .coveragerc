@@ -2,6 +2,13 @@
 omit =
   *__init__*
   *venv*
+relative_files = True
+source = ./src
+branch = True
 
 [html]
 directory = coverage_report
+
+[paths]
+source =
+    ./src
