@@ -5,7 +5,7 @@ from httpx import ASGITransport, AsyncClient
 
 from main import app
 
-BASE_URL = "http://test"
+BASE_URL = "https://test"
 
 
 @pytest.mark.anyio

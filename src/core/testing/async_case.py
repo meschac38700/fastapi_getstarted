@@ -11,7 +11,7 @@ from core.testing.client import AsyncClientTest
 from main import app
 from settings import settings
 
-BASE_URL = "http://test"
+BASE_URL = "https://test"
 _engine = settings.get_engine()
 
 
