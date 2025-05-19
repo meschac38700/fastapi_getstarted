@@ -9,11 +9,8 @@ branch = True
 
 [report]
 format = markdown
-report = xml
 fail_under=80
 config=.coveragerc
-cache_clear=True
-
 
 [html]
 directory = coverage_html_report
