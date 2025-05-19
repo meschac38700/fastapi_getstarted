@@ -1,0 +1,7 @@
+- model: user.User
+  properties:
+    username: djohn
+    first_name: John
+    last_name: DOE
+    password: test
+    email: d.john@eliam-lotonga.fr

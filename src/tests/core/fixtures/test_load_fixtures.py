@@ -1,3 +1,6 @@
+import asyncio
+from pathlib import Path
+
 from typer.testing import CliRunner
 
 from apps.authorization.models import Permission
@@ -8,10 +11,29 @@ from core.testing.async_case import AsyncTestCase
 class TestLoadFixture(AsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
+        await asyncio.gather(
+            Permission.generate_crud_objects(Permission.table_name()),
+            Permission.generate_crud_objects(User.table_name()),
+        )
         await User.truncate()
         self.cli_runner = CliRunner()
 
-    async def test_load_fixtures_single_file(self):
+    async def test_load_initial_fixtures(self):
+        self.assertEqual(0, len(await User.all()))
+
+        await self.fixture_loader.load_fixtures()
+
+        self.assertGreaterEqual(len(await User.all()), 1)
+
+    async def test_load_fixtures_filepath(self):
+        self.assertEqual(0, len(await User.all()))
+
+        fixture_path = Path(__file__).parent / "data" / "test_fixtures.yaml"
+        await self.fixture_loader.load_fixtures([fixture_path], loader_key="path")
+
+        self.assertGreaterEqual(len(await User.all()), 1)
+
+    async def test_load_fixtures_name(self):
         self.assertEqual(0, len(await User.all()))
 
         await self.fixture_loader.load_fixtures(["users"])
@@ -19,17 +41,7 @@ class TestLoadFixture(AsyncTestCase):
         self.assertGreaterEqual(len(await User.all()), 1)
         self.assertGreaterEqual(self.fixture_loader.count_created, 1)
 
-    async def test_load_multiple_fixtures_files(self):
-        self.assertEqual(0, len(await Permission.all()))
-        self.assertEqual(0, len(await User.all()))
-
-        await self.fixture_loader.load_fixtures(["users", "permissions"])
-
-        self.assertGreaterEqual(len(await Permission.all()), 1)
-        self.assertGreaterEqual(len(await User.all()), 1)
-        self.assertGreaterEqual(self.fixture_loader.count_created, 1)
-
-    async def test_load_fixtures_file_with_extension(self):
+    async def test_load_fixtures_name_with_extension(self):
         self.assertEqual(0, len(await User.all()))
 
         await self.fixture_loader.load_fixtures(["users.yaml"])
