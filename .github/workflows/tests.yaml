@@ -37,6 +37,8 @@ jobs:
       - name: Run Tests
         run: |
           docker exec -t api_test pytest
+          # remove the first
+          sed -i "0,/<source>.*<\/source>/{//d;}" src/coverage.xml
           # Fixed source path
           sed -i "s/<source>.*<\/source>/<source>\/home\/runner\/work\/fastapi_getstarted\/fastapi_getstarted\/src<\/source>/g" src/coverage.xml
 

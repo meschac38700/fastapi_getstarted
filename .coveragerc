@@ -4,7 +4,7 @@ omit =
   *venv*
 relative_files = True
 source =
-    ./src
+    . ./src ./apps
 branch = True
 
 [report]
@@ -16,4 +16,6 @@ directory = coverage_html_report
 
 [paths]
 source =
+    .
     ./src
+    ./apps
