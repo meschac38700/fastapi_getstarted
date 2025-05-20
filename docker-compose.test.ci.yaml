@@ -31,6 +31,8 @@ services:
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     volumes:
       - ./src:/home/appuser/app/www
+      - ./tox.ini:/home/appuser/app/www/tox.ini
+      - ./.coveragerc:/home/appuser/app/www/.coveragerc
     command: ["bash", "./scripts/entrypoint.sh"]
 
   redis_test:

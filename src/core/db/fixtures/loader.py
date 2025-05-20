@@ -89,9 +89,9 @@ class LoadFixtures:
     ):
         """Load application fixture data.
 
-        If loader_key equals app, it will load all the app's fixtures, fixtures argument should contain a list of apps
+        If loader_key equals app, it will load all the app's fixtures; fixtures argument should contain a list of apps
         If loader_key equals name, it will search and load fixtures listed by name
-        if loader_key equals path, it will load the specified fixture paths if exist
+        if loader_key equals a path, it will load the specified fixture paths if it exists
         """
         loader = self._loader_mapping.get(loader_key)
         if loader is None:

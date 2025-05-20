@@ -3,12 +3,19 @@ omit =
   *__init__*
   *venv*
 relative_files = True
-source = ./src
+source =
+    . ./src ./apps
 branch = True
 
+[report]
+format = markdown
+fail_under=80
+
 [html]
-directory = coverage_report
+directory = coverage_html_report
 
 [paths]
 source =
+    .
     ./src
+    ./apps

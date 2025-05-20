@@ -56,8 +56,6 @@ ENV PATH="$VBIN:$PATH"
 
 WORKDIR ${APP_DIR}
 
-COPY ./src .
-# util to run test inside container
-COPY ./tox.ini .
+COPY ./src ./
 
 RUN chmod +x ./scripts/entrypoint.sh

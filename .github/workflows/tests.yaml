@@ -36,15 +36,12 @@ jobs:
 
       - name: Run Tests
         run: |
-          docker exec -t api_test pytest --cov=. --cov-report=xml --cov-fail-under=80 --cov-branch --no-cov-on-fail --cov-config=.coveragerc --cache-clear --disable-warnings
+          docker exec -t api_test pytest
+          # remove the first
+          sed -i "0,/<source>.*<\/source>/{//d;}" src/coverage.xml
           # Fixed source path
           sed -i "s/<source>.*<\/source>/<source>\/home\/runner\/work\/fastapi_getstarted\/fastapi_getstarted\/src<\/source>/g" src/coverage.xml
 
-      - name: Check coverage file generated
-        run: |
-          pwd
-          ls -lha
-          head src/coverage.xml
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.2.0
         env:
