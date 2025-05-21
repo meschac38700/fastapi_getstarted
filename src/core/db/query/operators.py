@@ -50,7 +50,7 @@ class QueryExpressionManager:
     def _equals(
         cls, **filters: dict[str, Any]
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
-        return [cls.get_attribute(name) == value for name, value in filters.items()]
+        return [cls.get_attribute(name) == filters[name] for name in filters]
 
     @classmethod
     def _contains(
