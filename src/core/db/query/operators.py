@@ -8,11 +8,14 @@ from sqlmodel import col
 class QueryExpressionManager:
     @classmethod
     @lru_cache
-    def _operator_resolvers(cls):
-        return {
+    def _operator_resolvers(cls, operator: str | None = "equals"):
+        operator_mapper = {
             "contains": cls._contains,
             "icontains": partial(cls._contains, case_insensitive=True),
+            "not_contains": cls._not_contains,
+            "not_icontains": partial(cls._not_contains, case_insensitive=True),
             "in": cls._in,
+            "not_in": cls._not_in,
             "gt": cls._gt,
             "gte": partial(cls._gt, or_equals=True),
             "lt": cls._lt,
@@ -21,7 +24,13 @@ class QueryExpressionManager:
             "istartswith": partial(cls._startswith, case_insensitive=True),
             "endswith": cls._endswith,
             "iendswith": partial(cls._endswith, case_insensitive=True),
+            "equals": cls._equals,
+            "not_equals": cls._not_equals,
         }
+        if operator and operator not in operator_mapper:
+            raise ValueError(f"Invalid operator: {operator}")
+
+        return operator_mapper.get(operator, cls._equals)
 
     @classmethod
     def get_attribute(cls, name: str):
@@ -42,7 +51,7 @@ class QueryExpressionManager:
             if sep and not operator:
                 raise ValueError(f"Invalid operator: {key}")
 
-            resolver = cls._operator_resolvers().get(operator, cls._equals)
+            resolver = cls._operator_resolvers(operator)
             _filters.extend(resolver(**{_key: value}))
         return _filters
 
@@ -51,6 +60,12 @@ class QueryExpressionManager:
         cls, **filters: dict[str, Any]
     ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [cls.get_attribute(name) == filters[name] for name in filters]
+
+    @classmethod
+    def _not_equals(
+        cls, **filters: dict[str, Any]
+    ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
+        return [cls.get_attribute(name) != filters[name] for name in filters]
 
     @classmethod
     def _contains(
@@ -64,8 +79,25 @@ class QueryExpressionManager:
         ]
 
     @classmethod
+    def _not_contains(
+        cls, *, case_insensitive: bool = False, **filters
+    ) -> Sequence[ColumnExpressionArgument[bool] | bool]:
+        return [
+            cls.get_attribute(name).notilike(f"%{value}%")
+            if case_insensitive
+            else cls.get_attribute(name).notlike(f"%{value}%")
+            for name, value in filters.items()
+        ]
+
+    @classmethod
     def _in(cls, **filters) -> Sequence[ColumnExpressionArgument[bool] | bool]:
         return [cls.get_attribute(name).in_(value) for name, value in filters.items()]
+
+    @classmethod
+    def _not_in(cls, **filters) -> Sequence[ColumnExpressionArgument[bool] | bool]:
+        return [
+            cls.get_attribute(name).not_in(value) for name, value in filters.items()
+        ]
 
     @classmethod
     def _gt(
