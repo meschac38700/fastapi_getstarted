@@ -120,3 +120,18 @@ class TestQueryOperators(AsyncTestCase):
         users = await User.filter(last_name__istartswith=term.lower())
         self.assertGreaterEqual(len(users), 1)
         self.assertTrue(all(user.last_name.startswith(term) for user in users))
+
+    async def test_filter_endswith(self):
+        term = "API"
+        users = await User.filter(last_name__endswith=term.lower())
+        self.assertEqual([], users)
+
+        users = await User.filter(last_name__endswith=term)
+        self.assertGreaterEqual(len(users), 1)
+        self.assertTrue(all(user.last_name.endswith(term) for user in users))
+
+    async def test_filter_iendswith(self):
+        term = "API"
+        users = await User.filter(last_name__iendswith=term.lower())
+        self.assertGreaterEqual(len(users), 1)
+        self.assertTrue(all(user.last_name.endswith(term) for user in users))
