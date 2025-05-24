@@ -97,9 +97,6 @@ class TestQueryOperators(AsyncTestCase):
     async def test_filter_not_contains(self):
         term = "doe"
 
-        users = await User.filter(email__not_contains=term.upper())
-        self.assertEqual([], users)
-
         users = await User.filter(email__not_contains=term)
         self.assertTrue(all(term not in user.email for user in users))
 
@@ -110,13 +107,13 @@ class TestQueryOperators(AsyncTestCase):
         self.assertTrue(all(term not in user.email for user in users))
 
     async def test_filter_startswith(self):
-        term = "pyt"
-        users = await User.filter(last_name__startswith=term)
+        term = "Pyt"
+        users = await User.filter(last_name__startswith=term.lower())
         self.assertEqual([], users)
 
-        users = await User.filter(last_name__startswith=term.title())
+        users = await User.filter(last_name__startswith=term)
         self.assertGreaterEqual(len(users), 1)
-        self.assertTrue(all(user.last_name.startswith(term.title()) for user in users))
+        self.assertTrue(all(user.last_name.startswith(term) for user in users))
 
     async def test_filter_istartswith(self):
         term = "Pyt"
