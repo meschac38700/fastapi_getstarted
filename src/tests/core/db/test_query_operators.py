@@ -7,9 +7,6 @@ from core.testing.async_case import AsyncTestCase
 class TestQueryOperators(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-
     async def test_bad_operator(self):
         with pytest.raises(ValueError) as e:
             await User.filter(id__=1)
