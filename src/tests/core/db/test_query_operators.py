@@ -31,3 +31,50 @@ class TestQueryOperators(AsyncTestCase):
         u = await User.get(id=pk)
         self.assertIsInstance(u, User)
         self.assertEqual(u.id, pk)
+
+        u1 = await User.get(id__equals=pk)
+        self.assertEqual(u, u1)
+
+    async def test_filter_not_equals(self):
+        pk = 1
+        users = await User.filter(id__not_equals=pk)
+        self.assertNotIn(pk, [u.id for u in users])
+
+    async def test_filter_equals(self):
+        pk = 1
+        u = await User.get(id=pk)
+        self.assertIsInstance(u, User)
+        self.assertEqual(u.id, pk)
+
+    async def test_filter_in(self):
+        ids = [1, 2]
+        users = await User.filter(id__in=ids)
+        self.assertEqual(len(ids), len(users))
+        self.assertEqual(ids, [u.id for u in users])
+
+    async def test_filter_not_in(self):
+        ids = [1, 2]
+        users = await User.filter(id__not_in=ids)
+        actual_ids = [u.id for u in users]
+        self.assertNotEqual(ids, actual_ids)
+        self.assertTrue(all(pk not in actual_ids for pk in ids))
+
+    async def test_filter_less_than(self):
+        pk = 1
+        users = await User.filter(id__lt=pk)
+        self.assertTrue(all(pk > u.id for u in users))
+
+    async def test_filter_less_or_equals(self):
+        pk = 1
+        users = await User.filter(id__lte=pk)
+        self.assertTrue(all(pk >= u.id for u in users))
+
+    async def test_filter_greater_than(self):
+        pk = 1
+        users = await User.filter(id__gt=pk)
+        self.assertTrue(all(pk < u.id for u in users))
+
+    async def test_filter_greater_or_equals(self):
+        pk = 1
+        users = await User.filter(id__gte=pk)
+        self.assertTrue(all(pk <= u.id for u in users))
