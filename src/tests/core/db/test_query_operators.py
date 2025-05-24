@@ -93,3 +93,18 @@ class TestQueryOperators(AsyncTestCase):
         self.assertTrue(
             all(user.email.upper().endswith(email_domain) for user in users)
         )
+
+    async def test_filter_not_contains(self):
+        term = "doe"
+
+        users = await User.filter(email__not_contains=term.upper())
+        self.assertEqual([], users)
+
+        users = await User.filter(email__not_contains=term)
+        self.assertTrue(all(term not in user.email for user in users))
+
+    async def test_filter_not_icontains(self):
+        term = "DoE"
+
+        users = await User.filter(email__not_icontains=term)
+        self.assertTrue(all(term not in user.email for user in users))
