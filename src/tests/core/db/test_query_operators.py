@@ -23,6 +23,11 @@ class TestQueryOperators(AsyncTestCase):
         )
         assert str(e.value) == expected_msg
 
+    async def test_invalid_operator_error(self):
+        with pytest.raises(ValueError) as e:
+            await User.filter(is__equality="test")
+        self.assertEqual(str(e.value), "Invalid operator: equality")
+
     async def test_get_equals(self):
         pk = 1
         u = await User.get(id=pk)
