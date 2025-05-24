@@ -78,3 +78,18 @@ class TestQueryOperators(AsyncTestCase):
         pk = 1
         users = await User.filter(id__gte=pk)
         self.assertTrue(all(pk <= u.id for u in users))
+
+    async def test_filter_contains(self):
+        email_domain = "example.com"
+        users = await User.filter(email__contains=email_domain)
+        self.assertTrue(all(user.email.endswith(email_domain) for user in users))
+
+    async def test_filter_icontains(self):
+        email_domain = "example.com".upper()
+        users = await User.filter(email__contains=email_domain)
+        self.assertEqual([], users)
+
+        users = await User.filter(email__icontains=email_domain)
+        self.assertTrue(
+            all(user.email.upper().endswith(email_domain) for user in users)
+        )
