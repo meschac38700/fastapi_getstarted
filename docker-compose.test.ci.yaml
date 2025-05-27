@@ -68,5 +68,5 @@ services:
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile.tests
     command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=INFO"
