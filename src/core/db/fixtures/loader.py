@@ -40,7 +40,7 @@ class LoadFixtures:
         example:
          > self.load_fixture_file("/src/apps/user/fixtures/users.yaml").
         """
-        _fixture_file = Path(fixture_file)
+        _fixture_file = Path(fixture_file).absolute()
         self.logger.info(f"Start processing file '{_fixture_file.name}'.")
         if not _fixture_file.exists():
             raise ValueError(
@@ -48,11 +48,12 @@ class LoadFixtures:
             )
 
         models = await self._extract_models(_fixture_file)
+        _count = len(models)
         self.logger.info(
-            f"{len(models)} object(s) found in the {_fixture_file.name} file and will be saved in the database."
+            f"{_count} object(s) found in the {_fixture_file.name} file and will be saved in the database."
         )
         await SQLTable.objects().bulk_create_or_update(models)
-        return len(models)
+        self.count_created += _count
 
     async def load_app_fixtures(self, app_name: str):
         """Load all fixtures found in the provided app.
@@ -66,7 +67,7 @@ class LoadFixtures:
             f"{len(fixture_files)} fixture files found in the {app_name.title()} application."
         )
         tasks = [self.load_fixture_file(fixture_file) for fixture_file in fixture_files]
-        self.count_created += sum(await asyncio.gather(*tasks))
+        await asyncio.gather(*tasks)
         self.logger.info(
             f"Loaded a total of {self.count_created} fixtures for the {app_name} application."
         )
@@ -78,9 +79,7 @@ class LoadFixtures:
          > self.load_fixture_by_name(['initial_users'])
         """
         fixture_path = fixture_utils.retrieve_fixture_absolute_path(fixture_name)
-        self.count_created += await self.load_fixture_file(fixture_path)
-
-        return self.count_created
+        await self.load_fixture_file(fixture_path)
 
     async def load_fixtures(
         self,
