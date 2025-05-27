@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 
 from apps.authorization.models import Permission
 from apps.user.models import User
+from core.services.files.paths import relative_from_src
 from core.tasks import load_fixtures_task
 from core.testing.async_case import AsyncTestCase
 
@@ -64,4 +65,11 @@ class TestLoadFixture(AsyncTestCase):
                 "initial_users",
             ]
         ).get()
+        self.assertGreaterEqual(count, 1)
+
+    async def test_load_paths_fixtures_with_celery_task(self):
+        fixture_path = relative_from_src(
+            Path(__file__).parent / "data" / "test_fixtures.yaml"
+        )
+        count = load_fixtures_task.delay(paths=[fixture_path]).get()
         self.assertGreaterEqual(count, 1)
