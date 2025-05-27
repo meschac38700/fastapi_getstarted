@@ -39,7 +39,7 @@ services:
       - ./envs/test/.env
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile.tests
     depends_on:
       redis_test:
         condition: service_healthy
@@ -59,7 +59,7 @@ services:
       - ./envs/test/.env
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile.tests
     depends_on:
       redis_test:
         condition: service_healthy

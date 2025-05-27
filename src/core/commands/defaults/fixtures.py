@@ -33,7 +33,9 @@ def fixtures(
 ):
     """Load project fixtures."""
     _logger.info("Load fixtures command starting...")
-    result: AsyncResult = load_fixtures_task.delay(apps, names, paths)
+    result: AsyncResult = load_fixtures_task.delay(
+        apps, names, [str(p) for p in paths or []]
+    )
 
     try:
         count_created = result.get(timeout=2)
