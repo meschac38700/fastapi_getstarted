@@ -1,5 +1,5 @@
 from apps.authorization.models._base import GroupBase
-from core.models.utils import optional_fields
+from core.db.utils import optional_fields
 
 
 @optional_fields
