@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import settings
 from apps.user.models import User
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestAuthenticationEndpoints(AsyncTestCase):
