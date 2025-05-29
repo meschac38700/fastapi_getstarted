@@ -9,7 +9,7 @@ app_dir = settings.BASE_DIR / "apps"
 
 
 def collect_app_fixtures(app_name: str) -> Sequence[str]:
-    """Return all fixture of the given app name."""
+    """Return all fixtures of the given app name."""
 
     fixture_dir = app_dir / app_name / "fixtures"
     if not fixture_dir.is_dir():
@@ -35,3 +35,4 @@ def retrieve_fixture_absolute_path(fixture_name: str):
         fixtures_path = str(Path(app_path) / "**" / fixture_filename)
         if paths := glob.glob(fixtures_path, recursive=True):
             return paths[0]
+    return None
