@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 
+import settings
 from core.monitoring.logger import get_logger
 
 _logger = get_logger(__name__)
@@ -21,13 +22,17 @@ class ServerRunner:
         self.reload = reload
         self.logger = p_logger or _logger
 
+    @property
+    def _get_run_server_script_path(self) -> str:
+        return str(settings.BASE_DIR / "scripts" / "local_server.sh")
+
     def _start_server(self):
         """Run fastapi development server."""
         self.logger.info("Start dev server...")
 
         _env = {"HOST": self.host, "PORT": str(self.port), "RELOAD": str(self.reload)}
         ps = subprocess.Popen(
-            ["sh", "src/scripts/local_server.sh"],
+            ["sh", self._get_run_server_script_path],
             stdin=subprocess.PIPE,
             env=dict(os.environ, **_env),
         )
