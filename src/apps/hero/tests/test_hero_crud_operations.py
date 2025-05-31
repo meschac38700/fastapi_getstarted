@@ -4,7 +4,7 @@ from typing import Any
 from apps.authorization.models import Group, Permission
 from apps.hero.models import Hero
 from apps.user.models import User
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestHeroCRUD(AsyncTestCase):

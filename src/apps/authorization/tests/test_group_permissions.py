@@ -5,7 +5,7 @@ from apps.authorization.models import Group, Permission
 from apps.hero.models import Hero
 from apps.user.models import User
 from apps.user.utils.types import UserRole
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestGroupPermissions(AsyncTestCase):

@@ -3,7 +3,7 @@ import datetime
 import settings
 from apps.authentication.models import JWTToken
 from apps.user.models import User
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestHandleJWTToken(AsyncTestCase):

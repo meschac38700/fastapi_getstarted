@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from apps.authorization.models import Group, Permission
 from apps.user.models import User
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestUserCRUD(AsyncTestCase):

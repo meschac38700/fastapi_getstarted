@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field
 
-from apps.user.utils.types import UserRole
+from apps.user.utils.types import UserRole, UserStatus
 from core.db import SQLTable
 from core.db.mixins import TimestampedModelMixin
 
@@ -22,6 +22,14 @@ class UserBaseModel(UserBase, TimestampedModelMixin):
         default=UserRole.active,
         sa_column=sa.Column(
             postgresql.ENUM(UserRole, name="role"), default=UserRole.active, index=True
+        ),
+    )
+    status: UserStatus = Field(
+        default=UserStatus.inactive,
+        sa_column=sa.Column(
+            postgresql.ENUM(UserStatus, name="Status"),
+            default=UserStatus.inactive,
+            index=True,
         ),
     )
 

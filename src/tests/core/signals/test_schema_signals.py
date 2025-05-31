@@ -6,7 +6,7 @@ from sqlmodel import Field
 
 from core.db import SQLTable
 from core.db.signals.managers import signal_manager
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 from settings import settings
 
 Fn = Callable[..., Any]

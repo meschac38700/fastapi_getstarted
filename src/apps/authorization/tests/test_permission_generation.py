@@ -2,7 +2,7 @@ import re
 
 from apps.authorization.models import Permission
 from apps.hero.models import Hero
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestPermissionGeneration(AsyncTestCase):

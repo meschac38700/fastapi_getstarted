@@ -1,4 +1,4 @@
-from core.models.utils import optional_fields
+from core.db.utils import optional_fields
 
 from ._base import UserBaseModel
 

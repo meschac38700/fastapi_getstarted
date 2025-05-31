@@ -1,7 +1,9 @@
 # Running migrations
-cd ./src || exit
+SRC_FOLDER=src
+
+cd $SRC_FOLDER || true
 alembic upgrade head
-cd - || exit
+cd - || true
 
 
 # Waiting for database service to be up
@@ -14,10 +16,14 @@ do
     echo "Waiting for database container to start..." && sleep 1;
 done
 
+main_file=main.py
+if [ -d "$SRC_FOLDER" ]; then
+  main_file="$SRC_FOLDER/$main_file"
+fi;
 
 # Running fastapi dev server
 if [[ $RELOAD = "True" ]]; then
-  fastapi dev ./src/main.py --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --reload
+  fastapi dev $main_file --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --reload
 else
-  fastapi dev ./src/main.py --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --no-reload
+  fastapi dev $main_file --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --no-reload
 fi;
