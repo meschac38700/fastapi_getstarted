@@ -8,8 +8,8 @@ from apps.authorization.dependencies import permission_required
 from apps.authorization.models import Permission
 
 from .models import Hero
-from .models.pydantic.create import HeroCreate
-from .models.pydantic.patch import HeroPatch
+from .models.schema.create import HeroCreate
+from .models.schema.patch import HeroPatch
 
 routers = APIRouter(tags=["Heroes"], prefix="/heroes")
 perms = {

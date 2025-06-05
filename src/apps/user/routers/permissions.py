@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 
 from apps.authentication.dependencies.oauth2 import current_user
-from apps.authorization.models.pydantic.permission import PermissionList
+from apps.authorization.models.schema.permission import PermissionList
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 

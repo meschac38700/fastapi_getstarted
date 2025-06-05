@@ -3,10 +3,10 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 
 from apps.authorization.models import Group
-from apps.authorization.models.pydantic.group import GroupCreate, GroupUpdate
-from apps.authorization.models.pydantic.permission import PermissionList
+from apps.authorization.models.schema.group import GroupCreate, GroupUpdate
+from apps.authorization.models.schema.permission import PermissionList
 from apps.user.dependencies.roles import AdminAccess
-from apps.user.models.pydantic.create import UserList
+from apps.user.models.schema.create import UserList
 
 routers = APIRouter()
 

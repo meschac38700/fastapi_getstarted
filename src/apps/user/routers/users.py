@@ -6,8 +6,8 @@ from apps.authentication.dependencies.oauth2 import current_user
 from apps.authorization.dependencies import permission_required
 from apps.authorization.models import Permission
 from apps.user.models import User
-from apps.user.models.pydantic.create import UserCreate
-from apps.user.models.pydantic.patch import UserPatch
+from apps.user.models.schema.create import UserCreate
+from apps.user.models.schema.patch import UserPatch
 
 routers = APIRouter()
 perms = {

@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 import settings
 from apps.authentication.dependencies import oauth2_scheme
 from apps.authentication.models import JWTToken
-from apps.authentication.models.pydantic import JWTTokenRead
+from apps.authentication.models.schema import JWTTokenRead
 from apps.user.models import User
 
 routers = APIRouter(tags=["Authentication"], prefix=settings.AUTH_PREFIX_URL)
