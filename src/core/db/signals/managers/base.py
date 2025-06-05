@@ -41,7 +41,7 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         self.event_handlers: list[EventModel] = []
         self.logger = logger
 
-    def _guard_event_name(self, event_name: EventName):
+    def _guard_unknown_event_name(self, event_name: EventName):
         """Raise an error if the given event name is unknown."""
         if event_name not in self.EVENT_NAMES:
             raise ValueError(f"Not supported event: {event_name}.")
@@ -54,7 +54,7 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         target: Any,
         category: EventCategory,
     ):
-        self._guard_event_name(event_name)
+        self._guard_unknown_event_name(event_name)
 
         event = EventModel(
             name=event_name, target=target, callback=callback, category=category
@@ -74,7 +74,7 @@ class SignalManager(MapperEventMixin, SchemaEventMixin, SessionEventMixin):
         target: Any,
         category: EventCategory,
     ):
-        self._guard_event_name(event_name)
+        self._guard_unknown_event_name(event_name)
 
         event = EventModel(
             name=event_name, target=target, callback=callback, category=category
