@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     """
     celery_worker_heartbeat: int = 120  # Send a heartbeat every 120 seconds by default
 
+    # CORS authorization
+    cors_allowed_origins: list[str] = []
+    cors_allowed_headers: list[str] = ["*"]
+    cors_allowed_methods: list[str] = ["*"]
+
     def get_engine(self, **kwargs):
         """Return Async db Engine.
 
