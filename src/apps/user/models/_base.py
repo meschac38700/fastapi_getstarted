@@ -27,7 +27,7 @@ class UserBaseModel(UserBase, TimestampedModelMixin):
     status: UserStatus = Field(
         default=UserStatus.inactive,
         sa_column=sa.Column(
-            postgresql.ENUM(UserStatus, name="Status"),
+            postgresql.ENUM(UserStatus, name="status"),
             default=UserStatus.inactive,
             index=True,
         ),
