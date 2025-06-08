@@ -7,7 +7,7 @@ from apps.authorization.models import Permission
 from apps.user.models import User
 from core.services.files.paths import relative_from_src
 from core.tasks import load_fixtures_task
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class TestLoadFixture(AsyncTestCase):

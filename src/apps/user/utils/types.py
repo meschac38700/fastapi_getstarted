@@ -1,10 +1,17 @@
 import enum
 
 
-class UserRole(enum.Enum):
+class BaseEnum(enum.Enum):
+    def __str__(self):
+        return self.value
+
+
+class UserRole(BaseEnum):
     admin = "admin"
     staff = "staff"
     active = "active"
 
-    def __str__(self):
-        return self.value
+
+class UserStatus(BaseEnum):
+    active = "active"
+    inactive = "inactive"

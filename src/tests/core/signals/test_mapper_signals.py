@@ -6,7 +6,7 @@ from apps.authorization.models import Permission
 from apps.user.models import User
 from core.db.signals.managers import signal_manager
 from core.db.signals.utils.types import EventCategory
-from core.testing.async_case import AsyncTestCase
+from core.unittest.async_case import AsyncTestCase
 
 
 class DeletionProhibitedError(Exception):
