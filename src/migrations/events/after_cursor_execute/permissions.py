@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql.asyncpg import (
 from sqlalchemy.engine.base import Connection
 
 from apps.authorization.models import Group, Permission, PermissionGroupLink
+from apps.user.models import User
 from migrations.sql import utils as migration_utils
 
 Data = list[dict[str, Any]]
@@ -35,6 +36,8 @@ class PermissionAfterCursorExecute:
             return
 
         table_name = migration_utils.extract_table_name(statement)
+        if table_name and table_name == "user":
+            table_name = User.table_name()
         self._set_attributes(conn, cursor)
 
         if not self.permission_table_exists() or table_name is None:
