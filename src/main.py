@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from core.db.signals.main import setup_signals
 from core.lifespan import setup, teardown
+from core.middlewares import cors_middleware
 from core.monitoring.sentry import sentry_init
 from core.routers import register_default_endpoints
 from core.routers.register import AppRouter
@@ -25,6 +26,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.celery = celery
 
+cors_middleware(app)
 register_default_endpoints(app)
 # register routers from apps directory
 AppRouter().register_all(app)
