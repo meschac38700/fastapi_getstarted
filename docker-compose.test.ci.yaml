@@ -27,6 +27,7 @@ services:
     env_file:
       - envs.example/test/.env
     environment:
+      # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     volumes:
@@ -42,6 +43,7 @@ services:
     env_file:
       - ./envs.example/test/.env
     environment:
+      # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     ports:
@@ -64,6 +66,7 @@ services:
         condition: service_healthy
         restart: true
     environment:
+      # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     build:

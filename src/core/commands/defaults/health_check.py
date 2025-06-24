@@ -12,7 +12,7 @@ app = typer.Typer(rich_markup_mode="rich")
 
 async def _health_check():
     async with AsyncClient() as client:
-        response = await client.get(settings.HEALTH_CHECK_URL)
+        response = await client.get(settings.health_check_endpoint)
         if response.status_code != 200:
             raise RuntimeError(
                 f"Health check failed with status code {response.status_code}, {response.text}"

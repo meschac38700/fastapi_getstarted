@@ -28,9 +28,6 @@ class Settings(BaseSettings):
     sentry_dsn: str = ""
     sentry_send_pii: bool = False
 
-    # Health check
-    HEALTH_CHECK_URL: str = "http://localhost:8000/healthcheck"
-
     # Celery
     celery_broker: str = ""
     celery_backend: str = ""
@@ -69,6 +66,10 @@ class Settings(BaseSettings):
     @property
     def uri(self):
         return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.host_db}:{self.port_db}/{self.postgres_db}"
+
+    @property
+    def health_check_endpoint(self):
+        return f"http://127.0.0.1:{self.app_port}/healthcheck"
 
 
 @lru_cache
