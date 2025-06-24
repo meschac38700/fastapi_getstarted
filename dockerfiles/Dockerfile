@@ -46,12 +46,6 @@ ARG APP_EXPOSE_PORT=$APP_PORT
 
 EXPOSE ${APP_EXPOSE_PORT}
 
-# curl is needed for app health check
-RUN apt-get update -y \
- && apt-get -y install apt-utils \
- && apt-get -y install curl \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Copy the environment, but not the source code
 COPY --from=virtualenv --chown=${USER}:${USER} $VIRTUAL_ENV $VIRTUAL_ENV
 ENV PATH="$VBIN:$PATH"
