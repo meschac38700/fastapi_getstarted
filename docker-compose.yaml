@@ -20,7 +20,7 @@ services:
     image: registry.digitalocean.com/meschac38000/fastapi-starter
     pull_policy: always
     healthcheck:
-      test: curl --fail http://localhost:$$APP_PORT/ || exit 1
+      test: python manage.py healthcheck
       interval: 5s
       timeout: 5s
       retries: 5

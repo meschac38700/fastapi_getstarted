@@ -21,16 +21,19 @@ class Settings(BaseSettings):
         env_file=DATABASE_ENV_FILE, cli_ignore_unknown_args=True, extra="allow"
     )
     password_hasher_index: int = 0
-    secret_key: str = None
+    secret_key: str = ""
     algorithm: str = "HS256"
 
     # sentry config
     sentry_dsn: str = ""
     sentry_send_pii: bool = False
 
+    # Health check
+    HEALTH_CHECK_URL: str = "http://localhost:8000/healthcheck"
+
     # Celery
-    celery_broker: str = None
-    celery_backend: str = None
+    celery_broker: str = ""
+    celery_backend: str = ""
     """
     Source: https://ankurdhuriya.medium.com/understanding-celery-workers-concurrency-prefetching-and-heartbeats-85707f28c506
     Concurrency refers to the ability of a worker to handle multiple tasks at the same time.
