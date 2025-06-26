@@ -10,6 +10,7 @@ from .constants import DATABASE_ENV_FILE
 
 
 class Settings(BaseSettings):
+    server_address: str = "http://127.0.0.1"
     postgres_user: str = "fastapi"
     postgres_password: str = "fastapi"
     postgres_db: str = "fastapi"
@@ -21,7 +22,7 @@ class Settings(BaseSettings):
         env_file=DATABASE_ENV_FILE, cli_ignore_unknown_args=True, extra="allow"
     )
     password_hasher_index: int = 0
-    secret_key: str = None
+    secret_key: str = ""
     algorithm: str = "HS256"
 
     # sentry config
@@ -29,8 +30,8 @@ class Settings(BaseSettings):
     sentry_send_pii: bool = False
 
     # Celery
-    celery_broker: str = None
-    celery_backend: str = None
+    celery_broker: str = ""
+    celery_backend: str = ""
     """
     Source: https://ankurdhuriya.medium.com/understanding-celery-workers-concurrency-prefetching-and-heartbeats-85707f28c506
     Concurrency refers to the ability of a worker to handle multiple tasks at the same time.
@@ -66,6 +67,10 @@ class Settings(BaseSettings):
     @property
     def uri(self):
         return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.host_db}:{self.port_db}/{self.postgres_db}"
+
+    @property
+    def health_check_endpoint(self):
+        return f"{self.server_address}:{self.app_port}/healthcheck"
 
 
 @lru_cache

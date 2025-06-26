@@ -1,13 +1,13 @@
 import typer
 
-from .defaults import fixture_command, server_command, test_command
+from . import defaults as default_commands
 from .utils import AppCommandRegisterManager
 
 app = typer.Typer(rich_markup_mode="rich")
 
-app.add_typer(test_command)
-app.add_typer(server_command)
-app.add_typer(fixture_command)
+for command_name in default_commands.__all__:
+    command_instance = default_commands.__dict__[command_name]
+    app.add_typer(command_instance)
 
 command_manager = AppCommandRegisterManager(app)
 command_manager.register()

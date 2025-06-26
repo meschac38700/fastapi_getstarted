@@ -3,7 +3,21 @@ import secrets
 from celery.result import AsyncResult
 from fastapi import FastAPI
 
+from apps.user.models import User
 from core.tasks import load_fixtures_task
+from redis import asyncio as aioredis
+from settings import settings
+
+
+async def health_check():
+    # check that the database is up
+    await User.count()
+
+    # check that redis is up
+    redis = aioredis.from_url(settings.celery_broker)
+    await redis.ping()
+
+    return {"status": "ok"}
 
 
 def secret_key(length: int = 65):
@@ -11,7 +25,7 @@ def secret_key(length: int = 65):
     return {"secret": secret}
 
 
-async def load_fake_data():
+def load_fake_data():
     result: AsyncResult = load_fixtures_task.delay()
     return {
         "status": result.state,
@@ -28,6 +42,13 @@ def register_default_endpoints(app: FastAPI):
             "endpoint": secret_key,
             "methods": ["GET"],
             "name": "secret_key",
+            "tags": default_tags,
+        },
+        {
+            "path": "/healthcheck",
+            "endpoint": health_check,
+            "methods": ["GET"],
+            "name": "health_check",
             "tags": default_tags,
         },
         {

@@ -47,3 +47,4 @@ def fixtures(
         )
 
     _logger.info(f"Loaded {count_created} fixtures successfully.")
+    return count_created
