@@ -10,6 +10,7 @@ from .constants import DATABASE_ENV_FILE
 
 
 class Settings(BaseSettings):
+    server_address: str = "http://127.0.0.1"
     postgres_user: str = "fastapi"
     postgres_password: str = "fastapi"
     postgres_db: str = "fastapi"
@@ -69,7 +70,7 @@ class Settings(BaseSettings):
 
     @property
     def health_check_endpoint(self):
-        return f"http://127.0.0.1:{self.app_port}/healthcheck"
+        return f"{self.server_address}:{self.app_port}/healthcheck"
 
 
 @lru_cache
