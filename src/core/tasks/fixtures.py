@@ -1,9 +1,9 @@
 import asyncio
 from pathlib import Path
 
-from core.commands.defaults.runners import FixtureRunner
 from core.monitoring.logger import get_logger
 from core.services.celery import celery_app
+from core.services.runners import FixtureRunner
 
 _logger = get_logger(__name__)
 
