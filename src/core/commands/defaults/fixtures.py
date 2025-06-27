@@ -5,23 +5,23 @@ from celery.result import AsyncResult
 
 from core.monitoring.logger import get_logger
 from core.tasks import load_fixtures_task
-from core.types.annotations.command_types import TyperListOption
+from core.types.annotations.command_types import typer_list_options
 
 _logger = get_logger(__file__)
 app = typer.Typer(rich_markup_mode="rich")
 
-AppsType = TyperListOption(
+AppsType = typer_list_options(
     "--apps",
     "-a",
-    description="Specify some applications for which the fixtures should be loaded. Default loading initial_fixtures.",
+    help_msg="Specify some applications for which the fixtures should be loaded. Default loading initial_fixtures.",
 )
-NamesType = TyperListOption(
+NamesType = typer_list_options(
     "--names",
     "-n",
-    description="Name of the fixtures to load. ex: --names initial-users",
+    help_msg="Name of the fixtures to load. ex: --names initial-users",
 )
-PathsType = TyperListOption(
-    "--paths", "-p", description="List of fixture file paths to load", of_type=Path
+PathsType = typer_list_options(
+    "--paths", "-p", help_msg="List of fixture file paths to load", of_type=Path
 )
 
 

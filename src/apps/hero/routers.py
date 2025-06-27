@@ -18,6 +18,7 @@ perms = {
     "update": Permission.format_permission_name("update", Hero.table_name()),
     "delete": Permission.format_permission_name("delete", Hero.table_name()),
 }
+_NOT_FOUND_MSG = "Hero not found."
 
 
 @routers.get("/{pk}/", name="Get hero by id.")
@@ -62,7 +63,7 @@ async def create_hero(hero: HeroCreate):
 async def update_hero(pk: int, hero: HeroCreate):
     stored_hero: Hero = await Hero.get(id=pk)
     if stored_hero is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not hero.check_all_required_fields_updated(stored_hero.model_dump()):
         detail = "Cannot use PUT to partially update registry, use PATCH instead."
@@ -89,7 +90,7 @@ async def update_hero(pk: int, hero: HeroCreate):
 async def patch_hero(pk: int, hero: HeroPatch):
     stored_hero: Hero = await Hero.get(id=pk)
     if stored_hero is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if hero.check_all_fields_updated(stored_hero.model_dump()):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
@@ -115,6 +116,6 @@ async def patch_hero(pk: int, hero: HeroPatch):
 async def delete_hero(pk: int):
     stored_hero: Hero = await Hero.get(id=pk)
     if stored_hero is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Hero not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await stored_hero.delete()

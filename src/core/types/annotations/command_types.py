@@ -1,25 +1,35 @@
-from typing import Annotated, TypeAlias
+from typing import Annotated
 
 import typer
 
 
-def TyperListOption(  # noqa: N802
-    *param_decls: str, description: str, of_type: type = str
-) -> TypeAlias:
-    return Annotated[
-        list[of_type],
-        typer.Option(
-            *param_decls,
-            help=description,
-            default_factory=list,
-        ),
-    ]
+class TyperListOption:
+    def __call__[U = str, T = list[U]](
+        self, *param_decls: str, help_msg: str = "", of_type: U = str
+    ) -> Annotated[T, typer.Option]:
+        return Annotated[
+            list[of_type],
+            typer.Option(
+                *param_decls,
+                help=help_msg,
+                default_factory=list,
+            ),
+        ]
 
 
-def TyperListArgument(description: str = "", of_type: type = str) -> TypeAlias:  # noqa: N802
-    return Annotated[
-        list[of_type],
-        typer.Argument(
-            help=description,
-        ),
-    ]
+typer_list_options = TyperListOption()
+
+
+class TyperListArgument:
+    def __call__[U = str, T = list[U]](
+        self, help_msg: str = "", of_type: U = str
+    ) -> Annotated[T, typer.Option]:
+        return Annotated[
+            list[of_type],
+            typer.Argument(
+                help=help_msg,
+            ),
+        ]
+
+
+typer_list_arguments = TyperListArgument()

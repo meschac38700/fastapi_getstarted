@@ -8,6 +8,8 @@ from apps.authorization.models.schema.permission import PermissionList
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 
+_NOT_FOUND_MSG = "User not found."
+
 routers = APIRouter()
 
 
@@ -24,7 +26,7 @@ async def get_authenticated_user_permissions(auth_user: User = Depends(current_u
 async def get_user_permissions(pk: int):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     return stored_user.get_permissions()
 
@@ -37,7 +39,7 @@ async def get_user_permissions(pk: int):
 async def add_permissions_user(pk: int, permissions: PermissionList):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     added_perms = await permissions.to_object_list()
     await stored_user.extend_permissions(added_perms)
@@ -53,7 +55,7 @@ async def add_permissions_user(pk: int, permissions: PermissionList):
 async def remove_permissions_user(pk: int, permissions: PermissionList):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     removed_perms = await permissions.to_object_list()
     await stored_user.remove_permissions(removed_perms)

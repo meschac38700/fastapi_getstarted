@@ -5,22 +5,22 @@ from core.commands.defaults.runners import TestRunner
 from core.monitoring.logger import get_logger
 from core.services.docker.compose import DockerComposeManager
 from core.types.annotations.command_types import (
-    TyperListArgument,
-    TyperListOption,
+    typer_list_arguments,
+    typer_list_options,
 )
 
 app = typer.Typer(rich_markup_mode="rich")
 _logger = get_logger(__file__)
 
-AppsType = TyperListOption(
-    "--apps", "-a", description="Specify an application name on which to run tests."
+AppsType = typer_list_options(
+    "--apps", "-a", help_msg="Specify an application name on which to run tests."
 )
-PytestArgsType = TyperListOption(
+PytestArgsType = typer_list_options(
     "--pytest-args",
     "-p",
-    description="List of arguments to pass to the pytest module in string format.",
+    help_msg="List of arguments to pass to the pytest module in string format.",
 )
-TestPathsType = TyperListArgument(
+TestPathsType = typer_list_arguments(
     'Test paths to run, run all application tests by default. cannot be combined with the "app" option.',
     of_type=str,
 )

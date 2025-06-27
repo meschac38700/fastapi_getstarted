@@ -16,6 +16,7 @@ perms = {
     "update": Permission.format_permission_name("update", User.table_name()),
     "delete": Permission.format_permission_name("delete", User.table_name()),
 }
+_NOT_FOUND_MSG = "User not found."
 
 
 @routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
@@ -43,7 +44,7 @@ async def update_user(
 ):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
@@ -76,7 +77,7 @@ async def patch_user(
 ):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
@@ -120,7 +121,7 @@ async def delete_user(pk: int, user: User = Depends(current_user())):
     stored_user = await User.get(id=pk)
 
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not user.is_admin and user != stored_user:
         raise HTTPException(

@@ -11,6 +11,8 @@ from apps.user.dependencies.roles import AdminAccess
 
 routers = APIRouter()
 
+_NOT_FOUND_MSG = "Permission not found."
+
 
 @routers.get(
     "/",
@@ -55,9 +57,7 @@ async def create_permission(permission_data: PermissionCreate):
 async def patch_permission(pk: int, permission_data: PermissionUpdate):
     permission = await Permission.get(id=pk)
     if permission is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
-        )
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if permission_data.check_all_fields_updated(permission.model_dump()):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
@@ -79,9 +79,7 @@ async def patch_permission(pk: int, permission_data: PermissionUpdate):
 async def put_permission(pk: int, permission_data: PermissionCreate):
     permission = await Permission.get(id=pk)
     if permission is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
-        )
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     permission_data.check_all_required_fields_updated(permission.model_dump())
     if not permission_data.is_updated:
@@ -101,8 +99,6 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
 async def delete_permission(pk: int):
     permission = await Permission.get(id=pk)
     if permission is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Permission not found."
-        )
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await permission.delete()

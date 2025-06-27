@@ -76,7 +76,7 @@ class DockerComposeManager:
         file."""
         with open(self.docker_compose_file) as f:
             docker_data: dict[str, Any] = yaml.safe_load(f)
-        return tuple({name for name, _ in docker_data["services"].items()})
+        return tuple((name for name, _ in docker_data["services"].items()))
 
     def _get_not_running_services(self, states: str) -> list[str] | tuple[str, ...]:
         """Return list of services that have not been started yet.

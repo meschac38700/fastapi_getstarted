@@ -10,6 +10,8 @@ from apps.user.models.schema.create import UserList
 
 routers = APIRouter()
 
+_NOT_FOUND_MSG = "Group not found."
+
 
 @routers.get("/", name="List all groups", dependencies=[Depends(AdminAccess())])
 async def get_groups(
@@ -48,7 +50,7 @@ async def create_group(group_data: GroupCreate):
 async def patch_group(pk: int, group_data: GroupUpdate):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if group_data.check_all_fields_updated(group.model_dump()):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
@@ -70,7 +72,7 @@ async def patch_group(pk: int, group_data: GroupUpdate):
 async def put_group(pk: int, group_data: GroupCreate):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
     # if all required fields are not updated, pydantic error will be generated (GroupCreate)
     group_data.check_all_required_fields_updated(group.model_dump())
     if not group_data.is_updated:
@@ -90,7 +92,7 @@ async def put_group(pk: int, group_data: GroupCreate):
 async def delete_group(pk: int):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await group.delete()
 
@@ -103,7 +105,7 @@ async def delete_group(pk: int):
 async def add_users_to_group(pk: int, users: UserList):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await group.extend_users(await users.to_object_list())
 
@@ -118,7 +120,7 @@ async def add_users_to_group(pk: int, users: UserList):
 async def remove_users_to_group(pk: int, users: UserList):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await group.remove_users(await users.to_object_list())
 
@@ -133,7 +135,7 @@ async def remove_users_to_group(pk: int, users: UserList):
 async def add_permissions_to_group(pk: int, permissions: PermissionList):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await group.extend_permissions(await permissions.to_object_list())
 
@@ -148,7 +150,7 @@ async def add_permissions_to_group(pk: int, permissions: PermissionList):
 async def remove_permissions_to_group(pk: int, permissions: PermissionList):
     group = await Group.get(id=pk)
     if group is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Group not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     await group.remove_permissions(await permissions.to_object_list())
 

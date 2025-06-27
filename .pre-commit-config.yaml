@@ -71,6 +71,9 @@ repos:
     hooks:
       - id: ruff-format
         types_or: [python, toml]
+        args:
+          - --config
+          - ruff.toml
       - id: ruff
         types_or: [python, toml]
         args: [--fix]
