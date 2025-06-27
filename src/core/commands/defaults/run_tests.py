@@ -1,9 +1,9 @@
 import typer
 
 import settings
+from core.commands.defaults.runners import TestRunner
 from core.monitoring.logger import get_logger
 from core.services.docker.compose import DockerComposeManager
-from core.services.runners import TestRunner
 from core.types.annotations.command_types import (
     TyperListArgument,
     TyperListOption,
