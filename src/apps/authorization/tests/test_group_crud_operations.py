@@ -150,6 +150,39 @@ class TestGroupCRUD(AsyncTestCase):
         self.assertIsNotNone(actual_data.pop("id", None))
         self.assertTrue(all(actual_data[k] == v for k, v in update_data.items()))
 
+    async def test_patch_group_not_found(self):
+        await self.client.user_login(self.admin)
+        update_data = {
+            "description": "New group description",
+            "display_name": "Delete admin account Modified",
+        }
+        group_id = -1
+        response = await self.client.patch(
+            f"/authorizations/groups/{group_id}/", json=update_data
+        )
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "Group not found."})
+
+    async def test_using_patch_instead_of_put(self):
+        await self.client.user_login(self.admin)
+        update_data = {
+            "name": "new_group_name",
+            "target_table": Group.table_name(),
+            "description": "New group description",
+            "display_name": "Delete admin account Modified",
+        }
+        group = await Group(
+            name="patch_test_group", target_table=Permission.table_name()
+        ).save()
+        response = await self.client.patch(
+            f"/authorizations/groups/{group.id}/", json=update_data
+        )
+        self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
+        self.assertEqual(
+            response.json(),
+            {"detail": "Cannot use PATCH to update entire registry, use PUT instead."},
+        )
+
     async def test_put_group(self):
         update_data = {
             "name": "update_test_permission_modified",
