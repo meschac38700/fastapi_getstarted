@@ -1,6 +1,6 @@
 import typing
 from functools import lru_cache
-from typing import Any, Callable, Literal, ParamSpec, TypeAlias
+from typing import Any, Callable, Literal, ParamSpec
 
 from sqlalchemy import event as sa_event
 
@@ -14,7 +14,7 @@ from core.monitoring.logger import get_logger
 
 P = ParamSpec("P")
 Fn = Callable[P, Any]
-EventName: TypeAlias = Literal[
+EventName: type[str] = Literal[
     # mapper events
     "after_delete",
     "after_insert",

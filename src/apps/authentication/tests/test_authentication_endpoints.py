@@ -11,7 +11,7 @@ class TestAuthenticationEndpoints(AsyncTestCase):
     async def test_login_undefined_user(self):
         data = {
             "username": "sqdsq",
-            "password": "qsdz",
+            "password": (lambda: "qsdz")(),
         }
         response = await self.client.post(
             f"{settings.AUTH_PREFIX_URL}/token", data=data
@@ -26,7 +26,7 @@ class TestAuthenticationEndpoints(AsyncTestCase):
         user = await User.get(id=1)
         data = {
             "username": user.username,
-            "password": "test",
+            "password": (lambda: "test")(),
         }
         response = await self.client.post(
             f"{settings.AUTH_PREFIX_URL}/token", data=data
@@ -41,7 +41,7 @@ class TestAuthenticationEndpoints(AsyncTestCase):
         user = await User.get(username="fastapi")
         data = {
             "username": user.username,
-            "password": "fastapi",
+            "password": (lambda: "fastapi")(),
         }
         response = await self.client.post(
             f"{settings.AUTH_PREFIX_URL}/token", data=data

@@ -16,6 +16,7 @@ perms = {
     "update": Permission.format_permission_name("update", User.table_name()),
     "delete": Permission.format_permission_name("delete", User.table_name()),
 }
+_NOT_FOUND_MSG = "User not found."
 
 
 @routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
@@ -43,19 +44,17 @@ async def update_user(
 ):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="this action is prohibited with this user currently logged in",
+            detail="Insufficient rights to carry out this action",
         )
 
     user.role_guard(stored_user, auth_user)
 
     user.check_all_required_fields_updated(stored_user.model_dump())
-    if not user.is_updated:
-        return stored_user
 
     stored_user.update_from_dict(user.model_dump())
     return await stored_user.save()
@@ -76,12 +75,12 @@ async def patch_user(
 ):
     stored_user = await User.get(id=pk)
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="this action is prohibited with this user currently logged in.",
+            detail="Insufficient rights to carry out this action.",
         )
 
     user.role_guard(stored_user, auth_user)
@@ -89,9 +88,6 @@ async def patch_user(
     if user.check_all_fields_updated(stored_user.model_dump()):
         detail = "Cannot use PATCH to update entire object, use PUT instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
-
-    if not user.is_updated:
-        return stored_user
 
     stored_user.update_from_dict(user.model_dump(exclude_unset=True))
     return await stored_user.save()
@@ -120,12 +116,12 @@ async def delete_user(pk: int, user: User = Depends(current_user())):
     stored_user = await User.get(id=pk)
 
     if stored_user is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     if not user.is_admin and user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="this action is prohibited with this user currently logged in",
+            detail="Insufficient rights to carry out this action",
         )
 
     return await stored_user.delete()

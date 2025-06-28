@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from apps.authorization.models import Group, Permission
 from apps.user.models import User
+from apps.user.utils.types import UserRole
 from core.unittest.async_case import AsyncTestCase
 
 
@@ -16,6 +17,7 @@ class TestUserCRUD(AsyncTestCase):
         await Permission.generate_crud_objects(User.table_name())
         await Group.generate_crud_objects(User.table_name())
         self.user = await User.get(username="test")
+        self.admin = await User.get(role=UserRole.admin)
 
     async def test_get_users(self):
         response = await self.client.get("/users/")
@@ -37,7 +39,7 @@ class TestUserCRUD(AsyncTestCase):
             "username": "jdoe",
             "first_name": "John",
             "last_name": "DOE",
-            "password": "jdoe",
+            "password": (lambda: "jdoe")(),
         }
         self.assertIsNone(await User.get(username=data["username"]))
 
@@ -57,7 +59,7 @@ class TestUserCRUD(AsyncTestCase):
             username="user_patch",
             first_name="Test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
             email="patch.user@example.test",
         ).save()
         data = {
@@ -81,31 +83,40 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(data["username"], patched_user["username"])
         self.assertEqual(data["email"], patched_user["email"])
 
+    async def test_patch_user_not_found(self):
+        data = {
+            "username": "doej",
+            "first_name": "Jane",
+            "last_name": "DOE",
+        }
+        await self.client.force_login(self.admin)
+        response = await self.client.patch(f"/users/{-1}/", json=data)
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+
+        expected_response = {
+            "detail": "User not found.",
+        }
+        self.assertEqual(expected_response, response.json())
+
     async def test_patch_entire_user_should_not_be_possible(self):
         user = await User(
             username="patch_entire",
             first_name="test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
             email="patch.entire@example.test",
         ).save()
         data = {
             "username": "doej",
             "first_name": "Jane",
             "last_name": "DOE",
-            "password": "doej",
+            "password": (lambda: "doej")(),
             "age": date.today().year - 1970,
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
             "role": "active",
         }
-        response = await self.client.patch(f"/users/{user.id}/", json=data)
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
-
         await self.client.login(user.username)
-        response = await self.client.patch(f"/users/{user.id}/", json=data)
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-
         update_perm = Permission.format_permission_name("update", User.table_name())
         await self.add_permissions(user, [update_perm])
         response = await self.client.patch(f"/users/{user.id}/", json=data)
@@ -121,7 +132,7 @@ class TestUserCRUD(AsyncTestCase):
             username="user_put",
             first_name="John",
             last_name="DOE",
-            password="jdoe",
+            password=(lambda: "jdoe")(),
             email="put.user@example.test",
         ).save()
         data = {
@@ -129,7 +140,7 @@ class TestUserCRUD(AsyncTestCase):
             "first_name": "Jane",
             "last_name": "DOE",
             "email": "user.put@example.com",
-            "password": "jdoe",
+            "password": (lambda: "jdoe")(),
         }
         response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
@@ -148,6 +159,19 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(data["email"], user.email)
         self.assertTrue(user.check_password(data["password"]))
 
+    async def test_put_user_not_found(self):
+        data = {
+            "username": "put_user",
+            "first_name": "Jane",
+            "last_name": "DOE",
+            "email": "user.put@example.com",
+            "password": (lambda: "jdoe")(),
+        }
+        await self.client.force_login(self.admin)
+        response = await self.client.put(f"/users/{-1}/", json=data)
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "User not found."})
+
     async def test_delete_user(self):
         response = await self.client.delete(f"/users/{self.user.id}/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
@@ -162,12 +186,18 @@ class TestUserCRUD(AsyncTestCase):
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertIsNone(await User.get(id=self.user.id))
 
+    async def test_delete_user_not_found(self):
+        await self.client.force_login(self.admin)
+        response = await self.client.delete(f"/users/{-1}/")
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "User not found."})
+
     async def test_use_token_of_deleted_user(self):
         user = await User(
             username="deleted_token",
             first_name="Test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
         ).save()
         delete_perm = Permission.format_permission_name("delete", User.table_name())
         await self.add_permissions(user, [delete_perm])

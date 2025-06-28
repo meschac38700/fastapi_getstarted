@@ -1,12 +1,15 @@
 import secrets
 
-from celery.result import AsyncResult
+from celery import states as celery_states
 from fastapi import FastAPI
 
 from apps.user.models import User
+from core.monitoring.logger import get_logger
 from core.tasks import load_fixtures_task
 from redis import asyncio as aioredis
 from settings import settings
+
+_logger = get_logger(__name__)
 
 
 async def health_check():
@@ -25,13 +28,23 @@ def secret_key(length: int = 65):
     return {"secret": secret}
 
 
-def load_fake_data():
-    result: AsyncResult = load_fixtures_task.delay()
-    return {
-        "status": result.state,
-        "msg": "Loading fixtures process started.",
-        "success": result.successful(),
+def load_fixtures():
+    response = {
+        "status": celery_states.FAILURE,
+        "msg": "Loading fixtures process finished.",
+        "loaded": 0,
     }
+    try:
+        count_loaded: int = load_fixtures_task.delay().get(timeout=10)
+        response["status"] = celery_states.SUCCESS
+        response["loaded"] = count_loaded
+    except Exception as e:
+        if "sqlalchemy.exc.IntegrityError" in str(e):
+            response["status"] = celery_states.REJECTED
+        else:
+            _logger.info("IntegrityError during load fixtures task.", exc_info=e)
+
+    return response
 
 
 def register_default_endpoints(app: FastAPI):
@@ -53,7 +66,7 @@ def register_default_endpoints(app: FastAPI):
         },
         {
             "path": "/fixtures",
-            "endpoint": load_fake_data,
+            "endpoint": load_fixtures,
             "methods": ["POST"],
             "name": "fixtures",
             "tags": default_tags,

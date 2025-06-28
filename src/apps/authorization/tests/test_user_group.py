@@ -27,13 +27,13 @@ class TestUserGroup(AsyncTestCase):
             "users": [self.active.username, self.staff.username, self.admin.username]
         }
         await self.client.user_login(self.staff)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/users/add/", json=data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.user_login(self.admin)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/users/add/", json=data
         )
 
@@ -62,13 +62,13 @@ class TestUserGroup(AsyncTestCase):
             ]
         }
         await self.client.user_login(self.staff)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group_admin.id}/users/remove/", json=data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.user_login(self.admin)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group_admin.id}/users/remove/", json=data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)

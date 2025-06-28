@@ -39,7 +39,7 @@ def oauth2_scheme():
 
 
 def current_user():
-    async def dependency(token: JWTToken = Depends(oauth2_scheme())) -> User:
+    def dependency(token: JWTToken = Depends(oauth2_scheme())) -> User:
         return token.user
 
     return dependency

@@ -16,7 +16,7 @@ class RoleAccess(ABC):
         allowed = self._has_access(user)
 
         if not allowed:
-            detail = "this action is prohibited with this user currently logged in"
+            detail = "Insufficient rights to carry out this action"
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail=detail)
 
         return allowed
