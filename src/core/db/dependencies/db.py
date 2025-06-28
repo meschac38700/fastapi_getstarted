@@ -81,7 +81,7 @@ class DBService:
         return res.first()
 
     @inject_session
-    async def first(self, model: SQLModel, *, session: AsyncSession):
+    async def first(self, model: SQLModel, *, session: AsyncSession = None):
         res = await session.scalars(select(model).limit(1))
         return res.first()
 
