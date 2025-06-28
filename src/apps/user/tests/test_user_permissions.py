@@ -20,6 +20,13 @@ class TestUserPermission(AsyncTestCase):
             User.get(role=UserRole.admin),
         )
 
+    async def test_get_user_permissions_not_found(self):
+        await self.client.user_login(self.admin)
+
+        response = await self.client.get(f"/users/{-1}/permissions/")
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "User not found."})
+
     async def test_get_another_user_permissions_denied(self):
         response = await self.client.get("/users/permissions/")
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
@@ -102,6 +109,19 @@ class TestUserPermission(AsyncTestCase):
             all(perm["name"] in expected_permissions for perm in response.json())
         )
 
+    async def test_add_permissions_to_user_not_found(self):
+        data = {
+            "permissions": [
+                Permission.format_permission_name("create", User.table_name()),
+                Permission.format_permission_name("read", User.table_name()),
+            ]
+        }
+        await self.client.user_login(self.admin)
+
+        response = await self.client.patch(f"/users/{-1}/permissions/add/", json=data)
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "User not found."})
+
     async def test_add_permissions_to_user(self):
         user = await User(
             username="add_permission",
@@ -135,6 +155,21 @@ class TestUserPermission(AsyncTestCase):
         self.assertTrue(user.has_permissions(perms))
         expected_perms_response = [perm.model_dump(mode="json") for perm in perms]
         self.assertEqual(response.json(), expected_perms_response)
+
+    async def test_remove_permissions_to_user_not_found(self):
+        data = {
+            "permissions": [
+                Permission.format_permission_name("create", User.table_name()),
+                Permission.format_permission_name("read", User.table_name()),
+            ]
+        }
+        await self.client.user_login(self.admin)
+
+        response = await self.client.patch(
+            f"/users/{-1}/permissions/remove/", json=data
+        )
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "User not found."})
 
     async def test_remove_permissions_to_user(self):
         data = {
