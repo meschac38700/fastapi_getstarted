@@ -47,7 +47,10 @@ class TestUserRoles(AsyncTestCase):
 
         # Try to delete another account than his own
         user = await User(
-            username="someone", first_name="John", last_name="DOE", password="someone"
+            username="someone",
+            first_name="John",
+            last_name="DOE",
+            password=(lambda: "someone")(),
         ).save()
         response = await self.client.delete(f"/users/{user.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
@@ -63,7 +66,10 @@ class TestUserRoles(AsyncTestCase):
 
     async def test_user_admin_can_delete_any_account(self):
         user = await User(
-            username="someone", first_name="John", last_name="DOE", password="someone"
+            username="someone",
+            first_name="John",
+            last_name="DOE",
+            password=(lambda: "someone")(),
         ).save()
         self.assertIsNotNone(self.admin)
         delete_perm = Permission.format_permission_name("delete", User.table_name())
@@ -85,7 +91,7 @@ class TestUserRoles(AsyncTestCase):
             "username": "jean",
             "first_name": "Jean",
             "last_name": "DUPONT",
-            "password": "jean",
+            "password": (lambda: "jean")(),
             "role": "admin",
         }
         update_perm = Permission.format_permission_name("update", User.table_name())
@@ -119,7 +125,7 @@ class TestUserRoles(AsyncTestCase):
             "username": "jean",
             "first_name": "Jean",
             "last_name": "DUPONT",
-            "password": "jean",
+            "password": (lambda: "jean")(),
             "role": "admin",
         }
         update_perm = Permission.format_permission_name("update", User.table_name())
@@ -151,7 +157,7 @@ class TestUserRoles(AsyncTestCase):
             "username": "jean",
             "first_name": "Jean",
             "last_name": "DUPONT",
-            "password": "jean",
+            "password": (lambda: "jean")(),
             "role": "admin",
         }
         await self.client.user_login(self.admin)

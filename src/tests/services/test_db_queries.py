@@ -11,41 +11,41 @@ class TestDBService(AsyncTestCase):
     def user_list(self):
         return [
             User(
-                password="test1",
+                password=(lambda: "test1")(),
                 username="u_spider",
                 first_name="Spider-Boy",
                 last_name="Pedro Parqueador",
             ),
             User(
-                password="test1",
+                password=(lambda: "test1")(),
                 username="u_rusty",
                 first_name="Rusty-Man",
                 last_name="Tommy Sharp",
                 age=48,
             ),
             User(
-                password="test1",
+                password=(lambda: "test1")(),
                 username="u_iron",
                 first_name="Iron man",
                 last_name="Robert Downey Jr",
                 age=59,
             ),
             User(
-                password="test1",
+                password=(lambda: "test1")(),
                 username="u_captain",
                 first_name="Captain America",
                 last_name="Chris Evans",
                 age=43,
             ),
             User(
-                password="test1",
+                password=(lambda: "test1")(),
                 username="u_superman",
                 first_name="Superman",
                 last_name="Henry Cavill",
                 age=41,
             ),
             User(
-                password="test1",
+                password=(lambda: "test1")(),
                 username="u_deadpond",
                 first_name="Deadpond",
                 last_name="Dive Wilson",

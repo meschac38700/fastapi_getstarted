@@ -10,7 +10,7 @@ class TestCeleryTasks(TestCase):
             "username": "pytest",
             "first_name": "Celery",
             "last_name": "FastApi",
-            "password": "test",
+            "password": (lambda: "test")(),
         }
         created_user = create_user_task.delay(**user_data).get(timeout=15)
         assert isinstance(created_user, User)

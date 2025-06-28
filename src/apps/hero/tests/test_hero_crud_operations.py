@@ -73,7 +73,7 @@ class TestHeroCRUD(AsyncTestCase):
             username="user_put",
             first_name="Test",
             last_name="Pytest",
-            password="pytest123",
+            password=(lambda: "pytest123")(),
         ).save()
 
         await self.client.user_login(user)
@@ -103,7 +103,7 @@ class TestHeroCRUD(AsyncTestCase):
             username="user_patch",
             first_name="Test",
             last_name="Pytest",
-            password="pytest123",
+            password=(lambda: "pytest123")(),
         ).save()
         await self.client.user_login(user)
         response = await self.client.patch(f"/heroes/{hero.id}/", json=data)

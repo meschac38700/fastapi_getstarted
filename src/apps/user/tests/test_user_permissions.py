@@ -107,7 +107,7 @@ class TestUserPermission(AsyncTestCase):
             username="add_permission",
             first_name="Test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
         ).save()
         data = {
             "permissions": [
@@ -147,7 +147,7 @@ class TestUserPermission(AsyncTestCase):
             username="remove_permission",
             first_name="Test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
         ).save()
 
         await self.add_permissions(user, data["permissions"])

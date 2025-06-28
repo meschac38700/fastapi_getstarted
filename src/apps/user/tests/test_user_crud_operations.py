@@ -37,7 +37,7 @@ class TestUserCRUD(AsyncTestCase):
             "username": "jdoe",
             "first_name": "John",
             "last_name": "DOE",
-            "password": "jdoe",
+            "password": (lambda: "jdoe")(),
         }
         self.assertIsNone(await User.get(username=data["username"]))
 
@@ -57,7 +57,7 @@ class TestUserCRUD(AsyncTestCase):
             username="user_patch",
             first_name="Test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
             email="patch.user@example.test",
         ).save()
         data = {
@@ -86,14 +86,14 @@ class TestUserCRUD(AsyncTestCase):
             username="patch_entire",
             first_name="test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
             email="patch.entire@example.test",
         ).save()
         data = {
             "username": "doej",
             "first_name": "Jane",
             "last_name": "DOE",
-            "password": "doej",
+            "password": (lambda: "doej")(),
             "age": date.today().year - 1970,
             "email": "john.doe@example.com",
             "address": "115 Place de Belledonne, Chamrousse",
@@ -121,7 +121,7 @@ class TestUserCRUD(AsyncTestCase):
             username="user_put",
             first_name="John",
             last_name="DOE",
-            password="jdoe",
+            password=(lambda: "jdoe")(),
             email="put.user@example.test",
         ).save()
         data = {
@@ -129,7 +129,7 @@ class TestUserCRUD(AsyncTestCase):
             "first_name": "Jane",
             "last_name": "DOE",
             "email": "user.put@example.com",
-            "password": "jdoe",
+            "password": (lambda: "jdoe")(),
         }
         response = await self.client.put(f"/users/{user.id}/", json=data)
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
@@ -167,7 +167,7 @@ class TestUserCRUD(AsyncTestCase):
             username="deleted_token",
             first_name="Test",
             last_name="Pytest",
-            password="test123",
+            password=(lambda: "test123")(),
         ).save()
         delete_perm = Permission.format_permission_name("delete", User.table_name())
         await self.add_permissions(user, [delete_perm])

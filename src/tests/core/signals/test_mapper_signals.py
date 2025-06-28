@@ -65,7 +65,10 @@ class TestMapperSignal(AsyncTestCase):
 
         signal_manager.before_insert(User)(set_permissions)
         new_user = await User(
-            username="foo", first_name="bar", last_name="DOE", password="pytest"
+            username="foo",
+            first_name="bar",
+            last_name="DOE",
+            password=(lambda: "pytest")(),
         ).save()
 
         self.assertEqual(new_user.permissions, permissions)
@@ -86,7 +89,7 @@ class TestMapperSignal(AsyncTestCase):
             username="foo",
             first_name="bar",
             last_name="DOE",
-            password="pytest",
+            password=(lambda: "pytest")(),
             permissions=permissions,
         ).save()
 
