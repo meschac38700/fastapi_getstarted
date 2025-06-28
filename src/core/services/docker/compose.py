@@ -10,13 +10,17 @@ import yaml
 
 import settings
 from core.monitoring.logger import get_logger
+from core.services.docker.types import ContainerState
 
 Fn = Callable[..., Any]
 logger = get_logger(__name__)
 
 
-class DockerComposeManager:
-    """Manager to run docker compose services."""
+class DockerComposeRunner:
+    """Runner for a Docker compose YAML file.
+
+    You can provide a callback that will be executed once all services are up and running.
+    """
 
     docker_compose_file: Path | str
     override_compose_files: list[Path]
@@ -41,7 +45,7 @@ class DockerComposeManager:
         """
         self._set_dockerfiles(compose_file, override_compose_files or [])
         self.env = env
-        self.required_services = required_services or self._get_compose_services()
+        self.required_services = required_services or self.get_compose_services()
         self.logger = p_logger or logger
 
     def _set_dockerfiles(
@@ -71,35 +75,46 @@ class DockerComposeManager:
                 settings.BASE_DIR.parent / Path(compose_file)
             )
 
-    def _get_compose_services(self) -> tuple[str, ...]:
+    def get_compose_services(self) -> tuple[str, ...]:
         """Return all the service names from the provided docker compose
         file."""
         with open(self.docker_compose_file) as f:
             docker_data: dict[str, Any] = yaml.safe_load(f)
         return tuple((name for name, _ in docker_data["services"].items()))
 
-    def _get_not_running_services(self, states: str) -> list[str] | tuple[str, ...]:
-        """Return list of services that have not been started yet.
-
-        @params state: The state of all the current services. Can be 'running', 'stopped'
-            available format: "exited" "created" "running" "created"
-        """
-        if not states and self.required_services:
-            return self.required_services
-
-        state_list = re.findall(r"\w+", states)  # extract all services status
-        return [
-            service
-            for state, service in zip(state_list, self.required_services)
-            if state.lower() != "running"
-        ]
-
-    def _has_pending_services(self) -> list[str]:
-        """Check if the provided 'required_services' or all the docker compose
-        services are up."""
+    def get_not_running_services(self) -> list[str]:
+        """Return required services that are not running."""
         if not self.required_services:
             return []
 
+        # return list of services that are not running
+        return self.get_services_by_state(ContainerState.RUNNING, equals=False)
+
+    def get_services_by_state(
+        self, p_state: ContainerState, *, equals: bool = True
+    ) -> list[str]:
+        """Filter required services by the given state.
+
+        @params state: The desired state of the services.
+        @params not_equals: If true, return services that do not match the given states.
+        """
+        services = []
+        current_states = self._get_required_container_states
+        if not current_states:
+            return list(self.required_services)
+
+        for state, service in zip(current_states, self.required_services):
+            if equals and state.lower() == p_state.value:
+                services.append(service)
+                continue
+
+            if not equals and state.lower() != p_state.value:
+                services.append(service)
+
+        return services
+
+    @property
+    def _get_required_container_states(self) -> list[ContainerState]:
         container_state = (
             subprocess.run(
                 [
@@ -115,8 +130,7 @@ class DockerComposeManager:
             .stdout.decode("utf-8")
             .replace("\n", "")
         )
-        # return list of services that are not running
-        return self._get_not_running_services(container_state)
+        return re.findall(r"\w+", container_state)  # extract all services status
 
     def _run_docker_compose_services(self, force_recreate: bool = False):
         """Try to run services of the provided docker compose file."""
@@ -166,11 +180,12 @@ class DockerComposeManager:
             )
 
         self._run_docker_compose_services(force_recreate)
+        self._wait_for_services()
 
     def stop_services(self) -> None:
         """Stop all the services related to the dockerfile."""
         self.logger.info("Shutting down environment.")
-        output: subprocess.CompletedProcess[bytes] = subprocess.run(
+        container_ids: subprocess.CompletedProcess[bytes] = subprocess.run(
             [
                 "docker",
                 "compose",
@@ -182,7 +197,7 @@ class DockerComposeManager:
             capture_output=True,
             check=False,
         )
-        if self.docker_compose_file.exists() and output:
+        if self.docker_compose_file.exists() and container_ids:
             args = [
                 "docker",
                 "compose",
@@ -197,7 +212,7 @@ class DockerComposeManager:
 
     def _wait_for_services(self):
         """Wait for all services to up."""
-        while pending_svc := self._has_pending_services():
+        while pending_svc := self.get_not_running_services():
             self.logger.info(f'Waiting for services "{pending_svc}"" to be up...')
             time.sleep(2)
 
@@ -220,5 +235,4 @@ class DockerComposeManager:
         """Start docker services, apply the provided callback and stop services
         if stop_after is True."""
         self.start_services(force_recreate=force_recreate)
-        self._wait_for_services()
         self._apply_callback(callback, stop_after)

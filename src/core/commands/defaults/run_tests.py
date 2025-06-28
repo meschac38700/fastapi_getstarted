@@ -2,7 +2,7 @@ import typer
 
 import settings
 from core.monitoring.logger import get_logger
-from core.services.docker.compose import DockerComposeManager
+from core.services.docker.compose import DockerComposeRunner
 from core.services.runners import TestRunner
 from core.types.annotations.command_types import (
     typer_list_arguments,
@@ -40,7 +40,7 @@ def run_tests(
         > python manage.py tests /apps/user apps/authentication  # Run all tests of the specified applications
         > python manage.py tests --pytest-args="--ignore=apps/"--pytest-args --strict # Specify pytest args
     """
-    dk_compose = DockerComposeManager(
+    dk_compose = DockerComposeRunner(
         settings.BASE_DIR.parent / "docker-compose.test.yaml", env="test"
     )
 
