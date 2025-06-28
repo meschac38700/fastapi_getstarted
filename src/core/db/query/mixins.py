@@ -19,6 +19,10 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().get(**filters)
 
     @classmethod
+    async def first(cls) -> Iterable[Self]:
+        return await cls.objects().first()
+
+    @classmethod
     async def values(cls, *fields, filters: dict[str, Any] | None = None):
         """Select specific columns from database table.
 
