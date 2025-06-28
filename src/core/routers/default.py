@@ -1,5 +1,6 @@
 import secrets
 
+from celery import states as celery_states
 from celery.result import AsyncResult
 from fastapi import FastAPI
 
@@ -30,8 +31,8 @@ def secret_key(length: int = 65):
 
 def load_fake_data():
     response = {
-        "status": "FAILURE",
-        "msg": "Loading fixtures process finished.",
+        "status": celery_states.FAILURE,
+        "msg": "Loading fixtures process failed.",
         "success": False,
     }
     try:
@@ -40,7 +41,12 @@ def load_fake_data():
         response["success"] = result.successful()
 
     except Exception as e:
-        _logger.info("IntegrityError during load fixtures task.", exc_info=e)
+        if "sqlalchemy.exc.IntegrityError" in str(e):
+            response["status"] = celery_states.SUCCESS
+            response["success"] = True
+            response["msg"] = "Fixtures already loaded."
+        else:
+            _logger.info("IntegrityError during load fixtures task.", exc_info=e)
 
     return response
 
