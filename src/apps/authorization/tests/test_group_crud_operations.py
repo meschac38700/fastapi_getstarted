@@ -183,6 +183,19 @@ class TestGroupCRUD(AsyncTestCase):
             {"detail": "Cannot use PATCH to update entire registry, use PUT instead."},
         )
 
+    async def test_put_group_not_found(self):
+        await self.client.user_login(self.admin)
+        update_data = {
+            "name": "update_test_permission_modified",
+            "target_table": "permission_test",
+        }
+        group_id = -1
+        response = await self.client.put(
+            f"/authorizations/groups/{group_id}/", json=update_data
+        )
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "Group not found."})
+
     async def test_put_group(self):
         update_data = {
             "name": "update_test_permission_modified",
