@@ -31,7 +31,7 @@ class TestUserRoles(AsyncTestCase):
         response = await self.client.delete(f"/users/{self.admin.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "this action is prohibited with this user currently logged in",
+            "Insufficient rights to carry out this action",
             response.json()["detail"],
         )
 
@@ -52,7 +52,7 @@ class TestUserRoles(AsyncTestCase):
         response = await self.client.delete(f"/users/{user.id}/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "this action is prohibited with this user currently logged in",
+            "Insufficient rights to carry out this action",
             response.json()["detail"],
         )
 

@@ -49,7 +49,7 @@ async def update_user(
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="this action is prohibited with this user currently logged in",
+            detail="Insufficient rights to carry out this action",
         )
 
     user.role_guard(stored_user, auth_user)
@@ -82,7 +82,7 @@ async def patch_user(
     if not auth_user.is_admin and auth_user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="this action is prohibited with this user currently logged in.",
+            detail="Insufficient rights to carry out this action.",
         )
 
     user.role_guard(stored_user, auth_user)
@@ -126,7 +126,7 @@ async def delete_user(pk: int, user: User = Depends(current_user())):
     if not user.is_admin and user != stored_user:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
-            detail="this action is prohibited with this user currently logged in",
+            detail="Insufficient rights to carry out this action",
         )
 
     return await stored_user.delete()

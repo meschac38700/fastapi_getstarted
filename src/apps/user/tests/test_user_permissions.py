@@ -45,7 +45,7 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "this action is prohibited with this user currently logged in",
+            "Insufficient rights to carry out this action",
             response.json()["detail"],
         )
 
