@@ -2,6 +2,7 @@ import re
 import subprocess
 import time
 from collections.abc import Callable
+from contextlib import ExitStack
 from logging import Logger
 from pathlib import Path
 from typing import Any, Literal
@@ -45,8 +46,12 @@ class DockerComposeRunner:
         """
         self._set_dockerfiles(compose_file, override_compose_files or [])
         self.env = env
-        self.required_services = required_services or self.get_compose_services()
+        self._required_services = required_services
         self.logger = p_logger or logger
+
+    @property
+    def required_services(self) -> tuple[str, ...]:
+        return self._required_services or self.get_compose_services()
 
     def _set_dockerfiles(
         self,
@@ -78,9 +83,18 @@ class DockerComposeRunner:
     def get_compose_services(self) -> tuple[str, ...]:
         """Return all the service names from the provided docker compose
         file."""
+        services = []
         with open(self.docker_compose_file) as f:
             docker_data: dict[str, Any] = yaml.safe_load(f)
-        return tuple((name for name, _ in docker_data["services"].items()))
+            services = [name for name, _ in docker_data["services"].items()]
+
+        with ExitStack() as stack:
+            for file_name in self.override_compose_files:
+                _file = stack.enter_context(open(file_name))
+                docker_data: dict[str, Any] = yaml.safe_load(_file)
+                services.extend([name for name, _ in docker_data["services"].items()])
+
+        return tuple(services)
 
     def get_not_running_services(self) -> list[str]:
         """Return required services that are not running."""

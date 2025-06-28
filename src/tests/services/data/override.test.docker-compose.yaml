@@ -1,0 +1,5 @@
+services:
+  php:
+    image: php:8-alpine
+    ports:
+      - "8881:80"
