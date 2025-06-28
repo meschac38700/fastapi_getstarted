@@ -92,7 +92,7 @@ async def delete_group(pk: int):
     await group.delete()
 
 
-@routers.post(
+@routers.patch(
     "/{pk}/users/add/",
     name="Add some users to a certain group",
     dependencies=[Depends(AdminAccess())],
@@ -107,7 +107,7 @@ async def add_users_to_group(pk: int, users: UserList):
     return group.users
 
 
-@routers.post(
+@routers.patch(
     "/{pk}/users/remove/",
     name="Remove some user to a certain group",
     dependencies=[Depends(AdminAccess())],
@@ -122,7 +122,7 @@ async def remove_users_to_group(pk: int, users: UserList):
     return group.users
 
 
-@routers.post(
+@routers.patch(
     "/{pk}/permissions/add/",
     name="Add some permissions to a certain group",
     dependencies=[Depends(AdminAccess())],
@@ -137,7 +137,7 @@ async def add_permissions_to_group(pk: int, permissions: PermissionList):
     return group.get_permissions()
 
 
-@routers.post(
+@routers.patch(
     "/{pk}/permissions/remove/",
     name="Remove some permissions to a certain group",
     dependencies=[Depends(AdminAccess())],

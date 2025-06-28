@@ -78,19 +78,19 @@ class TestGroupPermissions(AsyncTestCase):
 
         perms = await Permission.filter(target_table=User.table_name())
         data = {"permissions": [perm.name for perm in perms]}
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.user)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.user_login(self.admin)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
@@ -115,19 +115,19 @@ class TestGroupPermissions(AsyncTestCase):
             "permissions": [perm.name for perm in perms if perm.name != read_permission]
         }
 
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/remove/", json=data
         )
         self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
 
         await self.client.user_login(self.active)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/remove/", json=data
         )
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
 
         await self.client.user_login(self.admin)
-        response = await self.client.post(
+        response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/remove/", json=data
         )
         self.assertEqual(HTTPStatus.OK, response.status_code)
