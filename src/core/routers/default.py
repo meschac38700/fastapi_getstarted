@@ -4,9 +4,12 @@ from celery.result import AsyncResult
 from fastapi import FastAPI
 
 from apps.user.models import User
+from core.monitoring.logger import get_logger
 from core.tasks import load_fixtures_task
 from redis import asyncio as aioredis
 from settings import settings
+
+_logger = get_logger(__name__)
 
 
 async def health_check():
@@ -26,12 +29,20 @@ def secret_key(length: int = 65):
 
 
 def load_fake_data():
-    result: AsyncResult = load_fixtures_task.delay()
-    return {
-        "status": result.state,
-        "msg": "Loading fixtures process started.",
-        "success": result.successful(),
+    response = {
+        "status": "FAILURE",
+        "msg": "Loading fixtures process finished.",
+        "success": False,
     }
+    try:
+        result: AsyncResult = load_fixtures_task.delay().get(timeout=10)
+        response["status"] = result.state
+        response["success"] = result.successful()
+
+    except Exception as e:
+        _logger.info("IntegrityError during load fixtures task.", exc_info=e)
+
+    return response
 
 
 def register_default_endpoints(app: FastAPI):
