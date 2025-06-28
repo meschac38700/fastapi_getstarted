@@ -29,7 +29,7 @@ def secret_key(length: int = 65):
     return {"secret": secret}
 
 
-def load_fake_data():
+def load_fixtures():
     response = {
         "status": celery_states.FAILURE,
         "msg": "Loading fixtures process failed.",
@@ -70,7 +70,7 @@ def register_default_endpoints(app: FastAPI):
         },
         {
             "path": "/fixtures",
-            "endpoint": load_fake_data,
+            "endpoint": load_fixtures,
             "methods": ["POST"],
             "name": "fixtures",
             "tags": default_tags,
