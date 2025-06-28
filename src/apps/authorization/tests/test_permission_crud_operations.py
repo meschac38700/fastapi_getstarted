@@ -26,7 +26,7 @@ class TestPermissionCRUD(AsyncTestCase):
         response = await self.client.get("authorizations/permissions/")
         self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
         self.assertEqual(
-            "this action is prohibited with this user currently logged in",
+            "Insufficient rights to carry out this action",
             response.json()["detail"],
         )
 
@@ -123,6 +123,19 @@ class TestPermissionCRUD(AsyncTestCase):
         self.assertIsNotNone(created_permission_id)
         self.assertIsNotNone(await Permission.get(id=created_permission_id))
         self.assertTrue(all(actual_data[k] == v for k, v in post_data.items()))
+
+    async def test_patch_permission_not_found(self):
+        await self.client.user_login(self.admin)
+        update_data = {
+            "description": "New permission description",
+            "display_name": "Delete admin account Modified",
+        }
+        permission_id = -1
+        response = await self.client.patch(
+            f"/authorizations/permissions/{permission_id}/", json=update_data
+        )
+        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
+        self.assertEqual(response.json(), {"detail": "Permission not found."})
 
     async def test_patch_permission(self):
         update_data = {
