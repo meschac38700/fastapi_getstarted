@@ -51,15 +51,15 @@ class TestLoadFixture(AsyncTestCase):
         self.assertGreaterEqual(len(await User.all()), 1)
         self.assertGreaterEqual(self.fixture_loader.count_created, 1)
 
-    async def test_load_initial_fixtures_with_celery_task(self):
+    def test_load_initial_fixtures_with_celery_task(self):
         count = load_fixtures_task.delay().get()
         self.assertGreaterEqual(count, 1)
 
-    async def test_load_app_fixtures_with_celery_task(self):
+    def test_load_app_fixtures_with_celery_task(self):
         count = load_fixtures_task.delay(apps=["user"]).get()
         self.assertGreaterEqual(count, 1)
 
-    async def test_load_names_fixtures_with_celery_task(self):
+    def test_load_names_fixtures_with_celery_task(self):
         count = load_fixtures_task.delay(
             names=[
                 "initial_users",
@@ -67,7 +67,7 @@ class TestLoadFixture(AsyncTestCase):
         ).get()
         self.assertGreaterEqual(count, 1)
 
-    async def test_load_paths_fixtures_with_celery_task(self):
+    def test_load_paths_fixtures_with_celery_task(self):
         fixture_path = relative_from_src(
             Path(__file__).parent / "data" / "test_fixtures.yaml"
         )
