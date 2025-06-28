@@ -56,9 +56,6 @@ async def patch_group(pk: int, group_data: GroupUpdate):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
 
-    if not group_data.is_updated:
-        return group
-
     group.update_from_dict(group_data.model_dump(exclude_unset=True))
 
     return await group.save()
@@ -75,8 +72,6 @@ async def put_group(pk: int, group_data: GroupCreate):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
     # if all required fields are not updated, pydantic error will be generated (GroupCreate)
     group_data.check_all_required_fields_updated(group.model_dump())
-    if not group_data.is_updated:
-        return group
 
     group.update_from_dict(group_data.model_dump(exclude_unset=True))
 

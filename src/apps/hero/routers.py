@@ -69,9 +69,6 @@ async def update_hero(pk: int, hero: HeroCreate):
         detail = "Cannot use PUT to partially update registry, use PATCH instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
 
-    if not hero.is_updated:
-        return stored_hero
-
     stored_hero.update_from_dict(hero.model_dump(exclude_unset=True))
     return await stored_hero.save()
 
@@ -95,9 +92,6 @@ async def patch_hero(pk: int, hero: HeroPatch):
     if hero.check_all_fields_updated(stored_hero.model_dump()):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
-
-    if not hero.is_updated:
-        return stored_hero
 
     stored_hero.update_from_dict(hero.model_dump(exclude_unset=True))
     return await stored_hero.save()

@@ -63,9 +63,6 @@ async def patch_permission(pk: int, permission_data: PermissionUpdate):
         detail = "Cannot use PATCH to update entire registry, use PUT instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
 
-    if not permission_data.is_updated:
-        return permission
-
     permission.update_from_dict(permission_data.model_dump(exclude_unset=True))
 
     return await permission.save()
@@ -82,8 +79,6 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
 
     permission_data.check_all_required_fields_updated(permission.model_dump())
-    if not permission_data.is_updated:
-        return permission
 
     permission.update_from_dict(permission_data.model_dump(exclude_unset=True))
 

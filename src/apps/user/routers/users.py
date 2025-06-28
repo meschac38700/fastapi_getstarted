@@ -55,8 +55,6 @@ async def update_user(
     user.role_guard(stored_user, auth_user)
 
     user.check_all_required_fields_updated(stored_user.model_dump())
-    if not user.is_updated:
-        return stored_user
 
     stored_user.update_from_dict(user.model_dump())
     return await stored_user.save()
@@ -90,9 +88,6 @@ async def patch_user(
     if user.check_all_fields_updated(stored_user.model_dump()):
         detail = "Cannot use PATCH to update entire object, use PUT instead."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
-
-    if not user.is_updated:
-        return stored_user
 
     stored_user.update_from_dict(user.model_dump(exclude_unset=True))
     return await stored_user.save()
