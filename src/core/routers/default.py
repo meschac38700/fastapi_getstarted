@@ -41,8 +41,9 @@ def load_fixtures():
     except Exception as e:
         if "sqlalchemy.exc.IntegrityError" in str(e):
             response["status"] = celery_states.REJECTED
+            _logger.debug("IntegrityError during load fixtures task.", exc_info=e)
         else:
-            _logger.info("IntegrityError during load fixtures task.", exc_info=e)
+            _logger.debug("An error occurred during load fixtures task.", exc_info=e)
 
     return response
 
