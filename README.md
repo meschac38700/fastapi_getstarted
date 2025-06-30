@@ -84,7 +84,7 @@ docker compose up
 ##### Run development server
 
 ```bash
-python manage dev
+python manage.py server
 ```
 
 ##### Using docker compose
@@ -94,7 +94,7 @@ docker compose -f docker-compose.dev.yaml up -d
 
 #### Run application tests
 ```bash
-python manage tests
+python manage.py tests
 ```
 
 #### Running migrations
