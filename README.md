@@ -352,6 +352,3 @@ routers.include_router(post_routers)
 routers.include_router(statistical_routers)
 
 __all__ = ["routers"]
-```
-> [!IMPORTANT]
-> It is important that this exported variable is named as `routers`

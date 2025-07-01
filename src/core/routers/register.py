@@ -1,7 +1,8 @@
 import importlib
 from pathlib import Path
+from types import ModuleType
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 
 from core.services.files import (
     get_application_paths,
@@ -33,6 +34,18 @@ class AppRouter:
 
         return importlib.import_module(_module_path)
 
+    def _find_api_router(self, router_module: ModuleType):
+        """Search the APIRouter instance in the given module."""
+
+        module_attribute_names = dir(router_module)
+
+        for attribute_name in module_attribute_names:
+            attribute = getattr(router_module, attribute_name, None)
+            if isinstance(attribute, APIRouter):
+                return attribute
+
+        return None
+
     def register_all(self, app: FastAPI):
         """Register all routers from apps folder."""
         for module_path in get_application_paths():
@@ -40,7 +53,8 @@ class AppRouter:
             prefix = f"/{module_path.stem}"
 
             router_module = self._import_router_module(module_path)
-            if router_module.routers.prefix:
+            routers = self._find_api_router(router_module)
+            if routers.prefix:
                 prefix = ""
 
             app.include_router(router_module.routers, prefix=prefix)
