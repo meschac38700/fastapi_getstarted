@@ -130,6 +130,9 @@ A valid application package requires at least a models and routers modules.
 apps/
 └── blog
     ├── __init__.py
+    ├── commands
+    │   ├── __init__.py
+    │   └── latest_posts.py
     ├── dependencies
     │   ├── __init__.py
     │   └── access_rights.py
@@ -172,9 +175,10 @@ apps/
 This could be a simple module or a package in which you could
 define all models related to your application.
 
-Example:
+#### Example:
+
+###### File: apps.post.models.py
 ```Python
-# apps.post.models.py
 from sqlmodel import Field
 
 from core.db.models import SQLTable
@@ -202,8 +206,8 @@ apps/
         ├── statistical.py
         └── post.py
 ```
+###### File: apps.post.models.__init__.py
 ```Python
-# apps.post.models.__init__.py
 from .post import Post
 from .statistical import PostStatistical
 
@@ -212,8 +216,8 @@ __all__ = [
     "PostStatistical",
 ]
 ```
+###### File: apps.post.models.post.py
 ```Python
-# apps.post.models.post.py
 from typing import Optional
 from sqlmodel import Field, Relationship
 
@@ -232,9 +236,8 @@ class Post(PostBaseModel, table=True):
     id: int | None = Field(default=None, primary_key=True, allow_mutation=False)
     statistical: Optional["PostStatistical"] =  Relationship(back_populates="post")
 ```
-
+###### File: apps.post.models.statistical.py
 ```Python
-# apps.post.models.statistical.py
 from sqlmodel import Relationship, Field
 
 from .post import Post
@@ -274,9 +277,9 @@ apps/
 ```
 
 First, we will create schemas so that we can use them to validate user data.
-###### Schema module
+##### Schema module
+###### File: apps.post.models.schema.py
 ```Python
-# apps.post.models.schema.py
 from apps.post.models.post import PostBaseModel
 
 class PostUpdate(PostBaseModel):
@@ -289,8 +292,8 @@ class PostCreate(PostBaseModel):
 ```
 #### Now let's focus on routers
 
+###### File: apps.post.routers.post.py
 ```Python
-# apps.post.routers.post.py
 from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException
@@ -325,9 +328,8 @@ async def delete_post(pk: int):
     return await stored_post.delete()
 ```
 
-
+###### File: apps.post.routers.statistical.py
 ```Python
-# apps.post.routers.statistical.py
 from fastapi import APIRouter
 
 from apps.post.models import PostStatistical
@@ -339,9 +341,8 @@ routers = APIRouter(prefix="/{post_id}/statisticals")
 async def post_statisticals(post_id: int):
     return await PostStatistical.filter(post_id=post_id)
 ```
-
+###### File: apps.post.routers.__init__.py
 ```Python
-# apps.post.routers.__init__.py
 from fastapi import APIRouter
 
 from .post import routers as post_routers
@@ -352,3 +353,4 @@ routers.include_router(post_routers)
 routers.include_router(statistical_routers)
 
 __all__ = ["routers"]
+```
