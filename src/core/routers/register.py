@@ -38,6 +38,11 @@ class AppRouter:
         """Search the APIRouter instance in the given module."""
 
         module_attribute_names = dir(router_module)
+        # If 'routers' is a package and not a module (routers.py), we will use the __all__ variable
+        # (which is normally defined in the routers/__init__.py module)
+        # to get the name of the APIRouter instance
+        if (attributes := getattr(router_module, "__all__", None)) is not None:
+            module_attribute_names = attributes
 
         for attribute_name in module_attribute_names:
             attribute = getattr(router_module, attribute_name, None)
