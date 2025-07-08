@@ -1,0 +1,74 @@
+
+default:
+  image: docker:27.3.1
+  services:
+    - name: docker:27.3.1-dind
+      alias: docker
+      command: ["--tls=false"]
+
+stages:
+  - pre_commit
+  - test
+  - build
+
+variables:
+  IMAGE_NAME: fastapi-starter
+  IMAGE_TAG: latest
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  # Doc: https://about.gitlab.com/blog/2019/07/31/docker-in-docker-with-docker-19-dot-03/
+  # Create the certificates inside this directory for both the server
+  # and client. The certificates used by the client will be created in
+  # /certs/client so we only need to share this directory with the
+  # volume mount in `config.toml`.
+  DOCKER_TLS_CERTDIR: ""
+
+linter:
+  stage: pre_commit
+  image: meschac38000/pre-commit:4.0.1
+  script:
+    - pre-commit run --all-files --color always
+
+tests:
+  stage: test
+  before_script:
+    - export $(grep -v '^#' ./envs.example/.test.env | xargs)
+    - export $(grep -v '^#' ./envs.example/.database.test.env | xargs)
+    - docker compose -f docker-compose.test.ci.yaml up
+      --quiet-pull
+      --no-log-prefix
+      -d
+      --wait
+      --wait-timeout 10
+  script:
+    - docker exec -t api_test pytest .
+  after_script:
+    - docker compose -f docker-compose.test.ci.yaml down
+
+staging:
+  rules:
+    - if: $CI_COMMIT_TAG == null && $CI_COMMIT_BRANCH == "master"
+  stage: build
+  before_script:
+    - branch=staging
+    - sha=${CI_COMMIT_SHA:0:8}
+    - ts=$(date +%s)
+    - export IMAGE_TAG="${branch}-${sha}-${ts}"
+    - docker logout
+    - echo $CI_REGISTRY_PASS | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - docker build -f dockerfiles/Dockerfile .
+        --tag $CI_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+    - docker push $CI_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+
+prod:
+  rules:
+    - if: $CI_COMMIT_TAG
+  stage: build
+  before_script:
+    - docker logout
+    - echo $CI_REGISTRY_PASS | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - docker build -f dockerfiles/Dockerfile .
+        --tag $CI_REGISTRY/$IMAGE_NAME:$CI_COMMIT_TAG
+    - docker push $CI_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
