@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, Sequence
 
 import sqlalchemy as sa
+from sqlalchemy import RowMapping
 from sqlalchemy.dialects.postgresql.asyncpg import (
     AsyncAdapt_asyncpg_cursor,
     PGExecutionContext_asyncpg,
@@ -11,7 +12,7 @@ from apps.authorization.models import Group, Permission, PermissionGroupLink
 from apps.user.models import User
 from migrations.sql import utils as migration_utils
 
-Data = list[dict[str, Any]]
+Data = list[dict[str, Any]] | Sequence[RowMapping]
 
 
 class PermissionAfterCursorExecute:
