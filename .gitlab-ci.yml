@@ -9,6 +9,7 @@ default:
 stages:
   - pre_commit
   - test
+  - sonarqube
   - build
 
 variables:
@@ -42,8 +43,38 @@ tests:
       --wait-timeout 10
   script:
     - docker exec -t api_test pytest .
+  artifacts:
+    paths:
+      - src/coverage.xml
   after_script:
     - docker compose -f docker-compose.test.ci.yaml down
+
+sonarcloud-check:
+  stage: sonarqube
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  before_script:
+    # remove the first
+    - sed -i "0,/<source>.*<\/source>/{//d;}" src/coverage.xml
+    # Fixed source path
+    - sed -i "s/<source>.*<\/source>/<source>\/home\/runner\/work\/fastapi_getstarted\/fastapi_getstarted\/src<\/source>/g" src/coverage.xml
+  script:
+    - sonar-scanner -Dsonar.qualitygate.wait=true -Dproject.settings=sonar-gitlab-project.properties
+  allow_failure: true
+  dependencies:
+    - tests
+  only:
+    - merge_requests
+    - master
+    - develop*
 
 staging:
   rules:
