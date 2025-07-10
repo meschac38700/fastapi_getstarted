@@ -2,6 +2,8 @@
 omit =
   *__init__*
   *venv*
+  */tests/*
+  */src/tests/*
 relative_files = True
 source =
     . ./src ./apps
