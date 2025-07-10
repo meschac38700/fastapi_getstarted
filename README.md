@@ -168,6 +168,9 @@ apps/
     ├── tasks
     │   ├── __init__.py
     │   └── load_initial_posts.py
+    ├── templates
+    │   └── blog
+    │      └── list_posts.html
     ├── tests
     │   ├── tasks
     │   │   ├── __init__.py

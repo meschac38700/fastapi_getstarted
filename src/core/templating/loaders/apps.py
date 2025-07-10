@@ -10,7 +10,11 @@ from core.templating.loaders._base import BaseTemplateLoader
 
 
 class AppTemplateLoader(BaseTemplateLoader):
-    """Load templates from 'apps' package."""
+    """Load templates from 'apps' package.
+
+    Docs: https://jinja.palletsprojects.com/en/stable/api/#jinja2.ChoiceLoader
+    Docs loader: https://jinja.palletsprojects.com/en/stable/api/#loaders
+    """
 
     def _get_template_dirs(self) -> Generator[Path, None, None]:
         for app_template_dir in file_services.get_application_paths(
