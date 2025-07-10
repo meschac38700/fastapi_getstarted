@@ -38,6 +38,9 @@ class TestAppTemplateLoader(TestCase):
         app_dirs = application_dirs or [self.test_template_app]
 
         test_template_dir = self.test_template_app / template_dirname
+
+        # make sure the directory does not exist
+        shutil.rmtree(test_template_dir, ignore_errors=True)
         test_template_dir.mkdir(exist_ok=True, parents=True)
         self.assertTrue(test_template_dir.is_dir())
         mock_file_services.get_application_paths = MagicMock(return_value=app_dirs)
@@ -50,7 +53,12 @@ class TestAppTemplateLoader(TestCase):
             self._mock_test_template_dir(mock_file_services, template_dirname, app_dirs)
             yield
             # clear files/folders
-            shutil.rmtree(str(self.test_template_app / template_dirname))
+            shutil.rmtree(
+                str(
+                    self.test_template_app / app_template_loader.loader.template_dirname
+                ),
+                ignore_errors=True,
+            )
 
     def test_simple_load_template(self):
         with self.mock_template_dir():
