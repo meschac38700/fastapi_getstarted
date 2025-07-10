@@ -30,3 +30,7 @@ AUTH_URL = f"{AUTH_PREFIX_URL}/token"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # The amount of time the token can be refreshed once expired
 TOKEN_REFRESH_DELAY_MINUTES = 30
+
+
+# Templating
+TEMPLATE_DIR = "templates"
