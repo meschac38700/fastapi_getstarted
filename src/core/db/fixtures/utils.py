@@ -35,3 +35,4 @@ def retrieve_fixture_absolute_path(fixture_name: str):
         fixtures_path = str(Path(app_path) / "**" / fixture_filename)
         if paths := glob.glob(fixtures_path, recursive=True):
             return paths[0]
+    return None
