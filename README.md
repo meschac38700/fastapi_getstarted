@@ -97,6 +97,7 @@ docker compose -f docker-compose.dev.yaml up -d
 python manage.py tests
 ```
 
+<a id="run_migrations"></a>
 #### Running migrations
 
 We use [alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html) to manage
@@ -113,11 +114,18 @@ alembic upgrade head
 python manage.py fixtures
 ```
 ---
-### Explanation of the application structure
+## Understand the structure of the application
+
+- [Apps package](#apps)
+- [Models](#models)
+  - [Schemas](#schemas)
+- [Routers](#routers)
+- [Signals](#signals)
 
 If you are familiar with the Django application structure, you will find almost the same approach in this project.
 
-#### `Apps` folder
+<a id="apps"></a>
+### Apps package
 This folder is generally where you will be working most of the time and where all your work will reside.
 you can think of it as a Django project in which you can create all the applications you need.
 
@@ -126,6 +134,8 @@ To add a new application, simply create a new package in this folder.
 For example, let's say we want to add an application that will manage our blog posts.
 The following tree illustrates what our blog post application might look like.
 A valid application package requires at least a models and routers modules.
+
+### App complete tree
 ```
 apps/
 └── blog
@@ -142,7 +152,7 @@ apps/
     │       └── fake_posts.yaml
     ├── models
     │   ├── __init__.py
-    │   ├── schema
+    │   ├── schemas
     │   │   ├── __init__.py
     │   │   ├── create.py
     │   │   └── patch.py
@@ -169,9 +179,11 @@ apps/
         └── types.py
 ```
 
-#### Now let's take a closer look at the `App folder`.
+## Now let's take a closer look at the `Apps package`.
 
-##### `Models` package
+---
+<a id="models"></a>
+### Models package
 This could be a simple module or a package in which you could
 define all models related to your application.
 
@@ -206,16 +218,7 @@ apps/
         ├── statistical.py
         └── post.py
 ```
-###### File: apps.post.models.__init__.py
-```Python
-from .post import Post
-from .statistical import PostStatistical
 
-__all__ = [
-    "Post",
-    "PostStatistical",
-]
-```
 ###### File: apps.post.models.post.py
 ```Python
 from typing import Optional
@@ -255,42 +258,84 @@ class PostStatistical(PostStatisticalBaseModel, table=True):
     post: Post = Relationship(back_populates="statistical", sa_relationship_kwargs={"lazy": "joined"})
 ```
 
-##### `routers` package
-Now let's talk about the "routers" package.
-This package, like the "models" package, can be a package or a module.
-This is where you'll define all the endpoints related to your application.
+> [!IMPORTANT]
+> Since this is a package, we need to explicitly export these models in the __init__ file
 
-Let's implement an example based on our previous `Post` and `PostStatistical` models.
+###### File: apps.post.models.__init__.py
 
-Here's what it looks like:
-```
-apps/
-└── blog
-    ├── models
-    │   ├── __init__.py
-    │   ├── post.py
-    │   └── statistical.py
-    └──  routers
-        ├── __init__.py
-        ├── post.py
-        └── statistical.py
+```Python
+from .post import PostBaseModel, Post
+from .statistical import PostStatisticalBaseModel, PostStatistical
+
+__all__ = [
+    "Post",
+    "PostBaseModel",
+    "PostStatistical",
+    "PostStatisticalBaseModel",
+]
 ```
 
-First, we will create schemas so that we can use them to validate user data.
-##### Schema module
+#### All that remains is to create migrations and run them.
+[Perform migrations](#run_migrations)
+
+---
+<a id="schemas"></a>
+### Schemas module
+The schemas are Pydantic models based on our SQLModel tables.
+We need them to validate user data. So let's create some Post schemas:
+
 ###### File: apps.post.models.schema.py
 ```Python
 from apps.post.models.post import PostBaseModel
 
 class PostUpdate(PostBaseModel):
+    """Validate user data with an http PUT/PATCH request to update a post."""
+
     class ConfigDict:
         from_attributes = True
 
+
 class PostCreate(PostBaseModel):
+    """Validate user data with an http POST request to create a post."""
+
     class ConfigDict:
         from_attributes = True
 ```
-#### Now let's focus on routers
+> [!IMPORTANT]
+> And similarly, since we chose the package approach,
+> we need to explicitly export these schemas
+
+###### File: apps.post.models.schemas.__init__.py
+
+```Python
+from .post import PostCreate, PostUpdate
+
+__all__ = [
+    "PostCreate",
+    "PostUpdate",
+]
+```
+
+Here's what it looks like:
+```
+apps/
+└── blog
+    └──models
+       ├── __init__.py
+       ├── post.py
+       ├── statistical.py
+       └── schemas
+           ├── __init__.py
+           └── post.py
+```
+
+---
+<a id="routers"></a>
+### Routers package
+This package, like the "models" package, can be a package or a module.
+This is where you'll define all the endpoints related to your application.
+
+Let's implement an example based on our previous `Post` and `PostStatistical` models.
 
 ###### File: apps.post.routers.post.py
 ```Python
@@ -353,4 +398,35 @@ routers.include_router(post_routers)
 routers.include_router(statistical_routers)
 
 __all__ = ["routers"]
+```
+This is what our blog app looks like so far, with everything we've added:
+```
+apps/
+└── blog
+    ├── models
+    │   ├── __init__.py
+    │   ├── post.py
+    │   └── statistical.py
+    │   └── schemas
+    │     ├── __init__.py
+    │     └── post.py
+    └──  routers
+         ├── __init__.py
+         ├── post.py
+         └── statistical.py
+```
+
+> [!IMPORTANT]
+> At this point, your blog application is fully functional.
+> You can run the development server to check it.
+
+---
+<a id="signals"></a>
+### Signals package
+Signals allow us to intervene before or after an action in our SQL table.
+There is a signal handling class that will help you easily add signals to your model.
+Let's implement an example signal with the Post model.
+
+```Python
+# TODO(Eliam): Work in progress
 ```
