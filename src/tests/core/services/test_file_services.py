@@ -15,7 +15,7 @@ from apps.authorization.models import (
     PermissionUserLink,
 )
 from apps.user.models import User
-from core.services.files import retrieve_all_app_models
+from core.services.files import get_application_paths, retrieve_all_app_models
 from core.services.files.apps import (
     extract_app_name_from_path,
     get_models_by_app_path,
@@ -89,3 +89,14 @@ def test_retrieve_module_models(
     actual_models = list(retrieve_module_models(module))
     assert len(actual_models) == len(expected_models)
     assert all(expected_model in actual_models for expected_model in expected_models)
+
+
+def test_get_application_paths():
+    paths = list(get_application_paths())
+    expected_paths = [
+        settings.BASE_DIR / "apps" / "authentication",
+        settings.BASE_DIR / "apps" / "authorization",
+        settings.BASE_DIR / "apps" / "user",
+    ]
+    assert len(paths) >= len(expected_paths)
+    assert all(expected_path in paths for expected_path in expected_paths)
