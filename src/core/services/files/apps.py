@@ -92,8 +92,12 @@ def retrieve_all_app_models():
 
 def extract_app_name_from_path(file_path: Path):
     """Extract app name from the given fixture path."""
-    app_dir = settings.BASE_DIR / "apps"
+    app_dir = settings.BASE_DIR / "apps/"
     try:
-        return str(file_path).replace(str(app_dir), "").lstrip("/").split("/")[0]
-    except IndexError:
+        relative_path = file_path.relative_to(app_dir)
+        app_name = str(relative_path).split("/")[0]
+        if app_name == ".":
+            return None
+        return app_name
+    except ValueError:
         return None
