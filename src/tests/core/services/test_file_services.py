@@ -4,8 +4,20 @@ import pytest
 from sqlmodel.main import SQLModelMetaclass
 
 import settings
+from apps.authentication.models import JWTToken
+from apps.authorization.models import (
+    Group,
+    GroupUserLink,
+    Permission,
+    PermissionGroupLink,
+    PermissionUserLink,
+)
+from apps.user.models import User
 from core.services.files import retrieve_all_app_models
-from core.services.files.apps import extract_app_name_from_path
+from core.services.files.apps import (
+    extract_app_name_from_path,
+    get_models_by_app_path,
+)
 
 
 @pytest.mark.parametrize(
@@ -40,3 +52,20 @@ def test_retrieve_all_app_models():
     assert len(models) > 1
     assert all(isinstance(model, SQLModelMetaclass) for model in models)
     assert all(model.model_config.get("table") for model in models)
+
+
+@pytest.mark.parametrize(
+    "app_path,expected_models",
+    (
+        (Path(settings.BASE_DIR) / "apps" / "user", [User]),
+        (Path(settings.BASE_DIR) / "apps" / "authentication", [JWTToken]),
+        (
+            Path(settings.BASE_DIR) / "apps" / "authorization",
+            [Permission, Group, PermissionUserLink, PermissionGroupLink, GroupUserLink],
+        ),
+    ),
+)
+def test_get_models_by_app_path(app_path: Path | str, expected_models):
+    actual_models = list(get_models_by_app_path(app_path))
+    assert len(actual_models) == len(expected_models)
+    assert all(expected_model in actual_models for expected_model in expected_models)

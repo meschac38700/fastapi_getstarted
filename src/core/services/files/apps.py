@@ -70,11 +70,9 @@ def extract_models(
             yield model_instance
 
 
-def get_app_models(app_path: Path | str):
+def get_models_by_app_path(app_path: Path):
     """Retrieve all models defined in apps/{app_name}/models module or package."""
-    _app_path = Path(app_path)
-
-    models_module_path = linux_path_to_module_path(_app_path / "models")
+    models_module_path = linux_path_to_module_path(app_path / "models")
     models_module = import_module(models_module_path)
     return extract_models(models_module)
 
@@ -83,7 +81,7 @@ def get_app_models(app_path: Path | str):
 def retrieve_all_app_models():
     return sum(
         [
-            list(get_app_models(app_path))
+            list(get_models_by_app_path(app_path))
             for app_path in get_application_paths(required_module="models")
         ],
         [],
