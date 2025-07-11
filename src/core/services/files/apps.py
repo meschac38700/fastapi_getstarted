@@ -51,10 +51,10 @@ def get_models_from_module(module: ModuleType) -> Generator[str, Any, None]:
             yield item_name
 
 
-def extract_models(
+def retrieve_module_models(
     models_module: ModuleType,
 ) -> Generator[SQLModelMetaclass, Any, None]:
-    """Extract models from a module or package."""
+    """Retrieve models from a module or package."""
 
     # models is a package
     model_names: Iterable[str] = getattr(models_module, "__all__", [])
@@ -74,7 +74,7 @@ def get_models_by_app_path(app_path: Path):
     """Retrieve all models defined in apps/{app_name}/models module or package."""
     models_module_path = linux_path_to_module_path(app_path / "models")
     models_module = import_module(models_module_path)
-    return extract_models(models_module)
+    return retrieve_module_models(models_module)
 
 
 @lru_cache

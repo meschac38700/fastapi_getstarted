@@ -1,4 +1,6 @@
+import importlib
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 from sqlmodel.main import SQLModelMetaclass
@@ -17,7 +19,9 @@ from core.services.files import retrieve_all_app_models
 from core.services.files.apps import (
     extract_app_name_from_path,
     get_models_by_app_path,
+    retrieve_module_models,
 )
+from tests.core.services.data.models import MyTestModel
 
 
 @pytest.mark.parametrize(
@@ -67,5 +71,21 @@ def test_retrieve_all_app_models():
 )
 def test_get_models_by_app_path(app_path: Path | str, expected_models):
     actual_models = list(get_models_by_app_path(app_path))
+    assert len(actual_models) == len(expected_models)
+    assert all(expected_model in actual_models for expected_model in expected_models)
+
+
+@pytest.mark.parametrize(
+    "module,expected_models",
+    (
+        (importlib.import_module("apps.authentication.models"), [JWTToken]),
+        (importlib.import_module("apps.user.models"), [User]),
+        (importlib.import_module("tests.core.services.data.models"), [MyTestModel]),
+    ),
+)
+def test_retrieve_module_models(
+    module: ModuleType, expected_models: list[SQLModelMetaclass]
+):
+    actual_models = list(retrieve_module_models(module))
     assert len(actual_models) == len(expected_models)
     assert all(expected_model in actual_models for expected_model in expected_models)
