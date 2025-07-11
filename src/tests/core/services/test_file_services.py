@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import pytest
+from sqlmodel.main import SQLModelMetaclass
 
 import settings
+from core.services.files import retrieve_all_app_models
 from core.services.files.apps import extract_app_name_from_path
 
 
@@ -31,3 +33,10 @@ from core.services.files.apps import extract_app_name_from_path
 )
 def test_extract_app_name_from_path(filepath, expected):
     assert extract_app_name_from_path(filepath) == expected
+
+
+def test_retrieve_all_app_models():
+    models = retrieve_all_app_models()
+    assert len(models) > 1
+    assert all(isinstance(model, SQLModelMetaclass) for model in models)
+    assert all(model.model_config.get("table") for model in models)
