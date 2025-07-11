@@ -2,9 +2,10 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field
 
+from apps.authorization.models.mixins import PermissionMixin
 from apps.user.utils.types import UserRole, UserStatus
 from core.db import SQLTable
-from core.db.mixins import TimestampedModelMixin
+from core.db.mixins import BaseTable
 
 
 class UserBase(SQLTable):
@@ -17,7 +18,7 @@ class UserBase(SQLTable):
     age: int | None = None
 
 
-class UserBaseModel(UserBase, TimestampedModelMixin):
+class UserBaseModel(PermissionMixin, BaseTable, UserBase):
     role: UserRole = Field(
         default=UserRole.active,
         sa_column=sa.Column(
