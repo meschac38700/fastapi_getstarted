@@ -2,7 +2,8 @@ import glob
 from functools import lru_cache
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Generator
+from types import ModuleType
+from typing import Any, Generator, Iterable
 
 from sqlmodel.main import SQLModelMetaclass
 
@@ -33,16 +34,49 @@ def get_application_paths(
             yield module_path
 
 
+def get_models_from_module(module: ModuleType) -> Generator[str, Any, None]:
+    """Retrieve all models from a module."""
+
+    module_items = getattr(module, "__dict__", [])
+    for item_name in module_items:
+        if item_name.startswith("_"):
+            continue
+
+        potential_model = module_items[item_name]
+        model_config = getattr(potential_model, "model_config", None)
+        if model_config is None:
+            continue
+
+        if model_config.get("table"):
+            yield item_name
+
+
+def extract_models(
+    models_module: ModuleType,
+) -> Generator[SQLModelMetaclass, Any, None]:
+    """Extract models from a module or package."""
+
+    # models is a package
+    model_names: Iterable[str] = getattr(models_module, "__all__", [])
+
+    if not model_names:
+        # models is a module
+        model_names = get_models_from_module(models_module)
+
+    for model_name in model_names:
+        model_instance = getattr(models_module, model_name)
+        is_table = getattr(model_instance, "model_config", {}).get("table")
+        if isinstance(model_instance, SQLModelMetaclass) and is_table:
+            yield model_instance
+
+
 def get_app_models(app_path: Path | str):
-    """Retrieve all models defined in apps/{app_name}/models module."""
+    """Retrieve all models defined in apps/{app_name}/models module or package."""
     _app_path = Path(app_path)
 
     models_module_path = linux_path_to_module_path(_app_path / "models")
     models_module = import_module(models_module_path)
-    for model_name in models_module.__all__:
-        model_class = getattr(models_module, model_name, None)
-        if isinstance(model_class, SQLModelMetaclass):
-            yield model_class
+    return extract_models(models_module)
 
 
 @lru_cache
