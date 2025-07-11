@@ -19,6 +19,7 @@ from core.services.files import get_application_paths, retrieve_all_app_models
 from core.services.files.apps import (
     extract_app_name_from_path,
     get_models_by_app_path,
+    is_valid_package,
     retrieve_module_models,
 )
 from tests.core.services.data.models import MyTestModel
@@ -100,3 +101,16 @@ def test_get_application_paths():
     ]
     assert len(paths) >= len(expected_paths)
     assert all(expected_path in paths for expected_path in expected_paths)
+
+
+@pytest.mark.parametrize(
+    "package_path,required_module,expected",
+    (
+        (settings.BASE_DIR / "apps" / "user", "models", True),
+        (settings.BASE_DIR / "apps" / "authentication", "routers", True),
+        (settings.BASE_DIR / "apps" / "authorization", "models", True),
+        (settings.BASE_DIR / "apps" / "authorization", "azeaze", False),
+    ),
+)
+def test_is_valid_package(package_path: Path, required_module: str, expected: bool):
+    assert is_valid_package(package_path, module_name=required_module) is expected

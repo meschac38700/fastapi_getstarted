@@ -12,12 +12,12 @@ import settings
 from .paths import linux_path_to_module_path
 
 
-def contains_module(module_folder_path: Path, *, module_name: str = "routers") -> bool:
-    """Check if the given module path contains the specified module_name."""
+def is_valid_package(package_path: Path, *, module_name: str = "routers") -> bool:
+    """Check if the given package path contains the specified module name."""
     return any(
         [
-            (module_folder_path / module_name).exists(),  # pkg
-            (module_folder_path / (module_name + ".py")).exists(),  # module
+            (package_path / module_name).exists(),  # pkg
+            (package_path / (module_name + ".py")).exists(),  # module
         ]
     )
 
@@ -26,12 +26,12 @@ def get_application_paths(
     required_module: str = "routers",
 ) -> Generator[Path, Any, None]:
     """Retrieve all create applications from apps package."""
-    module_paths = glob.glob(str(settings.BASE_DIR / "apps" / "*"))
+    app_packages = glob.glob(str(settings.BASE_DIR / "apps" / "*"))
 
-    for module_path_str in module_paths:
-        module_path = Path(module_path_str)
-        if contains_module(module_path, module_name=required_module):
-            yield module_path
+    for app_package_str in app_packages:
+        app_package = Path(app_package_str)
+        if is_valid_package(app_package, module_name=required_module):
+            yield app_package
 
 
 def get_models_from_module(module: ModuleType) -> Generator[str, Any, None]:
