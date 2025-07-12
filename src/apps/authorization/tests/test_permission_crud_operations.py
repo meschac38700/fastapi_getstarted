@@ -51,6 +51,8 @@ class TestPermissionCRUD(AsyncTestCase):
             "target_table": Permission.table_name(),
             "display_name": "Read permission",
             "description": "This permission allows user to read the Permission model.",
+            "created_at": response.json()[0]["created_at"],
+            "updated_at": None,
         }
         data = response.json()
         self.assertEqual(len(data), 1)
@@ -86,6 +88,8 @@ class TestPermissionCRUD(AsyncTestCase):
             "target_table": Permission.table_name(),
             "display_name": "Create permission",
             "description": "This permission allows user to create the Permission model.",
+            "created_at": response.json()[0]["created_at"],
+            "updated_at": None,
         }
         data = response.json()
         self.assertEqual(len(data), 1)

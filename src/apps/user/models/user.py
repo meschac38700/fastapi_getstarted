@@ -2,15 +2,15 @@ import re
 from importlib import import_module
 from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Relationship
 
 from apps.authorization.models import (
     GroupUserLink,
     Permission,
     PermissionUserLink,
 )
-from apps.authorization.models.mixins import PermissionMixin
 from core.auth.hashers import PasswordHasher
+from core.db.mixins import BaseTable
 from settings import PASSWORD_HASHER
 
 from ._base import UserBaseModel
@@ -20,10 +20,9 @@ if TYPE_CHECKING:
 _EMPTY = type("Empty", (), {})
 
 
-class User(PermissionMixin, UserBaseModel, table=True):
+class User(UserBaseModel, BaseTable, table=True):
     __tablename__ = "users"
 
-    id: int = Field(default=None, primary_key=True, allow_mutation=False)
     permissions: list[Permission] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionUserLink
     )

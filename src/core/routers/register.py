@@ -1,13 +1,16 @@
 import importlib
 from pathlib import Path
-from types import ModuleType
 
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
 
+from core.monitoring.logger import get_logger
+from core.services.files import apps as file_apps
 from core.services.files import (
     get_application_paths,
     linux_path_to_module_path,
 )
+
+_logger = get_logger(__name__)
 
 
 class AppRouter:
@@ -34,32 +37,23 @@ class AppRouter:
 
         return importlib.import_module(_module_path)
 
-    def _find_api_router(self, router_module: ModuleType):
-        """Search the APIRouter instance in the given module."""
-
-        module_attribute_names = dir(router_module)
-        # If 'routers' is a package and not a module (routers.py), we will use the __all__ variable
-        # (which is normally defined in the routers/__init__.py module)
-        # to get the name of the APIRouter instance
-        if (attributes := getattr(router_module, "__all__", None)) is not None:
-            module_attribute_names = attributes
-
-        for attribute_name in module_attribute_names:
-            attribute = getattr(router_module, attribute_name, None)
-            if isinstance(attribute, APIRouter):
-                return attribute
-
-        return None
-
     def register_all(self, app: FastAPI):
         """Register all routers from apps folder."""
         for module_path in get_application_paths():
+            router_module = self._import_router_module(module_path)
+            routers = list(
+                file_apps.retrieve_module_items(
+                    router_module, file_apps.is_valid_router
+                )
+            )
+            if not routers:
+                _logger.info(f"No router was found in {module_path}")
+                continue
+
             # extract module name, to be used as router prefix
             prefix = f"/{module_path.stem}"
+            for router in routers:
+                if router.prefix:
+                    prefix = ""
 
-            router_module = self._import_router_module(module_path)
-            routers = self._find_api_router(router_module)
-            if routers.prefix:
-                prefix = ""
-
-            app.include_router(router_module.routers, prefix=prefix)
+                app.include_router(router, prefix=prefix)

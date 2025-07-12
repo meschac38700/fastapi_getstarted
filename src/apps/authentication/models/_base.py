@@ -1,7 +1,7 @@
 from sqlmodel import Field
 
 from core.db import SQLTable
-from core.db.mixins import TimestampedModelMixin
+from core.db.mixins import BaseTable
 
 
 class JWTTokenBase(SQLTable):
@@ -9,5 +9,5 @@ class JWTTokenBase(SQLTable):
     token_type: str = Field(default="Bearer")
 
 
-class JWTTokenModel(JWTTokenBase, TimestampedModelMixin):
+class JWTTokenModel(BaseTable, JWTTokenBase):
     pass
