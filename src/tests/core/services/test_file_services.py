@@ -1,8 +1,10 @@
 import importlib
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
+from fastapi import APIRouter
 from sqlmodel.main import SQLModelMetaclass
 
 import settings
@@ -14,14 +16,11 @@ from apps.authorization.models import (
     PermissionGroupLink,
     PermissionUserLink,
 )
+from apps.authorization.routers import routers as authorization_routers
 from apps.user.models import User
+from core.db import SQLTable
+from core.services.files import apps as file_apps
 from core.services.files import get_application_paths, retrieve_all_app_models
-from core.services.files.apps import (
-    extract_app_name_from_path,
-    get_models_by_app_path,
-    is_valid_package,
-    retrieve_module_models,
-)
 from tests.core.services.data.models import MyTestModel
 
 
@@ -49,7 +48,7 @@ from tests.core.services.data.models import MyTestModel
     ),
 )
 def test_extract_app_name_from_path(filepath, expected):
-    assert extract_app_name_from_path(filepath) == expected
+    assert file_apps.extract_app_name_from_path(filepath) == expected
 
 
 def test_retrieve_all_app_models():
@@ -71,7 +70,7 @@ def test_retrieve_all_app_models():
     ),
 )
 def test_get_models_by_app_path(app_path: Path | str, expected_models):
-    actual_models = list(get_models_by_app_path(app_path))
+    actual_models = list(file_apps.get_models_by_app_path(app_path))
     assert len(actual_models) == len(expected_models)
     assert all(expected_model in actual_models for expected_model in expected_models)
 
@@ -87,7 +86,9 @@ def test_get_models_by_app_path(app_path: Path | str, expected_models):
 def test_retrieve_module_models(
     module: ModuleType, expected_models: list[SQLModelMetaclass]
 ):
-    actual_models = list(retrieve_module_models(module))
+    actual_models = list(
+        file_apps.retrieve_module_items(module, file_apps.is_valid_model)
+    )
     assert len(actual_models) == len(expected_models)
     assert all(expected_model in actual_models for expected_model in expected_models)
 
@@ -113,4 +114,30 @@ def test_get_application_paths():
     ),
 )
 def test_is_valid_package(package_path: Path, required_module: str, expected: bool):
-    assert is_valid_package(package_path, module_name=required_module) is expected
+    assert (
+        file_apps.is_valid_package(package_path, module_name=required_module)
+        is expected
+    )
+
+
+@pytest.mark.parametrize(
+    "model_instance,expected",
+    (
+        (MyTestModel, True),
+        (SQLTable, False),
+        (ModuleType, False),
+    ),
+)
+def test_is_valid_model(model_instance: SQLModelMetaclass | Any, expected: bool):
+    assert file_apps.is_valid_model(model_instance) is expected
+
+
+@pytest.mark.parametrize(
+    "router_instance,expected",
+    (
+        (authorization_routers, True),
+        (SQLTable, False),
+    ),
+)
+def test_is_valid_router(router_instance: APIRouter | Any, expected: bool):
+    assert file_apps.is_valid_router(router_instance) is expected
