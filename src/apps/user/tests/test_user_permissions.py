@@ -24,21 +24,21 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.get(f"/users/{-1}/permissions/")
-        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
-        self.assertEqual(response.json(), {"detail": "User not found."})
+        assert HTTPStatus.NOT_FOUND == response.status_code
+        assert response.json() == {"detail": "User not found."}
 
     async def test_get_another_user_permissions_denied(self):
         response = await self.client.get("/users/permissions/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
         response = await self.client.get(f"/users/{self.active.id}/permissions/")
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
     async def test_get_own_user_permissions_using_admin_endpoint_denied(self):
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
@@ -50,15 +50,14 @@ class TestUserPermission(AsyncTestCase):
         await self.add_permissions(self.staff, expected_permissions)
 
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-        self.assertEqual(
-            "Insufficient rights to carry out this action",
-            response.json()["detail"],
+        assert HTTPStatus.FORBIDDEN == response.status_code
+        assert (
+            "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
     async def test_get_own_user_permissions_allowed(self):
         response = await self.client.get("/users/permissions/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
@@ -70,16 +69,14 @@ class TestUserPermission(AsyncTestCase):
         await self.add_permissions(self.staff, expected_permissions)
 
         response = await self.client.get("/users/permissions/")
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertGreaterEqual(len(response.json()), len(expected_permissions))
-        self.assertTrue(
-            all(perm["name"] in expected_permissions for perm in response.json())
-        )
+        assert len(response.json()) >= len(expected_permissions)
+        assert all(perm["name"] in expected_permissions for perm in response.json())
 
     async def test_admin_get_user_permissions_allowed(self):
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.admin)
 
@@ -92,22 +89,18 @@ class TestUserPermission(AsyncTestCase):
         await self.add_permissions(self.active, expected_permissions)
 
         response = await self.client.get(f"/users/{self.active.id}/permissions/")
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertGreaterEqual(len(response.json()), len(expected_permissions))
-        self.assertTrue(
-            all(perm["name"] in expected_permissions for perm in response.json())
-        )
+        assert len(response.json()) >= len(expected_permissions)
+        assert all(perm["name"] in expected_permissions for perm in response.json())
 
         # Get permissions of staff user
         await self.add_permissions(self.staff, expected_permissions)
         response = await self.client.get(f"/users/{self.staff.id}/permissions/")
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertGreaterEqual(len(response.json()), len(expected_permissions))
-        self.assertTrue(
-            all(perm["name"] in expected_permissions for perm in response.json())
-        )
+        assert len(response.json()) >= len(expected_permissions)
+        assert all(perm["name"] in expected_permissions for perm in response.json())
 
     async def test_add_permissions_to_user_not_found(self):
         data = {
@@ -119,8 +112,8 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.patch(f"/users/{-1}/permissions/add/", json=data)
-        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
-        self.assertEqual(response.json(), {"detail": "User not found."})
+        assert HTTPStatus.NOT_FOUND == response.status_code
+        assert response.json() == {"detail": "User not found."}
 
     async def test_add_permissions_to_user(self):
         user = await User(
@@ -136,25 +129,25 @@ class TestUserPermission(AsyncTestCase):
             ]
         }
         perms = await Permission.filter(name__in=data["permissions"])
-        self.assertFalse(user.has_permissions(perms))
+        assert user.has_permissions(perms) is False
 
         await self.client.user_login(user)
 
         response = await self.client.patch(
             f"/users/{user.id}/permissions/add/", json=data
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
             f"/users/{user.id}/permissions/add/", json=data
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         user = await user.refresh()
-        self.assertTrue(user.has_permissions(perms))
+        assert user.has_permissions(perms)
         expected_perms_response = [perm.model_dump(mode="json") for perm in perms]
-        self.assertEqual(response.json(), expected_perms_response)
+        assert response.json() == expected_perms_response
 
     async def test_remove_permissions_to_user_not_found(self):
         data = {
@@ -168,8 +161,8 @@ class TestUserPermission(AsyncTestCase):
         response = await self.client.patch(
             f"/users/{-1}/permissions/remove/", json=data
         )
-        self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
-        self.assertEqual(response.json(), {"detail": "User not found."})
+        assert HTTPStatus.NOT_FOUND == response.status_code
+        assert response.json() == {"detail": "User not found."}
 
     async def test_remove_permissions_to_user(self):
         data = {
@@ -187,22 +180,22 @@ class TestUserPermission(AsyncTestCase):
 
         await self.add_permissions(user, data["permissions"])
         perms = await Permission.filter(name__in=data["permissions"])
-        self.assertTrue(user.has_permissions(perms))
+        assert user.has_permissions(perms)
 
         await self.client.user_login(user)
 
         response = await self.client.patch(
             f"/users/{user.id}/permissions/remove/", json=data
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
             f"/users/{user.id}/permissions/remove/", json=data
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         user = await user.refresh()
-        self.assertFalse(user.has_permissions(perms))
+        assert user.has_permissions(perms) is False
         perm_names = [perm["name"] for perm in response.json()]
-        self.assertListEqual(perm_names, data["permissions"])
+        assert perm_names == data["permissions"]

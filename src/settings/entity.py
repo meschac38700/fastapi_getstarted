@@ -3,8 +3,6 @@ from typing import Annotated, Literal
 
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import NullPool
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from .constants import DATABASE_ENV_FILE
 
@@ -14,8 +12,8 @@ class Settings(BaseSettings):
     postgres_user: str = "fastapi"
     postgres_password: str = "fastapi"
     postgres_db: str = "fastapi"
-    host_db: str = "localhost"
-    port_db: int = 5432
+    postgres_host: str = "localhost"
+    postgres_port: int = 5432
     app_environment: Literal["prod", "test", "dev"] = "dev"
     app_port: int = 8000
     model_config = SettingsConfigDict(
@@ -55,18 +53,19 @@ class Settings(BaseSettings):
     cors_allowed_headers: list[str] = ["*"]
     cors_allowed_methods: list[str] = ["*"]
 
-    def get_engine(self, **kwargs):
-        """Return Async db Engine.
-
-        Docs: https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html
-        """
-        kw = {"pool_pre_ping": True, "poolclass": NullPool, **kwargs}
-        engine = create_async_engine(self.uri, **kw)
-        return engine
-
     @property
     def uri(self):
-        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.host_db}:{self.port_db}/{self.postgres_db}"
+        prefix = "postgresql+asyncpg://"
+        db = self.postgres_db
+        port = self.postgres_port
+        host = self.postgres_host
+        return (
+            f"{prefix}{self.postgres_user}:{self.postgres_password}@{host}:{port}/{db}"
+        )
+
+    @property
+    def health_check_endpoint(self):
+        return f"{self.server_address}:{self.app_port}/healthcheck"
 
     @property
     def health_check_endpoint(self):

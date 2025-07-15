@@ -7,7 +7,6 @@ from sqlmodel import Field
 from core.db import SQLTable
 from core.db.signals.managers import signal_manager
 from core.unittest.async_case import AsyncTestCase
-from settings import settings
 
 Fn = Callable[..., Any]
 
@@ -24,8 +23,7 @@ class AfterDropModel(SQLTable, table=True):
 
 class TestSchemaSignals(AsyncTestCase):
     async def _db_exec(self, callback: Fn, **kwargs):
-        engine = settings.get_engine()
-        async with engine.connect() as conn:
+        async with self._engine.connect() as conn:
             await conn.run_sync(lambda sync_conn: callback(sync_conn, **kwargs))
 
     async def test_before_create_signal(self):
@@ -44,7 +42,7 @@ class TestSchemaSignals(AsyncTestCase):
 
         await self._db_exec(table.drop, checkfirst=True)
         await self._db_exec(table.create)
-        self.assertTrue(before_create_table_called)
+        assert before_create_table_called
 
     async def test_after_create_signal(self):
         class AfterCreateModel(SQLTable, table=True):
@@ -62,7 +60,7 @@ class TestSchemaSignals(AsyncTestCase):
 
         await self._db_exec(table.drop, checkfirst=True)
         await self._db_exec(table.create)
-        self.assertTrue(after_create_table_called)
+        assert after_create_table_called
 
     async def test_before_drop_signal(self):
         table = BeforeDropModel.table()
@@ -74,7 +72,7 @@ class TestSchemaSignals(AsyncTestCase):
             before_drop_table_called = target.name == BeforeDropModel.table_name()
 
         await self._db_exec(table.drop)
-        self.assertTrue(before_drop_table_called)
+        assert before_drop_table_called
 
     async def test_after_drop_signal(self):
         table = AfterDropModel.table()
@@ -86,4 +84,4 @@ class TestSchemaSignals(AsyncTestCase):
             after_drop_table_called = target.name == AfterDropModel.table_name()
 
         await self._db_exec(table.drop)
-        self.assertTrue(after_drop_table_called)
+        assert after_drop_table_called

@@ -1,14 +1,12 @@
 from pathlib import Path
-from unittest import TestCase
 
 from core.services.files import YAMLReader
+from core.unittest.async_case import AsyncTestCase
 
 
-class TestYAMLReader(TestCase):
-    def setUp(self):
-        self.reader = YAMLReader(Path(__file__).parent / "data" / "heroes.yaml")
-
+class TestYAMLReader(AsyncTestCase):
     def test_yaml_to_dict(self):
+        self.reader = YAMLReader(Path(__file__).parent / "data" / "heroes.yaml")
         expected = {
             "heroes": [
                 {"name": "Captain America", "age": 43, "secret_name": "Chris Evans"},
@@ -17,4 +15,4 @@ class TestYAMLReader(TestCase):
             ]
         }
 
-        self.assertDictEqual(expected, self.reader.read())
+        assert expected == self.reader.read()

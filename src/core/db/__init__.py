@@ -1,8 +1,8 @@
 from .models import SQLTable
-from .utils import create_db_and_tables, delete_db_and_tables
+from .utils import create_all_tables, delete_all_tables
 
 __all__ = [
-    "create_db_and_tables",
-    "delete_db_and_tables",
+    "create_all_tables",
+    "delete_all_tables",
     "SQLTable",
 ]

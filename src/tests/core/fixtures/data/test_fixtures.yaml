@@ -1,7 +1,7 @@
 - model: user.User
   properties:
-    username: djohn
-    first_name: John
-    last_name: DOE
-    password: test
-    email: d.john@eliam-lotonga.fr
+    username: celery_user
+    first_name: Celery
+    last_name: Pytest
+    password: celery_test
+    email: celery.pytest@eliam-lotonga.fr

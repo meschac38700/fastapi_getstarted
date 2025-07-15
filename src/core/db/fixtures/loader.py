@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Literal
 
 import settings
-from core.db import SQLTable
 from core.db.fixtures import utils as fixture_utils
 from core.db.fixtures.files import FixtureFileReader
+from core.db.fixtures.model_loaders.factory import ModelLoaderFactory
 from core.monitoring.logger import get_logger
 
 _APP_DIR = settings.BASE_DIR / "apps"
@@ -23,18 +23,26 @@ class LoadFixtures:
         self.app_dir: Path = Path(app_dir)
         self.logger = logger or _logger
         self.count_created = 0
+        self.model_loader = ModelLoaderFactory()
         self._loader_mapping = {
             "app": self.load_app_fixtures,
             "path": self.load_fixture_file,
             "name": self.load_fixture_by_name,
         }
 
-    async def _extract_models(self, file_path: Path):
-        """Extract model instances from the given yaml file."""
+    async def _load_models(self, file_path: Path) -> int:
+        """Extract model instances from the given YAML file and load them."""
         fixture_file_reader = FixtureFileReader(file_path=file_path)
-        return [model async for model in await fixture_file_reader.models()]
+        data_list_groups = await fixture_file_reader.extract_data()
+        created = 0
+        for group_key, data_list in data_list_groups.items():
+            count = len(data_list)
+            await self.model_loader.load(data_list, group_key)
+            self.logger.info(f"Loaded {count} objects of type {group_key}.")
+            created += count
+        return created
 
-    async def load_fixture_file(self, fixture_file: Path | str) -> int:
+    async def load_fixture_file(self, fixture_file: Path | str):
         """Process and load the provided fixture files.
 
         example:
@@ -47,13 +55,11 @@ class LoadFixtures:
                 f"Invalid fixture file: {_fixture_file}. File does not exists."
             )
 
-        models = await self._extract_models(_fixture_file)
-        _count = len(models)
+        count_created = await self._load_models(_fixture_file)
         self.logger.info(
-            f"{_count} object(s) found in the {_fixture_file.name} file and will be saved in the database."
+            f"{count_created} object(s) found in the {_fixture_file.name} file and will be saved in the database."
         )
-        await SQLTable.objects().bulk_create_or_update(models)
-        self.count_created += _count
+        self.count_created += count_created
 
     async def load_app_fixtures(self, app_name: str):
         """Load all fixtures found in the provided app.

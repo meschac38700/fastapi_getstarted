@@ -1,5 +1,5 @@
 from .fixture import FixtureRunner
 from .server import ServerRunner
-from .test import TestRunner
+from .test import AppTestRunner
 
-__all__ = ["ServerRunner", "TestRunner", "FixtureRunner"]
+__all__ = ["ServerRunner", "AppTestRunner", "FixtureRunner"]

@@ -1,10 +1,9 @@
-from unittest import TestCase
-
 from apps.user.models import User
 from apps.user.tasks.user import create_user_task
+from core.unittest.async_case import AsyncTestCase
 
 
-class TestCeleryTasks(TestCase):
+class TestCeleryTasks(AsyncTestCase):
     def test_create_user_task(self):
         user_data = {
             "username": "pytest",

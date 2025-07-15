@@ -1,3 +1,38 @@
+- model: authorization.Permission
+  properties:
+    name: update:users
+    target_table: users
+
+- model: authorization.Permission
+  properties:
+    name: create:users
+    target_table: users
+
+- model: authorization.Permission
+  properties:
+    name: read:users
+    target_table: users
+
+- model: authorization.Permission
+  properties:
+    name: delete:users
+    target_table: users
+
+- model: authorization.Permission
+  properties:
+    name: read:permission
+    target_table: permission
+
+- model: authorization.Permission
+  properties:
+    name: update:permission
+    target_table: permission
+
+- model: authorization.Permission
+  properties:
+    name: delete:permission
+    target_table: permission
+
 - model: user.User
   properties:
     username: admin
@@ -13,6 +48,5 @@
     - read:users
     - delete:users
     - read:permission
-    - update:permission
     - update:permission
     - delete:permission

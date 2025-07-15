@@ -1,33 +1,42 @@
-from unittest.async_case import IsolatedAsyncioTestCase
+from typing import Optional
 
+import pytest
 from httpx import ASGITransport
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from apps.authorization.models import Group, Permission
 from apps.user.models import User
-from core.db import create_db_and_tables, delete_db_and_tables
+from core.db import create_all_tables, delete_all_tables
 from core.db.dependencies import DBService
 from core.db.fixtures import LoadFixtures
 from core.unittest.client import AsyncClientTest
 from main import app
-from settings import settings
 
 BASE_URL = "https://test"
-_engine = settings.get_engine()
 
 
-class AsyncTestCase(IsolatedAsyncioTestCase):
-    fixtures: list[str] | None = None
+@pytest.mark.usefixtures("create_db")
+class AsyncTestCase:
+    fixtures: Optional[list[str]] = None
     db_service: DBService = None
-    _loaded_once: bool = False
     fixture_loader = LoadFixtures()
+    _engine: Optional[AsyncEngine] = None
+    client = None
+
+    @pytest.fixture(scope="function", autouse=True)
+    async def create_db(self, db: AsyncEngine, settings):
+        self._engine = db
+        self.db_service = DBService()
+        await self._load_fixtures()
+        await self.asyncSetUp()
+        yield
+        await self.asyncTearDown()
 
     async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self._load_once()
+        """Setup before each test"""
         self.client = AsyncClientTest(
             transport=ASGITransport(app=app), base_url=BASE_URL
         )
-        self.db_service = DBService(_engine)
 
     async def add_permissions(self, item: User | Group, permission_names: list[str]):
         _permissions = await Permission.filter(name__in=permission_names)
@@ -36,29 +45,15 @@ class AsyncTestCase(IsolatedAsyncioTestCase):
         ]
         item.permissions.extend(missing_permissions)
         await item.save()
-        self.assertTrue(item.has_permissions(_permissions))
+        assert item.has_permissions(_permissions)
 
     async def _load_fixtures(self):
         if not self.fixtures:
             return
 
+        await delete_all_tables(self._engine)
+        await create_all_tables(self._engine)
         await self.fixture_loader.load_fixtures(self.fixtures)
 
-    async def _load_once(self):
-        if self._loaded_once:
-            return
-
-        await delete_db_and_tables(_engine)
-        await create_db_and_tables(_engine)
-        await self._load_fixtures()
-        self._loaded_once = True
-
     async def asyncTearDown(self):
-        await super().asyncTearDown()
         await self.client.aclose()
-        await self.db_service.dispose()
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls._loaded_once = False

@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from functools import lru_cache
 from typing import Any, Self
 
@@ -19,7 +19,7 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().get(**filters)
 
     @classmethod
-    async def first(cls) -> Iterable[Self]:
+    async def first(cls) -> Self:
         return await cls.objects().first()
 
     @classmethod
@@ -36,7 +36,7 @@ class ModelQuery(QueryExpressionManager):
     @classmethod
     async def filter(
         cls, *, offset: int = 0, limit: int = 100, **filters
-    ) -> Sequence[Self]:
+    ) -> list[Self]:
         return await cls.objects().filter(**filters, offset=offset, limit=limit)
 
     @classmethod
@@ -44,7 +44,7 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().count(**filters)
 
     @classmethod
-    async def all(cls, *, offset: int = 0, limit: int = 100) -> Sequence[Self]:
+    async def all(cls, *, offset: int = 0, limit: int = 100) -> list[Self]:
         return await cls.objects().all(offset=offset, limit=limit)
 
     async def save(self) -> Self:
