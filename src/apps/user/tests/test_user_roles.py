@@ -37,13 +37,9 @@ class TestUserRoles(AsyncTestCase):
             "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
-        # Delete his own account: Should pass
-        copy_obj = self.active.model_dump()
         response = await self.client.delete(f"/users/{self.active.id}/")
         assert HTTPStatus.NO_CONTENT == response.status_code
         assert await User.get(id=self.active.id) is None
-        # restore obj: prevent breaking next tests
-        await User(**copy_obj).save()
 
     async def test_user_staff_can_delete_only_his_own_account(self):
         delete_perm = Permission.format_permission_name("delete", User.table_name())
@@ -64,14 +60,9 @@ class TestUserRoles(AsyncTestCase):
         )
 
         # Delete his own account: Should pass
-        copy_obj = self.staff.model_dump()
         response = await self.client.delete(f"/users/{self.staff.id}/")
         assert HTTPStatus.NO_CONTENT == response.status_code
         assert await User.get(id=self.staff.id) is None
-        # restore obj: prevent breaking next tests
-        u = await User(**copy_obj).save()
-        assert u.role == UserRole.staff
-        assert await User.get(role=UserRole.staff) is not None
 
     async def test_user_admin_can_delete_any_account(self):
         user = await User(
@@ -91,12 +82,9 @@ class TestUserRoles(AsyncTestCase):
         assert await User.get(id=user.id) is None
 
         # Delete his own account: Should pass
-        copy_obj = self.admin.model_dump()
         response = await self.client.delete(f"/users/{self.admin.id}/")
         assert HTTPStatus.NO_CONTENT == response.status_code
         assert await User.get(id=self.admin.id) is None
-        # restore obj: prevent breaking next tests
-        await User(**copy_obj).save()
 
     async def test_user_active_cannot_update_role_field(self):
         update_data = {

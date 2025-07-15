@@ -67,10 +67,6 @@ class Settings(BaseSettings):
     def health_check_endpoint(self):
         return f"{self.server_address}:{self.app_port}/healthcheck"
 
-    @property
-    def health_check_endpoint(self):
-        return f"{self.server_address}:{self.app_port}/healthcheck"
-
 
 @lru_cache
 def get_settings():
