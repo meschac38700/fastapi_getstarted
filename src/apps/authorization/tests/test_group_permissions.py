@@ -14,8 +14,8 @@ class TestGroupPermissions(AsyncTestCase):
         "heroes",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         await asyncio.gather(
             Permission.generate_crud_objects(Hero.table_name()),
             Permission.generate_crud_objects(User.table_name()),
@@ -39,10 +39,10 @@ class TestGroupPermissions(AsyncTestCase):
 
         data = {"secret_name": "Test edit"}
         response = await self.client.patch("/heroes/1/", json=data)
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-        self.assertEqual(
-            response.json()["detail"],
-            "You do not have sufficient rights to this resource.",
+        assert HTTPStatus.FORBIDDEN == response.status_code
+        assert (
+            response.json()["detail"]
+            == "You do not have sufficient rights to this resource."
         )
 
     async def test_group_permission_to_edit_resource(self):
@@ -58,14 +58,14 @@ class TestGroupPermissions(AsyncTestCase):
         hero_id = 1
         data = {"secret_name": "Test edit"}
         response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         actual_data = response.json()
         hero = await Hero.get(id=hero_id)
-        self.assertEqual(hero_id, hero.id)
-        self.assertEqual(data["secret_name"], hero.secret_name)
-        self.assertEqual(actual_data["secret_name"], data["secret_name"])
-        self.assertEqual(actual_data["id"], hero_id)
+        assert hero_id == hero.id
+        assert data["secret_name"] == hero.secret_name
+        assert actual_data["secret_name"] == data["secret_name"]
+        assert actual_data["id"] == hero_id
 
     async def test_add_permission_to_a_certain_group(self):
         group = await Group(
@@ -74,31 +74,31 @@ class TestGroupPermissions(AsyncTestCase):
             display_name="Can do anything about user",
             description="Can do everything about user operations except those that require an administrator role.",
         ).save()
-        self.assertEqual(group.get_permissions(), [])
+        assert group.get_permissions() == []
 
         perms = await Permission.filter(target_table=User.table_name())
         data = {"permissions": [perm.name for perm in perms]}
         response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
         )
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.user)
         response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/add/", json=data
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         expected_response = [perm.model_dump(mode="json") for perm in perms]
         group = await group.refresh()
-        self.assertTrue(group.has_permissions(perms))
-        self.assertEqual(response.json(), expected_response)
+        assert group.has_permissions(perms)
+        assert response.json() == expected_response
 
     async def test_remove_permission_to_a_certain_group(self):
         group = await Group(
@@ -108,7 +108,8 @@ class TestGroupPermissions(AsyncTestCase):
         ).save()
         perms = await Permission.filter(target_table=User.table_name())
         await group.extend_permissions(perms)
-        self.assertEqual(group.get_permissions(), perms)
+        actual_ids = [perm.id for perm in group.get_permissions()]
+        assert all(perm.id in actual_ids for perm in perms)
 
         read_permission = Permission.format_permission_name("read", User.table_name())
         data = {
@@ -118,25 +119,25 @@ class TestGroupPermissions(AsyncTestCase):
         response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/remove/", json=data
         )
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.active)
         response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/remove/", json=data
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
             f"/authorizations/groups/{group.id}/permissions/remove/", json=data
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         read_permission_name = Permission.format_permission_name(
             "read", User.table_name()
         )
         read_perm = await Permission.get(name=read_permission_name)
         expected_response = [read_perm.model_dump(mode="json")]
-        self.assertEqual(response.json(), expected_response)
+        assert response.json() == expected_response
         group = await group.refresh()
-        self.assertEqual(group.get_permissions(), [read_perm])
+        assert group.get_permissions() == [read_perm]

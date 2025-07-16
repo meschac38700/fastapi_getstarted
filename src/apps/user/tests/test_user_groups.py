@@ -10,8 +10,8 @@ from core.unittest.async_case import AsyncTestCase
 class TestUserGroup(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         await Group.generate_crud_objects(User.table_name())
         self.active, self.staff, self.admin = await asyncio.gather(
             User.get(role=UserRole.active),
@@ -21,21 +21,20 @@ class TestUserGroup(AsyncTestCase):
 
     async def test_get_own_groups_using_admin_endpoint_denied(self):
         response = await self.client.get(f"/users/{self.staff.id}/groups/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
         # endpoint reserved to admin user
         response = await self.client.get(f"/users/{self.staff.id}/groups/")
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-        self.assertEqual(
-            "Insufficient rights to carry out this action",
-            response.json()["detail"],
+        assert HTTPStatus.FORBIDDEN == response.status_code
+        assert (
+            "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
     async def test_get_own_user_groups(self):
         response = await self.client.get("/users/groups/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
@@ -47,16 +46,14 @@ class TestUserGroup(AsyncTestCase):
         await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get("/users/groups/")
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertGreaterEqual(len(response.json()), len(expected_groups))
-        self.assertTrue(
-            all(perm["name"] in expected_groups for perm in response.json())
-        )
+        assert len(response.json()) >= len(expected_groups)
+        assert all(perm["name"] in expected_groups for perm in response.json())
 
     async def test_admin_get_user_groups(self):
         response = await self.client.get(f"/users/{self.active.id}/groups/")
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.admin)
 
@@ -69,18 +66,14 @@ class TestUserGroup(AsyncTestCase):
         await self.active.add_to_groups(await Group.filter(name__in=expected_groups))
 
         response = await self.client.get(f"/users/{self.active.id}/groups/")
-        self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertGreaterEqual(len(response.json()), len(expected_groups))
-        self.assertTrue(
-            all(group["name"] in expected_groups for group in response.json())
-        )
+        assert HTTPStatus.OK == response.status_code
+        assert len(response.json()) >= len(expected_groups)
+        assert all(group["name"] in expected_groups for group in response.json())
 
         # Get groups of staff user
         await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
         response = await self.client.get(f"/users/{self.staff.id}/groups/")
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertGreaterEqual(len(response.json()), len(expected_groups))
-        self.assertTrue(
-            all(group["name"] in expected_groups for group in response.json())
-        )
+        assert len(response.json()) >= len(expected_groups)
+        assert all(group["name"] in expected_groups for group in response.json())

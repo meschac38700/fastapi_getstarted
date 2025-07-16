@@ -4,12 +4,23 @@ omit =
   *venv*
   */tests/*
   */src/tests/*
+  */src/*/tests/*
+  conftest.py
+  */src/conftest.py
 relative_files = True
 source =
     . ./src ./apps
 branch = True
 
 [report]
+omit =
+  *__init__*
+  *venv*
+  */tests/*
+  */src/tests/*
+  */src/*/tests/*
+  conftest.py
+  */src/conftest.py
 format = markdown
 fail_under=80
 

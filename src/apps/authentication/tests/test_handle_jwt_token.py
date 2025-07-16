@@ -9,25 +9,25 @@ from core.unittest.async_case import AsyncTestCase
 class TestHandleJWTToken(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         self.user = await User.get(username="test")
 
     async def test_generate_valid_jwt_token(self):
         token = await JWTToken.get_or_create(self.user)
-        self.assertTrue(token.is_valid)
-        self.assertEqual("Bearer", token.token_type)
+        assert token.is_valid
+        assert "Bearer" == token.token_type
 
     async def test_refresh_jwt_token(self):
         token = await JWTToken.get_or_create(self.user)
-        self.assertTrue(token.can_be_refreshed)
+        assert token.can_be_refreshed
 
         old_token = token.model_dump()
 
         await token.refresh()
-        self.assertNotEqual(old_token["access_token"], token.access_token)
-        self.assertEqual(old_token["id"], token.id)
-        self.assertTrue(token.is_valid)
+        assert old_token["access_token"] != token.access_token
+        assert old_token["id"] == token.id
+        assert token.is_valid
 
     async def test_token_exceeded_refresh_delay(self):
         token = await JWTToken.get_or_create(self.user)
@@ -43,5 +43,5 @@ class TestHandleJWTToken(AsyncTestCase):
         token.created_at = dt.replace(tzinfo=None)
         await token.save()
 
-        self.assertFalse(token.is_valid)
-        self.assertFalse(token.can_be_refreshed)
+        assert token.is_valid is False
+        assert token.can_be_refreshed is False

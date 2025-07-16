@@ -1,10 +1,10 @@
-from sqlmodel import Field, Relationship
+from sqlmodel import Relationship
 
 from apps.user.models import User
+from core.db.mixins import BaseTable
 
-from ._base import HeroModel
+from ._base import HeroBase
 
 
-class Hero(HeroModel, table=True):
-    id: int | None = Field(default=None, primary_key=True, allow_mutation=False)
+class Hero(HeroBase, BaseTable, table=True):
     user: User = Relationship(sa_relationship_kwargs={"lazy": "joined"})

@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
+import asyncpg
 import pydantic_core
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
@@ -14,16 +15,40 @@ BaseModelT = TypeVar("BaseModelT", bound=BaseModel)
 logger = get_logger(__name__)
 
 
-async def create_db_and_tables(engine: AsyncEngine):
+async def create_all_tables(engine: AsyncEngine):
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
     await engine.dispose()
 
 
-async def delete_db_and_tables(engine: AsyncEngine):
+async def delete_all_tables(engine: AsyncEngine):
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)
     await engine.dispose()
+
+
+async def database_exists(db_name, admin_url):
+    conn = await asyncpg.connect(admin_url)
+    exists = await conn.fetchval(
+        "SELECT 1 FROM pg_database WHERE datname = $1", db_name
+    )
+    return exists
+
+
+async def create_database_if_not_exists(db_name, admin_url):
+    conn = await asyncpg.connect(admin_url)
+    exists = await database_exists(db_name, admin_url)
+    if not exists:
+        await conn.execute(f'CREATE DATABASE "{db_name}"')
+    await conn.close()
+
+
+async def drop_database_if_exists(db_name, admin_url):
+    conn = await asyncpg.connect(admin_url)
+    exists = await database_exists(db_name, admin_url)
+    if exists:
+        await conn.execute(f'DROP DATABASE "{db_name}"')
+    await conn.close()
 
 
 # Context: https://github.com/pydantic/pydantic/issues/3120#issuecomment-1528030416

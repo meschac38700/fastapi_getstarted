@@ -1,8 +1,8 @@
-from sqlmodel import Field
+from core.db.mixins import BaseTable
 
 from ._base import PermissionBase
 from .mixins import CRUDModelMixin
 
 
-class Permission(CRUDModelMixin, PermissionBase, table=True):
-    id: int = Field(primary_key=True, allow_mutation=False)
+class Permission(CRUDModelMixin, BaseTable, PermissionBase, table=True):
+    pass

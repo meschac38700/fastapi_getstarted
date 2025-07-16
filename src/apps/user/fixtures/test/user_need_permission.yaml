@@ -1,0 +1,13 @@
+- model: user.User
+  properties:
+    username: test_permission
+    first_name: Permission
+    last_name: User
+    password: test_permission
+    email: test_permission@example.com
+    role: admin
+    permissions:
+    - update:users
+    - create:users
+    - read:users
+    - delete:users

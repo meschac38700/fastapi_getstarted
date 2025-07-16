@@ -6,8 +6,8 @@ from core.unittest.async_case import AsyncTestCase
 
 
 class TestPermissionGeneration(AsyncTestCase):
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         self.perms = [
             Permission.format_permission_name("create", Hero.table_name()),
             Permission.format_permission_name("read", Hero.table_name()),
@@ -19,13 +19,11 @@ class TestPermissionGeneration(AsyncTestCase):
         await Permission.generate_crud_objects(Hero.table_name())
 
         hero_crud_perms = await Permission.filter(target_table=Hero.table_name())
-        self.assertEqual(4, len(hero_crud_perms))
+        assert 4 == len(hero_crud_perms)
 
         actual_perm_names = [perm.name for perm in hero_crud_perms]
-        self.assertListEqual(actual_perm_names, self.perms)
-        self.assertTrue(
-            all(perm.target_table == Hero.table_name() for perm in hero_crud_perms)
-        )
+        assert actual_perm_names == self.perms
+        assert all(perm.target_table == Hero.table_name() for perm in hero_crud_perms)
 
     async def test_get_permission_insert_raw_sql(self):
         actual_sql = Permission.get_crud_data_list(Hero.table_name(), raw_sql=True)
@@ -37,4 +35,4 @@ class TestPermissionGeneration(AsyncTestCase):
         """
         actual_sql = re.sub("\\s+|\n+", "", actual_sql)
         expected_sql = re.sub("\\s+|\n+", "", expected_sql)
-        self.assertEqual(actual_sql, expected_sql)
+        assert actual_sql == expected_sql

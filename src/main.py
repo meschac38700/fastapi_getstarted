@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from core.db.dependencies.session import get_engine
 from core.db.signals.main import setup_signals
 from core.lifespan import setup, teardown
 from core.middlewares import cors_middleware
@@ -9,9 +10,8 @@ from core.monitoring.sentry import sentry_init
 from core.routers import register_default_endpoints
 from core.routers.register import AppRouter
 from core.services import celery
-from settings import settings
 
-_engine = settings.get_engine()
+_engine = get_engine()
 
 
 @asynccontextmanager

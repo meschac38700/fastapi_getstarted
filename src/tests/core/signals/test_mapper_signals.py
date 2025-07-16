@@ -16,10 +16,12 @@ class DeletionProhibitedError(Exception):
 class TestMapperSignal(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self, *_, **__):
-        await super().asyncSetUp()
-        self.user = await User.get(id=1)
-        self.second_user = await User.get(id=2)
+    async def async_set_up(self, *_, **__):
+        await super().async_set_up()
+        self.user = await User.first()
+        self.second_user = (await User.filter(username__not_equals=self.user.username))[
+            0
+        ]
 
     async def test_before_update_signal(self):
         def double_user_age(_: Mapper[User], __: Connection, user: User):
@@ -30,7 +32,7 @@ class TestMapperSignal(AsyncTestCase):
         self.user.age = new_age
         await self.user.save()
 
-        self.assertEqual(new_age * 2, self.user.age)
+        assert new_age * 2 == self.user.age
 
         # Unregister to avoid distorting next tests
         signal_manager.unregister(
@@ -46,8 +48,8 @@ class TestMapperSignal(AsyncTestCase):
         self.user.age = new_age
         await self.user.save()
 
-        self.assertEqual(new_age, self.user.age)
-        self.assertEqual(self.second_user.age, new_age * -1)
+        assert new_age == self.user.age
+        assert self.second_user.age == new_age * -1
 
         # Unregister to avoid distorting next tests
         signal_manager.unregister(
@@ -65,13 +67,13 @@ class TestMapperSignal(AsyncTestCase):
 
         signal_manager.before_insert(User)(set_permissions)
         new_user = await User(
-            username="foo",
+            username="before_insert_user",
             first_name="bar",
             last_name="DOE",
             password=(lambda: "pytest")(),
         ).save()
 
-        self.assertEqual(new_user.permissions, permissions)
+        assert new_user.permissions == permissions
 
         # Unregister to avoid distorting next tests
         signal_manager.unregister(
@@ -86,14 +88,14 @@ class TestMapperSignal(AsyncTestCase):
 
         signal_manager.after_insert(User)(copy_permissions)
         new_user = await User(
-            username="foo",
+            username="after_insert_user",
             first_name="bar",
             last_name="DOE",
             password=(lambda: "pytest")(),
             permissions=permissions,
         ).save()
 
-        self.assertEqual(self.user.permissions, new_user.permissions)
+        assert self.user.permissions == new_user.permissions
 
         # Unregister to avoid distorting next tests
         signal_manager.unregister(
@@ -109,8 +111,8 @@ class TestMapperSignal(AsyncTestCase):
             await self.second_user.delete()
 
         await self.second_user.refresh()
-        self.assertIsNotNone(self.second_user)
-        self.assertEqual(f"Cannot delete user {self.second_user.id}.", str(e.value))
+        assert self.second_user is not None
+        assert f"Cannot delete user {self.second_user.id}." == str(e.value)
 
         # Unregister to avoid distorting next tests
         signal_manager.unregister(
@@ -127,8 +129,8 @@ class TestMapperSignal(AsyncTestCase):
         pk = self.second_user.id
         signal_manager.after_delete(User)(check_called)
         await self.second_user.delete()
-        self.assertTrue(called)
-        self.assertIsNone(await User.get(id=pk))
+        assert called
+        assert await User.get(id=pk) is None
         # Unregister to avoid distorting next tests
         signal_manager.unregister(
             "after_delete", check_called, target=User, category=EventCategory.MAPPER
@@ -145,4 +147,4 @@ class TestMapperSignal(AsyncTestCase):
         users = await User.all()
         expected_called_count = len(users)
         await User.bulk_delete(users)
-        self.assertEqual(expected_called_count, called_count)
+        assert expected_called_count == called_count

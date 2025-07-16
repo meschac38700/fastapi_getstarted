@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Iterable
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Relationship
+
+from core.db.mixins import BaseTable
 
 from ._base import GroupBase
 from .mixins import CRUDModelMixin, PermissionMixin
@@ -11,10 +13,9 @@ if TYPE_CHECKING:
     from apps.user.models import User
 
 
-class Group(CRUDModelMixin, PermissionMixin, GroupBase, table=True):
+class Group(CRUDModelMixin, BaseTable, PermissionMixin, GroupBase, table=True):
     __tablename__ = "permission_group"
 
-    id: int = Field(primary_key=True, allow_mutation=False)
     permissions: list[Permission] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=PermissionGroupLink
     )

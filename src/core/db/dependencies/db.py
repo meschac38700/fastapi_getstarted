@@ -5,12 +5,13 @@ from typing import Iterable
 
 from fastapi import Depends
 from sqlalchemy import func
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import ForUpdateArg
 from sqlmodel import SQLModel, delete, select
 from typing_extensions import Annotated, Any, ParamSpec, TypeVar
 
-from settings import settings
+from core.db.dependencies.session import get_engine
 
 P = ParamSpec("P")
 Fn = Callable[P, Any]
@@ -21,7 +22,9 @@ def inject_session(func: Fn) -> Fn:
     @wraps(func)
     async def wrapper(*args, **kwargs) -> Any:
         self_obj = args[0]
-        async with AsyncSession(self_obj.engine) as session:
+        _engine = get_engine()
+        setattr(self_obj, "engine", _engine)
+        async with AsyncSession(_engine) as session:
             kwargs["session"] = session
             setattr(self_obj, "_current_session", session)
             res = await func(*args, **kwargs)
@@ -35,8 +38,8 @@ def inject_session(func: Fn) -> Fn:
 class DBService:
     """Group some utility functions for db queries."""
 
-    def __init__(self, engine: AsyncEngine = None):
-        self.engine = engine or settings.get_engine()
+    def __init__(self):
+        self.engine = None
         self._current_session: AsyncSession | None = None
 
     @property
@@ -56,7 +59,7 @@ class DBService:
         await self.engine.dispose()
 
     @inject_session
-    async def insert(self, item: T, *, session: AsyncSession):
+    async def insert(self, item: T, *, session: AsyncSession = None):
         session.add(item)
         await session.commit()
         await session.refresh(item)
@@ -171,7 +174,7 @@ class DBService:
         return instance
 
     @inject_session
-    async def delete(self, instance: SQLModel, *, session: AsyncSession):
+    async def delete(self, instance: SQLModel, *, session: AsyncSession = None):
         session.add(instance)
         await session.delete(instance)
         await session.commit()
@@ -187,11 +190,16 @@ class DBService:
 
         Docs: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#deleting"""
         async with session.begin():
+            try:
+                session.add_all(instances)
+            except InvalidRequestError:
+                pass
+
             await asyncio.gather(*[session.delete(instance) for instance in instances])
         await session.commit()
 
     @inject_session
-    async def truncate(self, instance: SQLModel, *, session: AsyncSession):
+    async def truncate(self, instance: SQLModel, *, session: AsyncSession = None):
         await session.execute(delete(instance))
         await session.commit()
 
