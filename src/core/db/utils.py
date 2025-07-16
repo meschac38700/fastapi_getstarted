@@ -3,14 +3,11 @@ from typing import Any, Optional, TypeVar
 
 import asyncpg
 import pydantic_core
-from alembic import command
-from alembic.config import Config
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
-import settings
 from core.monitoring.logger import get_logger
 
 BaseModelT = TypeVar("BaseModelT", bound=BaseModel)
@@ -44,14 +41,6 @@ async def create_database_if_not_exists(db_name, admin_url):
     if not exists:
         await conn.execute(f'CREATE DATABASE "{db_name}"')
     await conn.close()
-
-
-def run_alembic_upgrade(
-    revision: str = "head",
-    alembic_ini_path: str = str(settings.BASE_DIR / "alembic.ini"),
-):
-    alembic_cfg = Config(alembic_ini_path)
-    command.upgrade(alembic_cfg, revision)
 
 
 async def drop_database_if_exists(db_name, admin_url):
