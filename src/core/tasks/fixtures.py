@@ -1,5 +1,4 @@
 import asyncio
-from pathlib import Path
 
 from sqlalchemy.exc import IntegrityError
 
@@ -15,7 +14,7 @@ _logger = get_logger(__name__)
 def load_fixtures_task(
     apps: list[str] | None = None,
     names: list[str] | None = None,
-    paths: list[Path] | None = None,
+    paths: list[str] | None = None,
 ) -> None:
     """Load project fixtures in celery."""
     _logger.info(
