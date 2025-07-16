@@ -16,11 +16,9 @@ class TestAuthenticationEndpoints(AsyncTestCase):
         response = await self.client.post(
             f"{settings.AUTH_PREFIX_URL}/token", data=data
         )
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
-        self.assertEqual(
-            response.json(), {"detail": "Authentication error: user not found."}
-        )
+        assert response.json() == {"detail": "Authentication error: user not found."}
 
     async def test_login_bad_request(self):
         user = await User.get(id=1)
@@ -31,11 +29,10 @@ class TestAuthenticationEndpoints(AsyncTestCase):
         response = await self.client.post(
             f"{settings.AUTH_PREFIX_URL}/token", data=data
         )
-        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
-        self.assertEqual(
-            response.json(),
-            {"detail": "Authentication error: credentials are invalid."},
-        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.json() == {
+            "detail": "Authentication error: credentials are invalid."
+        }
 
     async def test_login_success(self):
         user = await User.get(username="fastapi")
@@ -46,17 +43,17 @@ class TestAuthenticationEndpoints(AsyncTestCase):
         response = await self.client.post(
             f"{settings.AUTH_PREFIX_URL}/token", data=data
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        assert response.status_code == HTTPStatus.OK
         data = response.json()
-        self.assertListEqual(list(data.keys()), ["access_token", "token_type"])
+        assert list(data.keys()) == ["access_token", "token_type"]
 
     async def test_refresh_token(self):
         await self.client.login(username="fastapi")
-        self.assertIsNotNone(self.client.token)
+        assert self.client.token is not None
         old_access_token = self.client.token.access_token
-        self.assertTrue(self.client.token.can_be_refreshed)
+        assert self.client.token.can_be_refreshed
 
         response = await self.client.post(f"{settings.AUTH_PREFIX_URL}/token/refresh")
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        assert response.status_code == HTTPStatus.OK
 
-        self.assertNotEqual(response.json()["access_token"], old_access_token)
+        assert response.json()["access_token"] != old_access_token

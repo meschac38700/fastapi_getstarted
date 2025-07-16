@@ -519,8 +519,8 @@ class TestPostCrudOperations(AsyncTestCase):
 
         posts = response.json()
 
-        self.assertEqual(HTTPStatus.OK, response.status_code)
-        self.assertGreaterEqual(len(posts), 2)
+        assert HTTPStatus.OK == response.status_code
+        assert len(posts) >= 2
 
     async def test_get_post_not_found(self):
         post_id = -1
@@ -528,13 +528,13 @@ class TestPostCrudOperations(AsyncTestCase):
         expected = {
           "detail": f"Post {post_id} not found."
         }
-        self.assertEqual(expected, response.json())
+        assert expected == response.json()
 
     async def test_get_post(self):
         post_id = 1
         response = await self.client.get(f"/blog/posts/{post_id}")
         expected = await Post.get(id=post_id)
-        self.assertEqual(expected.model_dump(mode="json"), response.json())
+        assert expected.model_dump(mode="json") == response.json()
 
     # And so on
 ```

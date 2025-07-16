@@ -27,10 +27,10 @@ class TestOAuth2Scheme(AsyncTestCase):
         response = await self.client.patch(
             f"/users/{self.user.id}/", json={"last_name": "DOE"}
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         await (await JWTToken.get(user_id=self.user.id)).delete()
 
         response = await self.client.patch("/users/1/", json={"last_name": "DOE"})
-        self.assertEqual(HTTPStatus.UNAUTHORIZED, response.status_code)
-        self.assertEqual("Invalid authentication token.", response.json()["detail"])
+        assert HTTPStatus.UNAUTHORIZED == response.status_code
+        assert "Invalid authentication token." == response.json()["detail"]

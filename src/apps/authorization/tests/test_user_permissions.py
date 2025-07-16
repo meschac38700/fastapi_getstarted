@@ -23,10 +23,10 @@ class TestUserPermission(AsyncTestCase):
 
         data = {"secret_name": "test edit"}
         response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-        self.assertEqual(
-            response.json()["detail"],
-            "You do not have sufficient rights to this resource.",
+        assert HTTPStatus.FORBIDDEN == response.status_code
+        assert (
+            response.json()["detail"]
+            == "You do not have sufficient rights to this resource."
         )
 
     async def test_user_has_rights_to_edit_resource(self):
@@ -39,11 +39,11 @@ class TestUserPermission(AsyncTestCase):
 
         data = {"secret_name": "test edit"}
         response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
         actual_data = response.json()
         hero = await Hero.get(id=hero_id)
-        self.assertEqual(hero_id, hero.id)
-        self.assertEqual(data["secret_name"], hero.secret_name)
-        self.assertEqual(actual_data["secret_name"], data["secret_name"])
-        self.assertEqual(actual_data["id"], hero_id)
+        assert hero_id == hero.id
+        assert data["secret_name"] == hero.secret_name
+        assert actual_data["secret_name"] == data["secret_name"]
+        assert actual_data["id"] == hero_id

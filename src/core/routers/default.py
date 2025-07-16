@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from apps.user.models import User
 from core.monitoring.logger import get_logger
 from core.tasks import load_fixtures_task
+from core.tasks.exceptions import SQLAlchemyIntegrityError
 from redis import asyncio as aioredis
 from settings import settings
 
@@ -39,7 +40,7 @@ def load_fixtures():
         response["status"] = celery_states.SUCCESS
         response["loaded"] = count_loaded
     except Exception as e:
-        if "sqlalchemy.exc.IntegrityError" in str(e):
+        if isinstance(e, SQLAlchemyIntegrityError):
             response["status"] = celery_states.REJECTED
             _logger.debug("IntegrityError during load fixtures task.", exc_info=e)
         else:

@@ -32,6 +32,7 @@ services:
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
     volumes:
       - ./src:/home/appuser/app/www
+      - ./conftest.py:/home/appuser/app/www/conftest.py
       - ./tox.ini:/home/appuser/app/www/tox.ini
       - ./.coveragerc:/home/appuser/app/www/.coveragerc
     command: ["bash", "./scripts/entrypoint.sh"]
@@ -65,6 +66,8 @@ services:
       api_test:
         condition: service_healthy
         restart: true
+    volumes:
+      - ./src:/home/appuser/app/www
     environment:
       # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0

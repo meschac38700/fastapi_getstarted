@@ -50,6 +50,7 @@ ENV PATH="$VBIN:$PATH"
 
 WORKDIR ${APP_DIR}
 
-COPY ./src tox.ini .coveragerc .
+COPY ./src ./
+
 
 RUN chmod +x ./scripts/entrypoint.sh ./scripts/entrypoint-celery.sh ./scripts/entrypoint-beat.sh

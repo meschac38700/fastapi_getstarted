@@ -20,25 +20,26 @@ class TestUserRoles(AsyncTestCase):
             User.get(role=UserRole.staff),
             User.get(role=UserRole.active),
         )
+        assert self.staff is not None
+        assert self.admin is not None
+        assert self.active is not None
 
     async def test_user_active_can_delete_only_his_own_account(self):
-        self.assertIsNotNone(self.active)
+        assert self.active is not None
         delete_perm = Permission.format_permission_name("delete", User.table_name())
         await self.add_permissions(self.active, [delete_perm])
         await self.client.user_login(self.active)
 
         # Try to delete another account than his own
         response = await self.client.delete(f"/users/{self.admin.id}/")
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-        self.assertEqual(
-            "Insufficient rights to carry out this action",
-            response.json()["detail"],
+        assert HTTPStatus.FORBIDDEN == response.status_code
+        assert (
+            "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
-        # Delete his own account: Should pass
         response = await self.client.delete(f"/users/{self.active.id}/")
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(id=self.active.id))
+        assert HTTPStatus.NO_CONTENT == response.status_code
+        assert await User.get(id=self.active.id) is None
 
     async def test_user_staff_can_delete_only_his_own_account(self):
         delete_perm = Permission.format_permission_name("delete", User.table_name())
@@ -53,16 +54,15 @@ class TestUserRoles(AsyncTestCase):
             password=(lambda: "someone")(),
         ).save()
         response = await self.client.delete(f"/users/{user.id}/")
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_code)
-        self.assertEqual(
-            "Insufficient rights to carry out this action",
-            response.json()["detail"],
+        assert HTTPStatus.FORBIDDEN == response.status_code
+        assert (
+            "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
         # Delete his own account: Should pass
         response = await self.client.delete(f"/users/{self.staff.id}/")
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(id=self.staff.id))
+        assert HTTPStatus.NO_CONTENT == response.status_code
+        assert await User.get(id=self.staff.id) is None
 
     async def test_user_admin_can_delete_any_account(self):
         user = await User(
@@ -71,20 +71,20 @@ class TestUserRoles(AsyncTestCase):
             last_name="DOE",
             password=(lambda: "someone")(),
         ).save()
-        self.assertIsNotNone(self.admin)
+        assert self.admin is not None
         delete_perm = Permission.format_permission_name("delete", User.table_name())
         await self.add_permissions(self.admin, [delete_perm])
         await self.client.user_login(self.admin)
 
         # Try to delete another account than his own
         response = await self.client.delete(f"/users/{user.id}/")
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(id=user.id))
+        assert HTTPStatus.NO_CONTENT == response.status_code
+        assert await User.get(id=user.id) is None
 
         # Delete his own account: Should pass
         response = await self.client.delete(f"/users/{self.admin.id}/")
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
-        self.assertIsNone(await User.get(id=self.admin.id))
+        assert HTTPStatus.NO_CONTENT == response.status_code
+        assert await User.get(id=self.admin.id) is None
 
     async def test_user_active_cannot_update_role_field(self):
         update_data = {
@@ -95,30 +95,30 @@ class TestUserRoles(AsyncTestCase):
             "role": "admin",
         }
         update_perm = Permission.format_permission_name("update", User.table_name())
-        await self.active.add_permission(await Permission.get(name=update_perm))
+        await self.add_permissions(self.active, [update_perm])
         await self.client.user_login(self.active)
 
         response = await self.client.put(f"/users/{self.active.id}/", json=update_data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertEqual(UserRole.active.value, response.json()["role"])
+        assert UserRole.active.value == response.json()["role"]
         await self.active.refresh()
-        self.assertEqual(UserRole.active, self.active.role)
+        assert UserRole.active == self.active.role
 
     async def test_user_active_cannot_patch_role_field(self):
         update_data = {"role": "admin"}
         update_perm = Permission.format_permission_name("update", User.table_name())
-        await self.active.add_permission(await Permission.get(name=update_perm))
+        await self.add_permissions(self.active, [update_perm])
         await self.client.user_login(self.active)
 
         response = await self.client.patch(
             f"/users/{self.active.id}/", json=update_data
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertEqual(UserRole.active.value, response.json()["role"])
+        assert UserRole.active.value, response.json()["role"]
         await self.active.refresh()
-        self.assertEqual(UserRole.active, self.active.role)
+        assert UserRole.active == self.active.role
 
     async def test_user_staff_cannot_update_role_field(self):
         update_data = {
@@ -129,32 +129,32 @@ class TestUserRoles(AsyncTestCase):
             "role": "admin",
         }
         update_perm = Permission.format_permission_name("update", User.table_name())
-        await self.staff.add_permission(await Permission.get(name=update_perm))
+        await self.add_permissions(self.active, [update_perm])
         await self.client.user_login(self.staff)
 
         response = await self.client.put(f"/users/{self.staff.id}/", json=update_data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
-        self.assertEqual(UserRole.staff.value, response.json()["role"])
+        assert "role" not in response.json()
         await self.staff.refresh()
-        self.assertEqual(UserRole.staff, self.staff.role)
+        assert UserRole.staff == self.staff.role
 
     async def test_user_staff_cannot_patch_role_field(self):
         update_data = {"role": "admin"}
         update_perm = Permission.format_permission_name("update", User.table_name())
-        await self.staff.add_permission(await Permission.get(name=update_perm))
+        await self.add_permissions(self.active, [update_perm])
         await self.client.user_login(self.staff)
 
         response = await self.client.patch(f"/users/{self.staff.id}/", json=update_data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.FORBIDDEN == response.status_code
 
-        self.assertEqual(UserRole.staff.value, response.json()["role"])
+        assert "role" not in response.json()
         await self.staff.refresh()
-        self.assertEqual(UserRole.staff, self.staff.role)
+        assert UserRole.staff == self.staff.role
 
     async def test_user_admin_can_update_role_field(self):
         update_data = {
-            "username": "jean",
+            "username": "jean_admin",
             "first_name": "Jean",
             "last_name": "DUPONT",
             "password": (lambda: "jean")(),
@@ -163,19 +163,25 @@ class TestUserRoles(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.put(f"/users/{self.staff.id}/", json=update_data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertEqual(UserRole.admin.value, response.json()["role"])
+        assert UserRole.admin.value == response.json()["role"]
         await self.staff.refresh()
-        self.assertEqual(UserRole.admin, self.staff.role)
+        assert UserRole.admin == self.staff.role
+        self.staff.role = UserRole.staff
+        await self.staff.save()
+        assert UserRole.staff == self.staff.role
 
     async def test_user_admin_can_patch_role_field(self):
         update_data = {"role": "admin"}
         await self.client.user_login(self.admin)
 
         response = await self.client.patch(f"/users/{self.staff.id}/", json=update_data)
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        assert HTTPStatus.OK == response.status_code
 
-        self.assertEqual(UserRole.admin.value, response.json()["role"])
+        assert UserRole.admin.value == response.json()["role"]
         await self.staff.refresh()
-        self.assertEqual(UserRole.admin, self.staff.role)
+        assert UserRole.admin == self.staff.role
+        self.staff.role = UserRole.staff
+        await self.staff.save()
+        assert UserRole.staff == self.staff.role

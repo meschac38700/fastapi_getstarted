@@ -1,18 +1,18 @@
 import contextlib
 import shutil
 from pathlib import Path
-from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
+import pytest
 from jinja2 import TemplateNotFound
 
 from core.templating.exceptions import ManyTemplateFoundError
 from core.templating.loaders import app_template_loader
+from core.unittest.async_case import AsyncTestCase
 
 
-class TestAppTemplateLoader(TestCase):
-    def setUp(self) -> None:
-        self.test_template_app = Path(__file__).parent
+class TestAppTemplateLoader(AsyncTestCase):
+    test_template_app = Path(__file__).parent
 
     def _create_template_file(
         self,
@@ -24,7 +24,7 @@ class TestAppTemplateLoader(TestCase):
         _template_dir = template_dir or app_template_loader.loader.template_dirname
         _file = _app_template / _template_dir / filename
         _file.touch(exist_ok=True)
-        self.assertTrue(_file.is_file())
+        assert _file.is_file()
         return _file
 
     def _mock_test_template_dir(
@@ -42,7 +42,7 @@ class TestAppTemplateLoader(TestCase):
         # make sure the directory does not exist
         shutil.rmtree(test_template_dir, ignore_errors=True)
         test_template_dir.mkdir(exist_ok=True, parents=True)
-        self.assertTrue(test_template_dir.is_dir())
+        assert test_template_dir.is_dir()
         mock_file_services.get_application_paths = MagicMock(return_value=app_dirs)
 
     @contextlib.contextmanager
@@ -68,7 +68,7 @@ class TestAppTemplateLoader(TestCase):
             index_file.write_text(expected_text)
 
             template = app_template_loader.get_template(index_file.name)
-            self.assertEqual(template.render(), expected_text)
+            assert template.render() == expected_text
 
     def test_load_template_from_custom_template_dir(self):
         custom_template_dir = "pages"
@@ -88,15 +88,15 @@ class TestAppTemplateLoader(TestCase):
                 template = app_template_loader.get_template(
                     sub_folder.stem + "/" + index_file.name
                 )
-                self.assertEqual(template.render(), expected_text)
+                assert template.render() == expected_text
 
     def test_load_template_not_found(self):
         with self.mock_template_dir():
-            index_file = self.test_template_app / "templates" / "index.html"
+            index_file = self.test_template_app / "templates" / "not_found.html"
 
-            with self.assertRaises(TemplateNotFound) as e:
+            with pytest.raises(TemplateNotFound) as e:
                 app_template_loader.get_template(index_file.name)
-            self.assertIn(index_file.name, str(e.exception))
+            assert index_file.name in str(e)
 
     def test_load_template_with_context(self):
         with self.mock_template_dir():
@@ -108,17 +108,17 @@ class TestAppTemplateLoader(TestCase):
             template = app_template_loader.get_template(index_file.name)
             name = "John DOE"
             expected_text = text.replace("{{name}}", name)
-            self.assertEqual(template.render(name=name), expected_text)
+            assert template.render(name=name) in expected_text
 
     def test_load_template_error_many_templates_found(self):
         another_app_template = Path(__file__).parent / "another_app_template"
         another_app_template.mkdir(exist_ok=True)
-        self.assertTrue(another_app_template.is_dir())
+        assert another_app_template.is_dir()
         another_template_dir = (
             another_app_template / app_template_loader.loader.template_dirname
         )
         another_template_dir.mkdir(exist_ok=True)
-        self.assertTrue(another_template_dir.is_dir())
+        assert another_template_dir.is_dir()
 
         with self.mock_template_dir(
             app_dirs=[self.test_template_app, another_app_template]
@@ -133,17 +133,17 @@ class TestAppTemplateLoader(TestCase):
                 index_file.name,
                 index_file2.name,
             ]
-            self.assertEqual(templates_found, app_template_loader.list_templates())
+            assert templates_found == app_template_loader.list_templates()
             templates_found = [
                 index_file,
                 index_file2,
             ]
-            with self.assertRaises(ManyTemplateFoundError) as e:
+            with pytest.raises(ManyTemplateFoundError) as e:
                 app_template_loader.get_template(filename)
 
-            self.assertEqual(
-                str(e.exception),
-                f"Ambiguous template name, many templates found: {templates_found}",
+            assert (
+                f"Ambiguous template name, many templates found: {templates_found}"
+                in str(e.value)
             )
 
             shutil.rmtree(str(another_app_template))

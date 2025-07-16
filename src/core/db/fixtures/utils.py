@@ -1,11 +1,17 @@
 import glob
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence, TypedDict
 
 import settings
 from core.services import files as app_utils
 
 app_dir = settings.BASE_DIR / "apps"
+
+
+class ModelDataType(TypedDict):
+    model: str
+    id: int
+    properties: dict[str, Any]
 
 
 def collect_app_fixtures(app_name: str) -> Sequence[str]:
