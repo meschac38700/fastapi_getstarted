@@ -2,25 +2,25 @@ from pathlib import Path
 
 import settings
 
+_Path = Path | str
 
-def relative_from_src(path: Path | str) -> str | None:
-    """Make relative the give path from src folder.
+
+def relative_from(p_path: _Path, from_folder: _Path = None) -> Path:
+    """Make the given path relative to the provided 'from_folder'. The default is "src".
 
     example:
-     > relative_from_src("/home/user/project/fixtures")
+     > relative_from("/home/user/project/fixtures")
      > "project/fixtures"
     """
 
-    base_dir_path = str(settings.BASE_DIR)
-    relative_path = str(path).split(base_dir_path + "/")
-    if relative_path:
-        return relative_path[-1]
-    return None
+    base_dir = from_folder or settings.BASE_DIR
+    try:
+        return p_path.relative_to(base_dir)
+    except ValueError:
+        return p_path
 
 
-def linux_path_to_module_path(linux_path: str | Path):
-    relative_path = relative_from_src(linux_path)
-    if relative_path is None:
-        return None
-
+def linux_path_to_module_path(linux_path: _Path) -> str:
+    """Normalize a path to a Python module path."""
+    relative_path = str(relative_from(linux_path))
     return relative_path.replace("/", ".").strip(".")
