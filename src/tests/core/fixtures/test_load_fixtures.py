@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from apps.user.models import User
-from core.services.files.paths import relative_from_src
+from core.services.files.paths import relative_from
 from core.tasks import load_fixtures_task
 from core.unittest.async_case import AsyncTestCase
 
@@ -55,8 +55,8 @@ class TestLoadFixture(AsyncTestCase):
         assert count >= 1
 
     def test_load_paths_fixtures_with_celery_task(self):
-        fixture_path = relative_from_src(
-            Path(__file__).parent / "data" / "test_fixtures.yaml"
-        )
-        count = load_fixtures_task.delay(paths=[fixture_path]).get()
+        current_working_dir = Path.cwd()
+        fixture_path = Path(__file__).parent / "data" / "test_fixtures.yaml"
+        fixture_path = relative_from(fixture_path, current_working_dir)
+        count = load_fixtures_task.delay(paths=[str(fixture_path)]).get()
         assert count >= 1
