@@ -23,11 +23,11 @@ class AsyncTestCase:
         self.db_service = DBService()
         self.client = client
         await self._load_fixtures()
-        await self.asyncSetUp()
+        await self.async_set_up()
         yield
-        await self.asyncTearDown()
+        await self.async_tear_down()
 
-    async def asyncSetUp(self):
+    async def async_set_up(self):
         """Override this method to set up the test context."""
 
     async def add_permissions(self, item: User | Group, permission_names: list[str]):
@@ -47,5 +47,5 @@ class AsyncTestCase:
         await create_all_tables(self._engine)
         await self.fixture_loader.load_fixtures(self.fixtures)
 
-    async def asyncTearDown(self):
+    async def async_tear_down(self):
         await self.client.aclose()
