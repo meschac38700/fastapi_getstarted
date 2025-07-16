@@ -57,6 +57,6 @@ class TestLoadFixture(AsyncTestCase):
     def test_load_paths_fixtures_with_celery_task(self):
         current_working_dir = Path.cwd()
         fixture_path = Path(__file__).parent / "data" / "test_fixtures.yaml"
-        fixture_path = relative_from(fixture_path, current_working_dir)
+        fixture_path = relative_from(fixture_path, from_path=current_working_dir)
         count = load_fixtures_task.delay(paths=[str(fixture_path)]).get()
         assert count >= 1
