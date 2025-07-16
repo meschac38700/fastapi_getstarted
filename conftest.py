@@ -27,6 +27,18 @@ def settings():
 
 
 @pytest.fixture
+async def client():
+    from httpx import ASGITransport
+
+    from core.unittest.client import AsyncClientTest
+    from main import app
+
+    client = AsyncClientTest(transport=ASGITransport(app=app), base_url="https://test")
+    yield client
+    await client.aclose()
+
+
+@pytest.fixture
 def db_name(request, worker_id):
     method_name = request.node.name
     _uuid = uuid.uuid4().hex[:6]
