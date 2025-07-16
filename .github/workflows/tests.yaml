@@ -1,5 +1,5 @@
-name: Tests
-run-name: Run tests
+name: CI
+run-name: CI
 
 on:
   push:
@@ -19,7 +19,8 @@ jobs:
         docker-channel: ["stable"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -41,6 +42,31 @@ jobs:
           sed -i "0,/<source>.*<\/source>/{//d;}" src/coverage.xml
           # Fixed source path
           sed -i "s/<source>.*<\/source>/<source>\/home\/runner\/work\/fastapi_getstarted\/fastapi_getstarted\/src<\/source>/g" src/coverage.xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: src/coverage.xml
+          retention-days: 1
+          overwrite: true
+          compression-level: 0
+
+  sonar:
+    needs: tests
+    runs-on: ubuntu-22.04
+    name: SonarQube Analysis
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: src/
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.2.0
