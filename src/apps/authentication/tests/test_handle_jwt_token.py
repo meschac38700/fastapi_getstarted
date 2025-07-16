@@ -9,8 +9,8 @@ from core.unittest.async_case import AsyncTestCase
 class TestHandleJWTToken(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         self.user = await User.get(username="test")
 
     async def test_generate_valid_jwt_token(self):

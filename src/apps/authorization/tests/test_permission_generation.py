@@ -6,8 +6,8 @@ from core.unittest.async_case import AsyncTestCase
 
 
 class TestPermissionGeneration(AsyncTestCase):
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         self.perms = [
             Permission.format_permission_name("create", Hero.table_name()),
             Permission.format_permission_name("read", Hero.table_name()),

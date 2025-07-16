@@ -12,8 +12,8 @@ class TestPermissionCRUD(AsyncTestCase):
         "users",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
 
         await Permission.generate_crud_objects(Permission.table_name())
         self.admin, self.staff = await asyncio.gather(

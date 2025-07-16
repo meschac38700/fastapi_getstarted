@@ -16,8 +16,8 @@ class DeletionProhibitedError(Exception):
 class TestMapperSignal(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self, *_, **__):
-        await super().asyncSetUp()
+    async def async_set_up(self, *_, **__):
+        await super().async_set_up()
         self.user = await User.first()
         self.second_user = (await User.filter(username__not_equals=self.user.username))[
             0

@@ -12,8 +12,8 @@ class TestUserCRUD(AsyncTestCase):
         "users",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         await Group.generate_crud_objects(User.table_name())
         self.user = await User.get(username="test")
         self.admin = await User.get(role=UserRole.admin)

@@ -10,8 +10,8 @@ from core.unittest.async_case import AsyncTestCase
 class TestUserPermission(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         await Permission.generate_crud_objects(User.table_name())
 
         self.active, self.staff, self.admin = await asyncio.gather(

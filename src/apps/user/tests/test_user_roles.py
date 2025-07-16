@@ -12,8 +12,8 @@ class TestUserRoles(AsyncTestCase):
         "users",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         _, self.admin, self.staff, self.active = await asyncio.gather(
             Permission.generate_crud_objects(User.table_name()),
             User.get(role=UserRole.admin),

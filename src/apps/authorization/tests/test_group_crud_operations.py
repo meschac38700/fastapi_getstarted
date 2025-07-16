@@ -12,8 +12,8 @@ class TestGroupCRUD(AsyncTestCase):
         "users",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
 
         await Permission.generate_crud_objects(Permission.table_name())
         await Group.generate_crud_objects(Permission.table_name())

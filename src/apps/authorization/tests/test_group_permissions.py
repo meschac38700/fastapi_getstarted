@@ -14,8 +14,8 @@ class TestGroupPermissions(AsyncTestCase):
         "heroes",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         await asyncio.gather(
             Permission.generate_crud_objects(Hero.table_name()),
             Permission.generate_crud_objects(User.table_name()),

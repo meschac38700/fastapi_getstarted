@@ -11,8 +11,8 @@ class TestOAuth2Scheme(AsyncTestCase):
         "users",
     ]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         self.user = await User.get(username="test")
         await Permission.generate_crud_objects(User.table_name())
 

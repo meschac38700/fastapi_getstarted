@@ -9,8 +9,8 @@ from core.unittest.async_case import AsyncTestCase
 class TestUserGroup(AsyncTestCase):
     fixtures = ["users"]
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    async def async_set_up(self):
+        await super().async_set_up()
         self.admin = await User.get(role=UserRole.admin)
         self.staff = await User.get(role=UserRole.staff)
         self.active = await User.get(role=UserRole.active)
