@@ -4,6 +4,8 @@ omit =
   *venv*
   */tests/*
   */src/tests/*
+  conftest.py
+  */src/conftest.py
 relative_files = True
 source =
     . ./src ./apps
