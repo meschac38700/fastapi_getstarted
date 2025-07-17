@@ -14,6 +14,7 @@ dependencies = [
     "celery-redbeat>=2.3.2",
     "celery[redis]>=5.4.0",
     "cryptography>=45.0.2",
+    "fastapi-csrf-protect>=1.0.3",
     "fastapi[standard]>=0.115.6",
     "httpx>=0.28.1",
     "jinja2>=3.1.6",
