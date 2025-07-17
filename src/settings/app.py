@@ -1,15 +1,11 @@
 from functools import lru_cache
-from typing import Annotated
-
-from fastapi import Depends
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from settings.constants import AppConstants
 from settings.csrf import CSRFSettings
 from settings.secrets import SecretSettings
 
 
-class Settings(AppConstants, CSRFSettings, SecretSettings, BaseSettings):
+class Settings(AppConstants, CSRFSettings, SecretSettings):
     server_address: str = "http://127.0.0.1"
     app_port: int = 8080
 
@@ -48,10 +44,6 @@ class Settings(AppConstants, CSRFSettings, SecretSettings, BaseSettings):
     cors_allowed_headers: list[str] = ["*"]
     cors_allowed_methods: list[str] = ["*"]
 
-    model_config = SettingsConfigDict(
-        env_file=AppConstants.DATABASE_ENV_FILE, cli_ignore_unknown_args=True
-    )
-
     @property
     def uri(self):
         prefix = "postgresql+asyncpg://"
@@ -70,6 +62,3 @@ class Settings(AppConstants, CSRFSettings, SecretSettings, BaseSettings):
 @lru_cache
 def get_settings():
     return Settings()
-
-
-SettingsDep = Annotated[Settings, Depends(get_settings)]

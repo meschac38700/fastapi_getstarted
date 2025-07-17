@@ -1,15 +1,9 @@
-from pydantic_settings import BaseSettings
+from ._base import AppBaseSettings
 
 
-class SecretSettings(BaseSettings):
+class SecretSettings(AppBaseSettings):
     postgres_password: str = "<PASSWORD>"
     redis_password: str = "<PASSWORD>"
-
-    """
-    Application secret key used in different aspects of the application:
-        encode JWT token, generate CSRF token etc.
-    """
-    secret_key: str = ""
 
     sentry_dsn: str = ""
 

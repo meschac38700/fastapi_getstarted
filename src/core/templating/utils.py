@@ -1,24 +1,40 @@
 from http import HTTPStatus
 from typing import Any
 
-from starlette.responses import HTMLResponse
+from fastapi import Request
+from fastapi.responses import HTMLResponse
 
-from core.security.decorators.csrf import csrf_protect
+from core.security.csrf import get_csrf_protect
 from core.templating.loaders import app_template_loader
+from settings import settings
 
 
-def render_string(template_name: str, context: dict[str, Any] = None) -> str:
+def render_string(
+    request: Request, template_name: str, context: dict[str, Any] = None
+) -> str:
     """Render application template with given context in string format."""
-    return app_template_loader.get_template(template_name).render(**(context or {}))
+    _context = context or {}
+    return app_template_loader.get_template(template_name).render(
+        {**_context, "request": request}
+    )
 
 
-@csrf_protect
 def render(
+    request: Request,
     template_name: str,
     context: dict[str, Any] = None,
     status_code: HTTPStatus = HTTPStatus.OK,
 ) -> HTMLResponse:
     """Return HTMLResponse of the template with given context."""
-    response = HTMLResponse(render_string(template_name, context), status_code)
+    csrf_protect = get_csrf_protect()
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens(settings.secret_key)
 
+    _context = context or {}
+    _context.update({"csrf_token": csrf_token})
+
+    response = HTMLResponse(
+        render_string(request, template_name, _context), status_code
+    )
+
+    csrf_protect.set_csrf_cookie(signed_token, response)
     return response

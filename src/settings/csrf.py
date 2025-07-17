@@ -1,9 +1,10 @@
+from functools import lru_cache
 from typing import Literal, Optional, Set
 
-from pydantic_settings import BaseSettings
+from ._base import AppBaseSettings
 
 
-class CSRFSettings(BaseSettings):
+class CSRFSettings(AppBaseSettings):
     cookie_key: Optional[str] = "fastapi-csrf-token"
     cookie_path: Optional[str] = "/"
     cookie_domain: Optional[str] = None
@@ -36,3 +37,8 @@ class CSRFSettings(BaseSettings):
     secret_key: Optional[str] = None
     token_location: Optional[str] = "header"
     token_key: Optional[str] = None
+
+
+@lru_cache
+def get_csrf_settings():
+    return CSRFSettings()

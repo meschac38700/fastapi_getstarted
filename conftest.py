@@ -1,4 +1,7 @@
+import shutil
 import uuid
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from celery import current_app
@@ -27,11 +30,17 @@ def settings():
 
 
 @pytest.fixture
-async def client():
+def app():
+    from main import app as main_app
+
+    return main_app
+
+
+@pytest.fixture
+async def client(app):
     from httpx import ASGITransport
 
     from core.unittest.client import AsyncClientTest
-    from main import app
 
     client = AsyncClientTest(transport=ASGITransport(app=app), base_url="https://test")
     yield client
@@ -62,3 +71,33 @@ async def db(db_name, settings):
     await delete_all_tables(_engine)
     await drop_database_if_exists(db_name, settings._admin_uri)
     await _engine.dispose()
+
+
+@pytest.fixture(scope="function")
+def http_request():
+    from fastapi import Request
+
+    return Request(scope={"type": "http"})
+
+
+@pytest.fixture(scope="function")
+def websocket_request():
+    from fastapi import Request
+
+    return Request(scope={"type": "websocket"})
+
+
+@pytest.fixture
+def template_dir():
+    """Mock the app directory to create fake templates for testing purposes."""
+    from core.templating.loaders import app_template_loader
+
+    app_dir = Path(__file__).parent / "tests" / "core" / "templating"
+    with patch("core.templating.loaders.apps.file_services") as mock_file_services:
+        mock_file_services.get_application_paths.return_value = [app_dir]
+        template_dir = app_dir / app_template_loader.loader.template_dirname
+        template_dir.mkdir(parents=True, exist_ok=True)
+        yield template_dir
+
+    # clear test data
+    shutil.rmtree(str(template_dir), ignore_errors=True)
