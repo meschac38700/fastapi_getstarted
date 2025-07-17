@@ -1,12 +1,12 @@
 import datetime
 from typing import Self
 
-import jwt
 from sqlmodel import Field, Relationship
 
 import settings
-from apps.authentication import utils
 from apps.user.models import User
+from core.auth import utils as auth_utils
+from core.auth.types import JWTPayload
 
 from ._base import JWTTokenModel
 
@@ -20,7 +20,7 @@ class JWTToken(JWTTokenModel, table=True):
 
     @property
     def is_expired(self) -> bool:
-        expiration_time = utils.token_expire_datetime(self.created_at)
+        expiration_time = auth_utils.get_token_expire_datetime(self.created_at)
         safety_now_time = datetime.datetime.now(datetime.timezone.utc)
         return expiration_time < safety_now_time
 
@@ -33,14 +33,14 @@ class JWTToken(JWTTokenModel, table=True):
         if self.is_valid:
             return True
 
-        expired_dt = utils.token_expire_datetime(self.created_at)
+        expired_dt = auth_utils.get_token_expire_datetime(self.created_at)
         now = datetime.datetime.now(datetime.timezone.utc)
         delta = now - expired_dt
         return (delta.seconds / 60) <= settings.TOKEN_REFRESH_DELAY_MINUTES
 
     @classmethod
     async def _create(cls, user: User):
-        dt = utils.token_expire_datetime()
+        dt = auth_utils.get_token_expire_datetime()
         return await cls(
             access_token=cls._generate_jwt_token(user, dt), user=user
         ).save()
@@ -57,7 +57,7 @@ class JWTToken(JWTTokenModel, table=True):
         refresh_delta = datetime.datetime.now(
             datetime.timezone.utc
         ) + datetime.timedelta(seconds=1)
-        dt = utils.token_expire_datetime(refresh_delta)
+        dt = auth_utils.get_token_expire_datetime(refresh_delta)
         data = {
             "access_token": JWTToken._generate_jwt_token(self.user, dt),
             "created_at": dt.replace(tzinfo=None),
@@ -67,11 +67,5 @@ class JWTToken(JWTTokenModel, table=True):
 
     @classmethod
     def _generate_jwt_token(cls, user: User, exp: datetime.datetime):
-        to_encode = {
-            "sub": user.username,
-            "exp": exp,
-        }
-        _settings = settings.get_settings()
-        return jwt.encode(
-            to_encode, _settings.secret_key, algorithm=_settings.algorithm
-        )
+        payload = JWTPayload(sub=user.username, exp=exp)
+        return auth_utils.generate_jwt_token(payload)
