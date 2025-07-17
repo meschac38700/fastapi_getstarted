@@ -4,9 +4,9 @@ from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-import settings
 from apps.authentication.models import JWTToken
 from apps.user.models import User
+from settings import settings
 
 
 def oauth2_scheme():

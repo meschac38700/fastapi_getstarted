@@ -1,6 +1,5 @@
 import typer
 
-import settings
 from core.monitoring.logger import get_logger
 from core.services.docker.compose import DockerComposeRunner
 from core.services.runners import AppTestRunner
@@ -8,6 +7,7 @@ from core.types.annotations.command_types import (
     typer_list_arguments,
     typer_list_options,
 )
+from settings import settings
 
 app = typer.Typer(rich_markup_mode="rich")
 _logger = get_logger(__file__)

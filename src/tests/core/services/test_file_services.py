@@ -7,7 +7,6 @@ import pytest
 from fastapi import APIRouter
 from sqlmodel.main import SQLModelMetaclass
 
-import settings
 from apps.authentication.models import JWTToken
 from apps.authorization.models import (
     Group,
@@ -23,6 +22,7 @@ from core.services.files import apps as file_app_services
 from core.services.files import get_application_paths
 from core.services.files import paths as file_path_services
 from core.services.files import retrieve_all_app_models
+from settings import settings
 from tests.core.services.data.models import MyTestModel
 
 

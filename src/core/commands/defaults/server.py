@@ -2,9 +2,9 @@ from typing import Annotated
 
 import typer
 
-import settings
 from core.services.docker.compose import DockerComposeRunner
 from core.services.runners import ServerRunner
+from settings import settings
 
 app = typer.Typer(rich_markup_mode="rich")
 

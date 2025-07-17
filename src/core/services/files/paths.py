@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-import settings
+from settings import settings
 
 _Path = Path | str
 

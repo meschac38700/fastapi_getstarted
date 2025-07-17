@@ -3,6 +3,7 @@ from typing import Any
 
 from starlette.responses import HTMLResponse
 
+from core.security.decorators.csrf import csrf_protect
 from core.templating.loaders import app_template_loader
 
 
@@ -11,10 +12,13 @@ def render_string(template_name: str, context: dict[str, Any] = None) -> str:
     return app_template_loader.get_template(template_name).render(**(context or {}))
 
 
+@csrf_protect
 def render(
     template_name: str,
     context: dict[str, Any] = None,
     status_code: HTTPStatus = HTTPStatus.OK,
 ) -> HTMLResponse:
     """Return HTMLResponse of the template with given context."""
-    return HTMLResponse(render_string(template_name, context), status_code)
+    response = HTMLResponse(render_string(template_name, context), status_code)
+
+    return response

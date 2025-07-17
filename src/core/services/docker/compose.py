@@ -9,9 +9,9 @@ from typing import Any, Literal
 
 import yaml
 
-import settings
 from core.monitoring.logger import get_logger
 from core.services.docker.types import ContainerState
+from settings import settings
 
 Fn = Callable[..., Any]
 logger = get_logger(__name__)

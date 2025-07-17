@@ -4,8 +4,8 @@ import subprocess
 
 import typer
 
-import settings
 from core.monitoring.logger import get_logger
+from settings import settings
 
 app = typer.Typer(rich_markup_mode="rich")
 _logger = get_logger(__file__)

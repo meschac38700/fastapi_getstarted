@@ -1,6 +1,5 @@
 import datetime
 
-import settings
 from apps.authentication.models import JWTToken
 from apps.user.models import User
 from core.unittest.async_case import AsyncTestCase
@@ -29,7 +28,7 @@ class TestHandleJWTToken(AsyncTestCase):
         assert old_token["id"] == token.id
         assert token.is_valid
 
-    async def test_token_exceeded_refresh_delay(self):
+    async def test_token_exceeded_refresh_delay(self, settings):
         token = await JWTToken.get_or_create(self.user)
         minutes = (
             settings.ACCESS_TOKEN_EXPIRE_MINUTES

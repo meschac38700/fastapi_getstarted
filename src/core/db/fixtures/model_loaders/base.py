@@ -3,10 +3,10 @@ from importlib import import_module
 from types import ModuleType
 from typing import Any
 
-import settings
 from core.db.fixtures.files import ModelDataType
 from core.monitoring.logger import get_logger
 from core.services import files as file_services
+from settings import settings
 
 _logger = get_logger(__name__)
 

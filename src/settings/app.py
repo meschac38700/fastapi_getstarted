@@ -1,30 +1,25 @@
 from functools import lru_cache
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .constants import DATABASE_ENV_FILE
+from settings.constants import AppConstants
+from settings.csrf import CSRFSettings
+from settings.secrets import SecretSettings
 
 
-class Settings(BaseSettings):
+class Settings(AppConstants, CSRFSettings, SecretSettings, BaseSettings):
     server_address: str = "http://127.0.0.1"
+    app_port: int = 8080
+
+    # database
     postgres_user: str = "fastapi"
-    postgres_password: str = "fastapi"
     postgres_db: str = "fastapi"
     postgres_host: str = "localhost"
     postgres_port: int = 5432
-    app_environment: Literal["prod", "test", "dev"] = "dev"
-    app_port: int = 8000
-    model_config = SettingsConfigDict(
-        env_file=DATABASE_ENV_FILE, cli_ignore_unknown_args=True, extra="allow"
-    )
-    password_hasher_index: int = 0
-    secret_key: str = ""
-    algorithm: str = "HS256"
 
     # sentry config
-    sentry_dsn: str = ""
     sentry_send_pii: bool = False
 
     # Celery
@@ -52,6 +47,10 @@ class Settings(BaseSettings):
     cors_allowed_origins: list[str] = []
     cors_allowed_headers: list[str] = ["*"]
     cors_allowed_methods: list[str] = ["*"]
+
+    model_config = SettingsConfigDict(
+        env_file=AppConstants.DATABASE_ENV_FILE, cli_ignore_unknown_args=True
+    )
 
     @property
     def uri(self):

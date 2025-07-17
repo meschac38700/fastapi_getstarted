@@ -10,7 +10,7 @@ class _ExcludeErrorsFilter(logging.Filter):
         return record.levelno < logging.ERROR
 
 
-ROOT_LEVEL = "INFO" if settings.app_environment in [None, "prod"] else "DEBUG"
+ROOT_LEVEL = "INFO" if settings.APP_ENVIRONMENT in [None, "prod"] else "DEBUG"
 
 
 def get_app_log_configs():

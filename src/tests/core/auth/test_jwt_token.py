@@ -3,7 +3,7 @@ import datetime as dt
 import jwt
 import pytest
 
-import settings as app_settings
+from settings import settings as app_settings
 from apps.user.models import User
 from core.auth import utils as auth_utils
 from core.auth.types import JWTPayload
