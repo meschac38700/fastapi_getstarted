@@ -38,6 +38,7 @@ class TestDefaultRouter(AsyncTestCase):
         response = await self.client.post("/fixtures")
         assert response.status_code == HTTPStatus.OK
         expected["status"] = celery_states.REJECTED
+        expected["msg"] = "Fixtures already loaded."
         expected["loaded"] = 0
         assert response.json() == expected
 
