@@ -3,10 +3,10 @@ from typing import Self
 
 from sqlmodel import Field, Relationship
 
-from settings import settings
 from apps.user.models import User
 from core.auth import utils as auth_utils
 from core.auth.types import JWTPayload
+from settings import settings
 
 from ._base import JWTTokenModel
 
