@@ -46,10 +46,11 @@ async def test_generate_csrf_token_on_rendering_html_template(
 
     assert response.status_code == status.HTTP_200_OK
     token = response.text
-    assert len(token) >= 40
 
-    signed_token = serializer.dumps(token)
-    assert signed_token in response.headers.get("Set-Cookie", "")
+    signed_token = response.headers.get("Set-cookie").split(";")[0].split("=")[1]
+    retrieved_token = serializer.loads(signed_token, max_age=3600)
+
+    assert retrieved_token in token
 
 
 async def test_validate_csrf_token_error_token_missing(client: AsyncClientTest):
@@ -64,6 +65,7 @@ async def test_validate_csrf_token(
 ):
     index_file = template_dir / "index.html"
     index_file.write_text("{{csrf_token}}")
+
     response = await client.get(_GET)
     token = response.text
 

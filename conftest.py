@@ -1,6 +1,5 @@
 import shutil
 import uuid
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -88,11 +87,11 @@ def websocket_request():
 
 
 @pytest.fixture
-def template_dir():
+def template_dir(settings):
     """Mock the app directory to create fake templates for testing purposes."""
     from core.templating.loaders import app_template_loader
 
-    app_dir = Path(__file__).parent / "tests" / "core" / "templating"
+    app_dir = settings.BASE_DIR / "tests" / "core" / "templating"
     with patch("core.templating.loaders.apps.file_services") as mock_file_services:
         mock_file_services.get_application_paths.return_value = [app_dir]
         template_dir = app_dir / app_template_loader.loader.template_dirname
@@ -100,4 +99,5 @@ def template_dir():
         yield template_dir
 
     # clear test data
+    assert template_dir.exists()
     shutil.rmtree(str(template_dir), ignore_errors=True)

@@ -20,7 +20,7 @@ def test_get_render_template_as_string(http_request, template_dir: Path):
 
 
 def test_get_render_template_as_html_response(http_request, template_dir: Path):
-    index_file = template_dir / "index.html"
+    index_file = template_dir / "template.html"
 
     expected_text = "<h1>render template: {{template_name}}</h1>"
     index_file.write_text(expected_text)
