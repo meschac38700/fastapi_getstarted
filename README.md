@@ -38,14 +38,14 @@ change the location and name, you can set
 [UV_PROJECT_ENVIRONMENT](https://docs.astral.sh/uv/concepts/projects/config/#project-environment-path)
 as environment variable before running the following command.
 
-```bash
-uv sync --all-extras
+```console
+$ uv sync --all-extras
 ```
 
 Next we need to activate the virtual environment created by uv previously
 
-```bash
-source ./.venv/bin/activate
+```console
+$ source ./.venv/bin/activate
 ```
 
 #### Setup `direnv`
@@ -61,40 +61,40 @@ source ./.venv/bin/activate
 Get started with [direnv](https://direnv.net/#getting-started) Once direnv is installed
 all you have to do is to allow the `.envrc` file
 
-```bash
-cd getstarted
-direnv allow .
+```console
+$ cd getstarted
+$ direnv allow .
 ```
 
 if you don't want to configure `direnv`, you need to export `APP_ENVIRONMENT` every time
 you move to the project directory:
 
-```bash
-export APP_ENVIRONMENT=dev
+```console
+$ export APP_ENVIRONMENT=dev
 ```
 
 ## Run the application
 
 ##### Run prod server
 
-```bash
-docker compose up
+```console
+$ docker compose up
 ```
 
 ##### Run development server
 
-```bash
-python manage.py server
+```console
+$ python src/manage.py server
 ```
 
 ##### Using docker compose
-```bash
-docker compose -f docker-compose.dev.yaml up -d
+```console
+$ docker compose -f docker-compose.dev.yaml up -d
 ```
 
 #### Run application tests
-```bash
-python manage.py tests
+```console
+$ python src/manage.py tests
 ```
 
 <a id="run_migrations"></a>
@@ -104,14 +104,14 @@ We use [alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html) to mana
 migrations. The following commands, as explained in the documentation, will allow you to
 create and run the migrations.
 
-```bash
-cd src
-alembic revision --autogenerate -m "message of commit"
-alembic upgrade head
+```console
+$ cd src
+$ alembic revision --autogenerate -m "message of commit"
+$ alembic upgrade head
 ```
 #### Load fixtures
-```bash
-python manage.py fixtures
+```console
+$ python src/manage.py fixtures
 ```
 ---
 ## Understand the structure of the application
@@ -119,6 +119,7 @@ python manage.py fixtures
 - [Apps package](#apps)
 - [Models](#models)
   - [Schemas](#schemas)
+  - [Migrations](#migrations)
 - [Routers](#routers)
 - [Fixtures](#fixtures)
 - [Signals](#signals)
@@ -136,7 +137,9 @@ For example, let's say we want to add an application that will manage our blog p
 The following tree illustrates what our blog post application might look like.
 A valid application package requires at least a models and routers modules.
 
-### App complete tree
+<details markdown="1">
+<summary>App complete tree</summary>
+
 ```
 apps/
 └── blog
@@ -182,6 +185,7 @@ apps/
         ├── __init__.py
         └── types.py
 ```
+</details>
 
 ## Now let's take a closer look at the `Apps package`.
 
@@ -193,27 +197,34 @@ define all models related to your application.
 
 #### Example:
 
-###### File: apps.post.models.py
+<details markdown="1">
+<summary>File: apps.post.models.py</summary>
+
 ```Python
 from sqlmodel import Field
 
 from core.db.models import SQLTable
-from core.db.mixins import TimestampedModelMixin
+from core.db.mixins import BaseTable
 
 
 # This base model will be useful later for declaring Pydantic schemas.
 # For example, we'll use it to declare the following schemas: CreatePost or UpdatePost
-class PostBaseModel(TimestampedModelMixin, SQLTable):
+class PostBaseModel(SQLTable):
     title: str
     description: str | None
 
 # This is our final model (ORM)
-class Post(PostBaseModel, table=True):
-    id: int | None = Field(default=None, primary_key=True, allow_mutation=False)
+# Extends BaseTable to define some generic fields, such as: id, created_at, updated_at
+class Post(PostBaseModel, BaseTable, table=True):
+    pass
 ```
+</details>
+
 **You can use the package approach if you have many models to define.**
 
-Here's what it looks like:
+<details markdown="1">
+<summary>Here's what the folder structure looks like:</summary>
+
 ```
 apps/
 └── blog
@@ -222,25 +233,24 @@ apps/
         ├── statistical.py
         └── post.py
 ```
-
 ###### File: apps.post.models.post.py
 ```Python
 from sqlmodel import Field, Relationship
 
 from apps.user.models import User
 from core.db.models import SQLTable
-from core.db.mixins import TimestampedModelMixin
+from core.db.mixins import BaseTable
+
 
 
 # This base model will be useful later for declaring Pydantic schemas.
 # For example, we'll use it to declare the following schemas: CreatePost or UpdatePost
-class PostBaseModel(TimestampedModelMixin, SQLTable):
+class PostBaseModel(SQLTable):
     title: str
     description: str | None
 
 # This is our final model (ORM)
-class Post(PostBaseModel, table=True):
-    id: int | None = Field(default=None, primary_key=True, allow_mutation=False)
+class Post(PostBaseModel, BaseTable, table=True):
     author_username: str | None = Field(
         default=None, foreign_key="users.username", ondelete="SET NULL"
     )
@@ -252,14 +262,14 @@ from sqlmodel import Relationship, Field
 
 from .post import Post
 from core.db.models import SQLTable
-from core.db.mixins import TimestampedModelMixin
+from core.db.mixins import BaseTable
 
 
-class PostStatisticalBaseModel(TimestampedModelMixin, SQLTable):
+class PostStatisticalBaseModel(SQLTable):
     view_number: int = Field(default=0)
     shared_number: int = Field(default=0)
 
-class PostStatistical(PostStatisticalBaseModel, table=True):
+class PostStatistical(PostStatisticalBaseModel, BaseTable, table=True):
     id: int | None = Field(default=None, primary_key=True, allow_mutation=False)
     post_id: int = Field(default=None, foreign_key="post.id", ondelete="CASCADE")
     post: Post = Relationship(sa_relationship_kwargs={"lazy": "joined"})
@@ -281,7 +291,9 @@ __all__ = [
     "PostStatisticalBaseModel",
 ]
 ```
+</details>
 
+<a id="migrations"></a>
 #### All that remains is to create migrations and run them.
 [Perform migrations](#run_migrations)
 
@@ -291,7 +303,9 @@ __all__ = [
 The schemas are Pydantic models based on our SQLModel tables.
 We need them to validate user data. So let's create some Post schemas:
 
-###### File: apps.post.models.schemas.post.py
+<details markdown="1">
+<summary>File: apps.post.models.schemas.post.py</summary>
+
 ```Python
 from apps.post.models.post import PostBaseModel
 
@@ -308,11 +322,14 @@ class PostCreate(PostBaseModel):
     class ConfigDict:
         from_attributes = True
 ```
+</details>
+
 > [!IMPORTANT]
 > And similarly, since we chose the package approach,
 > we need to explicitly export these schemas
 
-###### File: apps.post.models.schemas.__init__.py
+<details markdown="1">
+<summary>File: apps.post.models.schemas.__init__.py</summary>
 
 ```Python
 from .post import PostCreate, PostUpdate
@@ -322,8 +339,11 @@ __all__ = [
     "PostUpdate",
 ]
 ```
+</details>
 
-Here's what it looks like:
+<details markdown="1">
+<summary>Here's what the folder structure looks like:</summary>
+
 ```
 apps/
 └── blog
@@ -335,6 +355,7 @@ apps/
            ├── __init__.py
            └── post.py
 ```
+</details>
 
 ---
 <a id="routers"></a>
@@ -344,7 +365,9 @@ This is where you'll define all the endpoints related to your application.
 
 Let's implement an example based on our previous `Post` and `PostStatistical` models.
 
-###### File: apps.post.routers.post.py
+<details markdown="1">
+<summary>File: apps.post.routers.post.py</summary>
+
 ```Python
 from http import HTTPStatus
 
@@ -386,8 +409,11 @@ async def delete_post(pk: int):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Post {pk} not found.")
     return await stored_post.delete()
 ```
+</details>
 
-###### File: apps.post.routers.statistical.py
+<details markdown="1">
+<summary>apps.post.routers.statistical.py:</summary>
+
 ```Python
 from fastapi import APIRouter
 
@@ -400,7 +426,11 @@ routers = APIRouter(prefix="/{post_id}/statisticals")
 async def post_statisticals(post_id: int):
     return await PostStatistical.filter(post_id=post_id)
 ```
-###### File: apps.post.routers.__init__.py
+</details>
+
+<details markdown="1">
+<summary>apps.post.routers.__init__.py:</summary>
+
 ```Python
 from fastapi import APIRouter
 
@@ -413,7 +443,12 @@ routers.include_router(statistical_routers)
 
 __all__ = ["routers"]
 ```
-This is what our blog app looks like so far, with everything we've added:
+</details>
+
+
+<details markdown="1">
+<summary>This is what our blog app looks like so far, with everything we've added:</summary>
+
 ```
 apps/
 └── blog
@@ -429,6 +464,7 @@ apps/
          ├── post.py
          └── statistical.py
 ```
+</details>
 
 > [!IMPORTANT]
 > At this point, your blog application is fully functional.
@@ -448,6 +484,10 @@ All you need is to create your fixture YAML file then define in your Test class 
 which contains the name of your fixture file.
 
 Enough blah blah, let's put this into practice.
+
+<details markdown="1">
+<summary>apps.blog.fixtures.testing.posts.yaml</summary>
+
 ###### apps.blog.fixtures.testing.posts.yaml
 ```YAML
 - model: user.User
@@ -492,16 +532,18 @@ Enough blah blah, let's put this into practice.
       start-up Anthropic, to create a national training center.
       By Natasha SINGER
 ```
+</details>
 
 Now that our fixtures file is ready, let's implement the tests
 
 Since our blog application is a dedicated folder, it is a good practice to have all associated logic in this folder.
 We will create the tests folder inside the blog folder
 
-##### apps.blog.tests.test_post_crud_operations.py
+<details markdown="1">
+<summary>apps.blog.tests.test_post_crud_operations.py</summary>
 
 ```Python
-from http import HTTPStatus
+from fastapi import status
 
 from core.unittest.async_case import AsyncTestCase
 from apps.blog.models import Post
@@ -519,7 +561,7 @@ class TestPostCrudOperations(AsyncTestCase):
 
         posts = response.json()
 
-        assert HTTPStatus.OK == response.status_code
+        assert status.HTTP_200_OK == response.status_code
         assert len(posts) >= 2
 
     async def test_get_post_not_found(self):
@@ -538,8 +580,11 @@ class TestPostCrudOperations(AsyncTestCase):
 
     # And so on
 ```
+</details>
 
-Here's what it looks like:
+<details markdown="1">
+<summary>Here's what the folder structure looks like:</summary>
+
 ```
 apps/
 └── blog
@@ -557,6 +602,7 @@ apps/
     └── tests
         └── test_post_crud_operations.py
 ```
+</details>
 
 ---
 <a id="signals"></a>
@@ -569,7 +615,9 @@ Let's implement an example signal with the Post model.
 # TODO(Eliam): Work in progress
 ```
 
-Here's what it looks like:
+<details markdown="1">
+<summary>Here's what the folder structure looks like:</summary>
+
 ```
 apps/
 └── blog
@@ -592,3 +640,4 @@ apps/
         ├── test_signals.py
         └── test_post_crud_operations.py
 ```
+</details>
