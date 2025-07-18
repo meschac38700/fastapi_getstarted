@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from apps.user.models import User
+from core.db.query.exceptions import ObjectNotFoundError
 from core.unittest.async_case import AsyncTestCase
 
 BASE_URL = "https://test"
@@ -117,3 +118,8 @@ class TestDBService(AsyncTestCase):
         assert user.username == "u_spider"
         assert user.first_name == "Spider-Boy"
         assert user.last_name == "Pedro Parqueador"
+
+    async def test_get_or_404(self):
+        with pytest.raises(ObjectNotFoundError) as e:
+            await self.db_service.get_or_404(User, id=-1)
+        assert f"Object {User.__name__} not found." in str(e.value)
