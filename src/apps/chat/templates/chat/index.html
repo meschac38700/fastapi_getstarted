@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room list</title>
+</head>
+<body>
+    <h1>Chat Room: Foo</h1>
+    <h2>Your ID: <span id="ws-id"></span></h2>
+
+    <form onsubmit="sendMessage(event)">
+        <div class="form-group">
+            <label for="messageText">Message: </label>
+            <input id="messageText" type="text" class="form-control">
+        </div>
+        <button type="submit">Send</button>
+    </form>
+    <ul id="messages"></ul>
+
+    <script type="text/javascript">
+        const channelName = "Bar"
+        const clientId = Date.now()
+
+        document.getElementById("ws-id").innerHTML = channelName
+
+        const ws = new WebSocket(`ws://localhost:8000/chat/${channelName}`);
+        ws.onmessage = function (event) {
+            const messages = document.getElementById("messages")
+            const message = document.createElement("li")
+            const content = document.createTextNode(event.data)
+            message.appendChild(content)
+            messages.appendChild(message)
+        }
+
+        function sendMessage(e) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            const inputMessage = document.getElementById("messageText")
+            ws.send(inputMessage.value)
+            inputMessage.value = ""
+        }
+
+    </script>
+
+</body>
+</html>
