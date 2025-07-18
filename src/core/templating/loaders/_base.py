@@ -4,8 +4,8 @@ from typing import Generator
 
 from jinja2 import BaseLoader, Environment, TemplateNotFound
 
-import settings
 from core.templating.exceptions import ManyTemplateFoundError
+from settings import settings
 
 
 class BaseTemplateLoader(BaseLoader):

@@ -11,7 +11,7 @@ from apps.authorization.models import (
 )
 from core.auth.hashers import PasswordHasher
 from core.db.mixins import BaseTable
-from settings import PASSWORD_HASHER
+from settings import settings
 
 from ._base import UserBaseModel
 
@@ -54,7 +54,7 @@ class User(UserBaseModel, BaseTable, table=True):
     @property
     def _password_hasher(self) -> PasswordHasher:
         pattern = r"^(?P<pkg>.+)\.(?P<hasher_class>\w+)$"
-        pkg, hasher_class_name = re.search(pattern, PASSWORD_HASHER).groups()
+        pkg, hasher_class_name = re.search(pattern, settings.password_hasher).groups()
         hasher_pkg = import_module(pkg)
         return getattr(hasher_pkg, hasher_class_name)
 

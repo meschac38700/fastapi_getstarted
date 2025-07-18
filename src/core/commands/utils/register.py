@@ -4,11 +4,11 @@ from types import ModuleType
 
 import typer
 
-import settings
 from core.services.files import (
     get_application_paths,
     linux_path_to_module_path,
 )
+from settings import settings
 
 
 class AppCommandRegisterManager[T = typer.Typer]:  # noqa: E251

@@ -2,8 +2,8 @@ import logging
 import os
 import subprocess
 
-import settings
 from core.monitoring.logger import get_logger
+from settings import settings
 
 _logger = get_logger(__name__)
 

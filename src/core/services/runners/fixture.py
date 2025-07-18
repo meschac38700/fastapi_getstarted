@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from typing import Literal
 
-import settings
 from core.db.fixtures import LoadFixtures
 from core.monitoring.logger import get_logger
 
@@ -23,7 +22,7 @@ class FixtureRunner:
     ):
         """Load application fixtures."""
         loader_key: Literal["name", "path", "app"] = "name"
-        fixtures = fixture_paths or settings.initial_fixtures
+        fixtures = None
 
         if fixture_paths:
             loader_key = "path"

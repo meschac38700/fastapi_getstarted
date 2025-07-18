@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-import settings
 from apps.user.models import User
 from core.unittest.async_case import AsyncTestCase
+from settings import settings
 
 
 class TestAuthenticationEndpoints(AsyncTestCase):

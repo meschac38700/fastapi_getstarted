@@ -8,7 +8,7 @@ from typing import Any, Callable, Generator, Iterable, ParamSpec
 from fastapi import APIRouter
 from sqlmodel.main import SQLModelMetaclass
 
-import settings
+from settings import settings
 
 from .paths import linux_path_to_module_path
 

@@ -9,6 +9,7 @@ from core.middlewares import cors_middleware
 from core.monitoring.sentry import sentry_init
 from core.routers import register_default_endpoints
 from core.routers.register import AppRouter
+from core.security.csrf import csrf_exception_handler
 from core.services import celery
 
 _engine = get_engine()
@@ -26,6 +27,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.celery = celery
 
+csrf_exception_handler(app)
 cors_middleware(app)
 register_default_endpoints(app)
 # register routers from apps directory

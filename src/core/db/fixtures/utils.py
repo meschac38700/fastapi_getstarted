@@ -2,8 +2,8 @@ import glob
 from pathlib import Path
 from typing import Any, Sequence, TypedDict
 
-import settings
 from core.services import files as app_utils
+from settings import settings
 
 app_dir = settings.BASE_DIR / "apps"
 

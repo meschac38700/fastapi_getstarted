@@ -3,7 +3,6 @@ import datetime as dt
 import jwt
 import pytest
 
-import settings as app_settings
 from apps.user.models import User
 from core.auth import utils as auth_utils
 from core.auth.types import JWTPayload
@@ -42,7 +41,7 @@ async def test_decode_jwt_token(client, user, settings):
     assert data.iss == settings.server_address
 
     today = dt.datetime.now(dt.UTC) + dt.timedelta(
-        minutes=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
     assert data.exp.date() == today.date()
     assert data.exp.hour == today.hour
@@ -52,7 +51,7 @@ async def test_decode_jwt_token(client, user, settings):
 @pytest.mark.usefixtures("db")
 async def test_generate_jwt_token(user, settings):
     today = dt.datetime.now(dt.UTC) + dt.timedelta(
-        minutes=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
     payload = JWTPayload(sub=user.username, exp=today)

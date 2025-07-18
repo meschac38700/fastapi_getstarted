@@ -4,11 +4,11 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal
 
-import settings
 from core.db.fixtures import utils as fixture_utils
 from core.db.fixtures.files import FixtureFileReader
 from core.db.fixtures.model_loaders.factory import ModelLoaderFactory
 from core.monitoring.logger import get_logger
+from settings import settings
 
 _APP_DIR = settings.BASE_DIR / "apps"
 _logger = get_logger(__name__)
@@ -105,7 +105,7 @@ class LoadFixtures:
             )
 
         if fixtures is None:
-            fixtures = settings.initial_fixtures
+            fixtures = settings.INITIAL_FIXTURES
 
         for fixture in fixtures:
             await loader(fixture)

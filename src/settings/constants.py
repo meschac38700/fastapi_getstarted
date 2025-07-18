@@ -1,36 +1,24 @@
 import os
-from pathlib import Path
-
-BASE_DIR = Path(__file__).parent.parent
-
-# valid env: dev, test, prod
-env_name = (os.getenv("APP_ENVIRONMENT") or "prod").lower()
-valid_environments = ["prod", "test", "dev"]
-if env_name not in valid_environments:
-    raise ValueError(
-        f"Invalid environment value: {env_name}! Expected: {valid_environments}"
-    )
-
-DATABASE_ENV_FILE = BASE_DIR.parent / "envs" / env_name / ".env"
-
-PASSWORD_HASHERS = [
-    "core.auth.hashers.bcrypt.BCryptPasswordHasher",
-]
-PASSWORD_HASHER_INDEX = int(os.getenv("PASSWORD_HASHER_INDEX") or 0)
-PASSWORD_HASHER = PASSWORD_HASHERS[PASSWORD_HASHER_INDEX]
-
-initial_fixtures = [
-    "initial-users",
-    "initial-heroes",
-]
-
-# Authentication
-AUTH_PREFIX_URL = "/auth"
-AUTH_URL = f"{AUTH_PREFIX_URL}/token"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-# The amount of time the token can be refreshed once expired
-TOKEN_REFRESH_DELAY_MINUTES = 30
+from typing import Literal
 
 
-# Templating
-TEMPLATE_DIR = "templates"
+class AppConstants:
+    APP_ENVIRONMENT: Literal["prod", "test", "dev"] = os.getenv("APP_ENVIRONMENT")
+
+    INITIAL_FIXTURES = [
+        "initial-users",
+        "initial-heroes",
+    ]
+
+    # Authentication
+    AUTH_PREFIX_URL = "/auth"
+    AUTH_URL = f"{AUTH_PREFIX_URL}/token"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 30
+    """
+        Maximum time, in minutes, after the token expires during which it can still be refreshed,
+        otherwise the user must reauthenticate
+    """
+    TOKEN_REFRESH_DELAY_MINUTES = 30
+
+    # Templating
+    TEMPLATE_DIR = "templates"
