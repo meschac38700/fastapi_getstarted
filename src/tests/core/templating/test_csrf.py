@@ -27,7 +27,7 @@ def csrf_app_setup(app):
     from core.templating.utils import render
 
     @app.get(_GET, response_class=HTMLResponse)
-    async def read_resource(request: Request) -> HTMLResponse:
+    async def read(request: Request) -> HTMLResponse:
         # generate token
         return render(request, "index.html")
 
@@ -48,9 +48,9 @@ async def test_generate_csrf_token_on_rendering_html_template(
     token = response.text
 
     signed_token = response.headers.get("Set-cookie").split(";")[0].split("=")[1]
-    retrieved_token = serializer.loads(signed_token, max_age=3600)
+    unsigned_token = serializer.loads(signed_token, max_age=3600)
 
-    assert retrieved_token in token
+    assert unsigned_token == token
 
 
 async def test_validate_csrf_token_error_token_missing(client: AsyncClientTest):
@@ -69,6 +69,7 @@ async def test_validate_csrf_token(
     response = await client.get(_GET)
     token = response.text
 
+    # make a POST request with csrf a valid token
     token_header = {settings.header_name: token}
     response = await client.post(_POST, headers=token_header)
 

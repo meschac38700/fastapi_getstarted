@@ -100,4 +100,4 @@ def template_dir(settings):
 
     # clear test data
     assert template_dir.exists()
-    shutil.rmtree(str(template_dir), ignore_errors=True)
+    shutil.rmtree(str(template_dir))

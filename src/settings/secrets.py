@@ -12,7 +12,7 @@ class SecretSettings(AppBaseSettings):
         "core.auth.hashers.bcrypt.BCryptPasswordHasher",
     ]
     """
-    Allows the developer to access one of the password hashes listed in the PASSWORD_HASHERS constant
+    Choose one of the listed password hashes in the PASSWORD_HASHERS settings. default take the first one.
     """
     password_hasher_index: int = 0
     """
