@@ -10,7 +10,6 @@ from apps.authorization.models import (
     PermissionUserLink,
 )
 from core.auth.hashers import PasswordHasher
-from core.db.mixins import BaseTable
 from settings import settings
 
 from ._base import UserBaseModel
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 _EMPTY = type("Empty", (), {})
 
 
-class User(UserBaseModel, BaseTable, table=True):
+class User(UserBaseModel, table=True):
     __tablename__ = "users"
 
     permissions: list[Permission] = Relationship(
