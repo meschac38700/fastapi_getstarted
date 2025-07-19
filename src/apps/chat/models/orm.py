@@ -1,6 +1,7 @@
 from sqlmodel import Field, Relationship
 
 from apps.chat.models.base import ChatMessageBaseModel, ChatRoomBaseModel
+from apps.chat.models.relation_links import ChatRoomUserLink
 from apps.user.models import User
 from core.db.mixins import BaseTable
 
@@ -13,7 +14,9 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
     messages: list["ChatMessage"] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, back_populates="room"
     )
-    members: list[User] = Relationship()
+    members: list[User] = Relationship(
+        sa_relationship_kwargs={"lazy": "joined"}, link_model=ChatRoomUserLink
+    )
 
     async def subscribe(self, member: User):
         self.members.append(member)
