@@ -11,9 +11,9 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
     )
     owner: User = Relationship(sa_relationship_kwargs={"lazy": "joined"})
     messages: list["ChatMessage"] = Relationship(
-        sa_relationship_kwargs={"lazy": "left"}, back_populates="room"
+        sa_relationship_kwargs={"lazy": "joined"}, back_populates="room"
     )
-    members: list[User] = Relationship(sa_relationship_kwargs={"lazy": "left"})
+    members: list[User] = Relationship(sa_relationship_kwargs={"lazy": "joined"})
 
     async def subscribe(self, member: User):
         self.members.append(member)
