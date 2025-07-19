@@ -2,13 +2,13 @@ from fastapi import APIRouter, Request
 from starlette.websockets import WebSocket
 
 from apps.chat.models.orm import ChatRoom
-from apps.chat.services.manager import WebSocketManager
+from apps.chat.services.manager import ChatWebSocketManager
 from apps.user.models.user import User
 from core.templating.utils import render
 
 routers = APIRouter(tags=["chat"], prefix="/chat")
 
-websocket_manager = WebSocketManager()
+websocket_manager = ChatWebSocketManager()
 
 
 @routers.get("/")
