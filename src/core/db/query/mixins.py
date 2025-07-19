@@ -19,6 +19,10 @@ class ModelQuery(QueryExpressionManager):
         return await cls.objects().get(**filters)
 
     @classmethod
+    async def get_or_404(cls, **filters) -> Self | None:
+        return await cls.objects().get_or_404(**filters)
+
+    @classmethod
     async def first(cls) -> Self:
         return await cls.objects().first()
 

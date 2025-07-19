@@ -12,6 +12,7 @@ from sqlmodel import SQLModel, delete, select
 from typing_extensions import Annotated, Any, ParamSpec, TypeVar
 
 from core.db.dependencies.session import get_engine
+from core.db.query.exceptions import ObjectNotFoundError
 
 P = ParamSpec("P")
 Fn = Callable[P, Any]
@@ -78,10 +79,19 @@ class DBService:
         await session.commit()
 
     @inject_session
-    async def get(self, model: SQLModel, *, session: AsyncSession, **filters):
+    async def get(self, model: SQLModel, *, session: AsyncSession = None, **filters):
         filter_by = model.resolve_filters(**filters)
         res = await session.scalars(select(model).where(*filter_by))
         return res.first()
+
+    @inject_session
+    async def get_or_404(
+        self, model: SQLModel, *, session: AsyncSession = None, **filters
+    ):
+        item = await self.get(model, session=session, **filters)
+        if item is None:
+            raise ObjectNotFoundError(f"Object {model.__name__} not found.")
+        return item
 
     @inject_session
     async def first(self, model: SQLModel, *, session: AsyncSession = None):
