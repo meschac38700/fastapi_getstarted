@@ -143,6 +143,18 @@ wheels = [
 ]
 
 [[package]]
+name = "broadcaster"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/9a/937530b4b1339f96423ef314b832aa585250c99de465a6ec1a12da03bbda/broadcaster-0.3.1.tar.gz", hash = "sha256:35d1e174a98346d184cc6558979548340e877ae841c65c7e354153a84fe675d6", size = 6945 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/db/6789b924f1349739ea3a4eff0ad6877d1c4a2f844e8a15db49fd6335a532/broadcaster-0.3.1-py3-none-any.whl", hash = "sha256:433023ab6b6b4a8da9cbba95910eff52b1e767141419659be287cfd49f2a3ecb", size = 9545 },
+]
+
+[[package]]
 name = "celery"
 version = "5.5.3"
 source = { registry = "https://pypi.org/simple" }
@@ -454,6 +466,7 @@ dependencies = [
     { name = "asyncpg" },
     { name = "bcrypt" },
     { name = "billiard" },
+    { name = "broadcaster" },
     { name = "celery", extra = ["redis"] },
     { name = "celery-redbeat" },
     { name = "cryptography" },
@@ -477,6 +490,7 @@ dependencies = [
     { name = "sqlmodel" },
     { name = "syncpg" },
     { name = "trio" },
+    { name = "websockets" },
 ]
 
 [package.dev-dependencies]
@@ -491,6 +505,7 @@ requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "bcrypt", specifier = ">=4.2.1" },
     { name = "billiard", specifier = ">=4.2.1" },
+    { name = "broadcaster", specifier = ">=0.3.1" },
     { name = "celery", extras = ["redis"], specifier = ">=5.4.0" },
     { name = "celery-redbeat", specifier = ">=2.3.2" },
     { name = "cryptography", specifier = ">=45.0.2" },
@@ -514,6 +529,7 @@ requires-dist = [
     { name = "sqlmodel", specifier = ">=0.0.22" },
     { name = "syncpg", specifier = ">=1.1.3" },
     { name = "trio", specifier = ">=0.28.0" },
+    { name = "websockets", specifier = ">=15.0.1" },
 ]
 
 [package.metadata.requires-dev]
