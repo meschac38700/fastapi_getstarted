@@ -29,7 +29,7 @@ def inject_session(func: Fn) -> Fn:
             kwargs["session"] = session
             setattr(self_obj, "_current_session", session)
             res = await func(*args, **kwargs)
-        await session.flush()
+            session.expunge_all()
         setattr(self_obj, "_current_session", None)
         return res
 

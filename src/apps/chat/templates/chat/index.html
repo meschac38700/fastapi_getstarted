@@ -23,7 +23,7 @@
 
         document.getElementById("ws-id").innerHTML = channelName
 
-        const ws = new WebSocket(`ws://localhost:8000/chat/${channelName}`);
+        const ws = new WebSocket(`ws://localhost:8000/chat/${channelName}/`);
         ws.onmessage = function (event) {
             const messages = document.getElementById("messages")
             const message = document.createElement("li")

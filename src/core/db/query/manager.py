@@ -52,6 +52,10 @@ class ModelManager:
         return await self.db_service.get(self.model_class, **filters)
 
     @connection_manager
+    async def get_or_404(self, **filters):
+        return await self.db_service.get_or_404(self.model_class, **filters)
+
+    @connection_manager
     async def first(self):
         return await self.db_service.first(self.model_class)
 

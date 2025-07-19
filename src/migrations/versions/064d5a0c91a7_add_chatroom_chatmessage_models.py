@@ -1,8 +1,8 @@
-"""Add chat room and message models
+"""Add ChatRoom & ChatMessage models
 
-Revision ID: 243603f5b470
+Revision ID: 064d5a0c91a7
 Revises: c5da92aa72eb
-Create Date: 2025-07-19 01:39:28.117544
+Create Date: 2025-07-19 02:41:48.122617
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "243603f5b470"
+revision: str = "064d5a0c91a7"
 down_revision: Union[str, None] = "c5da92aa72eb"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,8 +32,8 @@ def upgrade() -> None:
         ),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("owner_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["owner_id"], ["users.id"], ondelete="CASCADE"),
+        sa.Column("owner_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(["owner_id"], ["users.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -47,8 +47,8 @@ def upgrade() -> None:
         ),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("content", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("author_id", sa.Integer(), nullable=False),
-        sa.Column("room_id", sa.Integer(), nullable=False),
+        sa.Column("author_id", sa.Integer(), nullable=True),
+        sa.Column("room_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(["author_id"], ["users.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["room_id"], ["chatroom.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
