@@ -41,9 +41,15 @@ class BaseTemplateLoader(BaseLoader):
 
         return templates_found[0]
 
+    def _file_uptodate(self, last_modif: float, filepath: Path) -> bool:
+        try:
+            return last_modif == getmtime(filepath)
+        except FileNotFoundError:
+            return False
+
     def get_source(self, environment: Environment, template: str):
         path = self.retrieve_template(template)
         last_modification_time = getmtime(path)
         with open(path) as f:
             source = f.read()
-        return source, path, lambda: last_modification_time == getmtime(path)
+        return source, path, lambda: self._file_uptodate(last_modification_time, path)
