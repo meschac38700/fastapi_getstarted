@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from celery import current_app
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from core.db import create_all_tables, delete_all_tables
@@ -14,6 +15,7 @@ from core.db.utils import (
     create_database_if_not_exists,
     drop_database_if_exists,
 )
+from core.services.files import linux_path_to_module_path
 
 
 def update_settings(database: str, settings):
@@ -92,14 +94,13 @@ def websocket_request():
 def mock_get_application_paths(mock_service: str, request):
     test_name = request.node.name
     app_dir = Path(request.node.module.__file__).parent / test_name
+    app_dir.mkdir(parents=True, exist_ok=True)
     with patch(mock_service) as mock_file_services:
-        mock_file_services.get_application_paths.return_value = [app_dir]
-        yield app_dir
+        yield app_dir, mock_file_services
 
     def _cleanup():
         """Cleanup tests files."""
-        assert app_dir.exists()
-        shutil.rmtree(app_dir)
+        shutil.rmtree(app_dir, ignore_errors=True)
 
     request.addfinalizer(_cleanup)
 
@@ -111,7 +112,8 @@ def template_dir(request):
 
     with mock_get_application_paths(
         "core.templating.loaders.apps.file_services", request
-    ) as app_dir:
+    ) as (app_dir, mock_obj):
+        mock_obj.get_application_paths.return_value = [app_dir]
         template_dir = app_dir / app_template_loader.loader.template_dirname
         template_dir.mkdir(parents=True, exist_ok=True)
         yield template_dir
@@ -119,9 +121,41 @@ def template_dir(request):
 
 @pytest.fixture
 def static_root(settings, request):
-    with mock_get_application_paths(
-        "core.templating.loaders.apps.file_services", request
-    ) as app_dir:
+    with mock_get_application_paths("main.file_apps", request) as (app_dir, mock_obj):
         static_root = app_dir / settings.STATIC_ROOT
         static_root.mkdir(parents=True, exist_ok=True)
+
+        mock_obj.static_packages.return_value = [linux_path_to_module_path(app_dir)]
+
         yield static_root
+
+
+@pytest.fixture()
+def serializer(settings):
+    return URLSafeTimedSerializer(settings.secret_key, salt="fastapi-csrf-token")
+
+
+@pytest.fixture()
+def setup_test_routes(app):
+    """
+    Sets up some FastAPI endpoints for test purposes.
+    """
+    from fastapi import Depends, Request
+    from fastapi.responses import HTMLResponse, JSONResponse
+
+    from core.security.csrf import csrf_required
+    from core.templating.utils import render
+
+    endpoint = "/test/"
+
+    @app.get(endpoint, response_class=HTMLResponse)
+    async def read(request: Request) -> HTMLResponse:
+        # generate token
+        return render(request, "index.html")
+
+    # use csrf_required Depends to validate csrf token
+    @app.post(endpoint, response_class=JSONResponse)
+    async def create(_=Depends(csrf_required)) -> JSONResponse:
+        return JSONResponse(status_code=200, content={"detail": "OK"})
+
+    return endpoint
