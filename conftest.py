@@ -1,5 +1,7 @@
+import contextlib
 import shutil
 import uuid
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -86,18 +88,40 @@ def websocket_request():
     return Request(scope={"type": "websocket"})
 
 
+@contextlib.contextmanager
+def mock_get_application_paths(mock_service: str, request):
+    test_name = request.node.name
+    app_dir = Path(request.node.module.__file__).parent / test_name
+    with patch(mock_service) as mock_file_services:
+        mock_file_services.get_application_paths.return_value = [app_dir]
+        yield app_dir
+
+    def _cleanup():
+        """Cleanup tests files."""
+        assert app_dir.exists()
+        shutil.rmtree(app_dir)
+
+    request.addfinalizer(_cleanup)
+
+
 @pytest.fixture
-def template_dir(settings):
+def template_dir(request):
     """Mock the app directory to create fake templates for testing purposes."""
     from core.templating.loaders import app_template_loader
 
-    app_dir = settings.BASE_DIR / "tests" / "core" / "templating"
-    with patch("core.templating.loaders.apps.file_services") as mock_file_services:
-        mock_file_services.get_application_paths.return_value = [app_dir]
+    with mock_get_application_paths(
+        "core.templating.loaders.apps.file_services", request
+    ) as app_dir:
         template_dir = app_dir / app_template_loader.loader.template_dirname
         template_dir.mkdir(parents=True, exist_ok=True)
         yield template_dir
 
-    # clear test data
-    assert template_dir.exists()
-    shutil.rmtree(str(template_dir))
+
+@pytest.fixture
+def static_root(settings, request):
+    with mock_get_application_paths(
+        "core.templating.loaders.apps.file_services", request
+    ) as app_dir:
+        static_root = app_dir / settings.STATIC_ROOT
+        static_root.mkdir(parents=True, exist_ok=True)
+        yield static_root
