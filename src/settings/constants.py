@@ -22,3 +22,14 @@ class AppConstants:
 
     # Templating
     TEMPLATE_DIR = "templates"
+    STATIC_URL = "/static/"
+    """
+        This folder is located at the root of the project,
+        at the same level as the src folder. By default, the name is "statics".
+        If you decide to change it, you must also rename the folder at the root, and finally,
+        in each application (apps/my_application/), you should also name the static folder with the same name.
+        example:
+            apps/user/{static_folder_name}
+            apps/authentication/{static_folder_name}
+    """
+    STATIC_ROOT = "statics"

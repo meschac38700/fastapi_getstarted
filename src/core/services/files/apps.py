@@ -120,3 +120,13 @@ def extract_app_name_from_path(file_path: Path):
         return app_name
     except ValueError:
         return None
+
+
+def static_packages() -> list[tuple[str, str]]:
+    """Return list of static packages for each application inside apps package."""
+    app_paths = get_application_paths(required_module=settings.STATIC_ROOT)
+
+    return [
+        (linux_path_to_module_path(app_path), settings.STATIC_ROOT)
+        for app_path in app_paths
+    ]
