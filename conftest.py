@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from celery import current_app
+from fastapi_pagination import add_pagination
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -36,6 +37,8 @@ def settings():
 @pytest.fixture
 def app():
     from main import app as main_app
+
+    add_pagination(main_app)
 
     return main_app
 

@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi_pagination import add_pagination
 from starlette.staticfiles import StaticFiles
 
 from core.db.dependencies.session import get_engine
@@ -28,6 +29,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+add_pagination(app)
 app.celery = celery
 static_packages = file_apps.static_packages()
 app.mount(
