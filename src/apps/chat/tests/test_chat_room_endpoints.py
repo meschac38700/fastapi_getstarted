@@ -1,0 +1,369 @@
+import pytest
+from fastapi import FastAPI, status
+
+from apps.chat.models import ChatMessage, ChatRoom
+from apps.user.models import User
+from core.unittest.client import AsyncClientTest
+
+
+@pytest.fixture
+async def subscriber(db):  # pylint: disable=unused-argument
+    return await User(
+        username="j.subscriber",
+        first_name="John",
+        last_name="Subscriber",
+        email="john.sub@example.org",
+        password=(lambda: "subscriber")(),
+    ).save()
+
+
+@pytest.fixture()
+async def room(db, user: User):  # pylint: disable=unused-argument
+    return await ChatRoom(name="my-chat-room").save()
+
+
+@pytest.fixture
+async def chat_message(db, subscriber, room: ChatRoom) -> ChatMessage:  # pylint: disable=unused-argument
+    return await ChatMessage(
+        content="Hello World!", author_id=subscriber.id, room_id=room.id
+    ).save()
+
+
+async def test_get_chat_rooms(
+    client: AsyncClientTest,
+    app: FastAPI,
+    admin: User,
+    subscriber: User,
+    room: ChatRoom,
+):
+    response = await client.get(app.url_path_for("room-all"))
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(subscriber)
+    response = await client.get(app.url_path_for("room-all"))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {"detail": "Insufficient rights to carry out this action"}
+
+    await client.force_login(admin)
+    response = await client.get(app.url_path_for("room-all"))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [room.model_dump(mode="json")]
+
+
+async def test_get_chat_room(
+    client: AsyncClientTest,
+    room: ChatRoom,
+    app: FastAPI,
+    user: User,
+    subscriber: User,
+):
+    response = await client.get(app.url_path_for("room-get", room_id=room.id))
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(subscriber)
+    response = await client.get(app.url_path_for("room-get", room_id=room.id))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {
+        "detail": "You do not have sufficient rights to this resource."
+    }
+
+    await client.force_login(user)
+    response = await client.get(app.url_path_for("room-get", room_id=-1))
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    response = await client.get(app.url_path_for("room-get", room_id=room.id))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == room.model_dump(mode="json")
+
+
+@pytest.mark.usefixtures("db")
+async def test_get_room_messages_forbidden(
+    client: AsyncClientTest, room, subscriber, app: FastAPI
+):
+    response = await client.get(app.url_path_for("room-messages", room_id=room.id))
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(subscriber)
+    response = await client.get(app.url_path_for("room-messages", room_id=room.id))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.usefixtures("db")
+async def test_get_room_messages_by_subscriber(
+    client: AsyncClientTest,
+    room: ChatRoom,
+    subscriber: User,
+    chat_message: ChatMessage,
+    app: FastAPI,
+):
+    await client.user_login(subscriber)
+
+    response = await client.get(app.url_path_for("room-messages", room_id=room.id))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    await room.subscribe(subscriber)
+
+    # Not found
+    response = await client.get(app.url_path_for("room-messages", room_id=-1))
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    # Success
+    response = await client.get(app.url_path_for("room-messages"))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+    room.messages.append(chat_message)
+    await room.save()
+
+    response = await client.get(app.url_path_for("room-messages"))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [chat_message.model_dump(mode="json")]
+
+
+@pytest.mark.usefixtures("db")
+async def test_get_room_messages_by_chat_owner(
+    client: AsyncClientTest,
+    room: ChatRoom,
+    user: User,
+    chat_message: ChatMessage,
+    app: FastAPI,
+):
+    await client.user_login(user)
+
+    # Success
+    room.messages.append(chat_message)
+    await room.save()
+
+    response = await client.get(app.url_path_for("room-messages", room_id=room.id))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [chat_message.model_dump(mode="json")]
+
+
+@pytest.mark.usefixtures("db")
+async def test_add_message_to_chat_room(
+    client: AsyncClientTest,
+    room: ChatRoom,
+    app: FastAPI,
+    subscriber: User,
+):
+    data = {"content": "John says: hello everybody."}
+
+    await client.user_login(subscriber)
+    response = await client.post(
+        app.url_path_for("room-message-add", room_id=room.id), json=data
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {"detail": "You are not subscribed to this room."}
+
+    await room.subscribe(subscriber)
+
+    # Not found
+    response = await client.patch(
+        app.url_path_for("room-message-add", room_id=-1), json=data
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    # Success
+    response = await client.post(
+        app.url_path_for("room-message-add", room_id=room.id), json=data
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    await room.refresh()
+
+    created_message = await ChatMessage.get(room=room, content=data["content"])
+    assert created_message in room.messages
+
+    assert response.json() == created_message.model_dump(mode="json")
+
+
+@pytest.mark.usefixtures("db")
+async def test_remove_message_from_chat_room(
+    client: AsyncClientTest,
+    room: ChatRoom,
+    chat_message: ChatMessage,
+    app: FastAPI,
+    user: User,
+):
+    await client.user_login(user)
+    room.messages.append(chat_message)
+    await room.save()
+
+    # Not found
+    response = await client.patch(
+        app.url_path_for("room-message-remove", room_id=-1),
+        json={"message_id": chat_message.id},
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    # Success
+    response = await client.patch(
+        app.url_path_for("room-message-remove", room_id=room.id),
+        json={"message_id": chat_message.id},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == chat_message.model_dump(mode="json")
+
+    await room.refresh()
+    assert room.messages == []
+
+
+async def test_user_subscribes_to_a_room(
+    room: ChatRoom, subscriber: User, client: AsyncClientTest, app: FastAPI
+) -> None:
+    assert len(room.members) == 0
+
+    # Unauthorize
+    response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(subscriber)
+
+    # Not found
+    response = await client.patch(
+        app.url_path_for("room-subscribe", room_id=-1),
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    # Success
+    response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
+    assert response.status_code == status.HTTP_200_OK
+
+    await room.refresh()
+    assert len(room.members) == 1
+
+
+async def test_user_unsubscribes_to_a_room(
+    room: ChatRoom, subscriber, client: AsyncClientTest, app: FastAPI
+) -> None:
+    await room.subscribe(subscriber)
+    assert len(room.members) == 1
+
+    response = await client.patch(app.url_path_for("room-unsubscribe", room_id=room.id))
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(subscriber)
+
+    # Not found
+    response = await client.patch(
+        app.url_path_for("room-unsubscribe", room_id=-1),
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    # Success
+    response = await client.patch(app.url_path_for("room-unsubscribe", room_id=room.id))
+    assert response.status_code == status.HTTP_200_OK
+
+    await room.refresh()
+    assert len(room.members) == 0
+
+
+async def test_create_chat_room(
+    client: AsyncClientTest, user: User, app: FastAPI
+) -> None:
+    data = {"name": "my lovely friends"}
+    response = await client.post(app.url_path_for("room-create"), json=data)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(user)
+    response = await client.post(app.url_path_for("room-create"), json=data)
+    assert response.status_code == status.HTTP_201_CREATED
+    created_chat_room = await ChatRoom.get(name=data["name"])
+    assert response.json() == created_chat_room.model_dump(mode="json")
+
+
+async def test_create_chat_room_error_already_exists(
+    client: AsyncClientTest, user: User, app: FastAPI
+) -> None:
+    chat_room = await ChatRoom(name="test", owner_id=user.id)
+    assert chat_room.id is not None
+
+    await client.user_login(user)
+    response = await client.post(
+        app.url_path_for("room-create"), json={"name": chat_room.name}
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {"detail": "Chat room already exists."}
+
+
+async def test_edit_chat_room(
+    client: AsyncClientTest,
+    subscriber: User,
+    admin: User,
+    user: User,
+    room: ChatRoom,
+    app: FastAPI,
+) -> None:
+    data = {"name": room.name + " Edited !"}
+    response = await client.patch(
+        app.url_path_for("room-edit", room_id=room.id), json=data
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    # forbidden: Owner or admin only
+    await client.user_login(subscriber)
+    response = await client.patch(
+        app.url_path_for("room-edit", room_id=room.id), json=data
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {"detail": "You are not allowed to edit this room."}
+
+    await client.force_login(user)
+    response = await client.patch(
+        app.url_path_for("room-edit", room_id=room.id), json=data
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {**room.model_dump(mode="json"), "name": data["name"]}
+
+    # Test with admin user
+    data = {"name": "admin room"}
+    await client.force_login(admin)
+    response = await client.patch(
+        app.url_path_for("room-edit", room_id=room.id), json=data
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {**room.model_dump(mode="json"), "name": data["name"]}
+
+
+async def test_delete_chat_room(
+    client: AsyncClientTest, room: ChatRoom, user: User, subscriber: User, app: FastAPI
+) -> None:
+    # Unauthorize
+    response = await client.delete(
+        app.url_path_for("room-delete", room_id=room.id),
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    await client.user_login(subscriber)
+
+    # Forbidden
+    response = await client.delete(
+        app.url_path_for("room-delete", room_id=room.id),
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {
+        "detail": "You do not have sufficient rights to this resource."
+    }
+
+    await client.force_login(user)
+
+    # Not found
+    response = await client.delete(
+        app.url_path_for("room-delete", room_id=-1),
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Room not found."}
+
+    # Success
+    response = await client.delete(
+        app.url_path_for("room-delete", room_id=room.id),
+    )
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert ChatRoom.get(name=room.name) is None

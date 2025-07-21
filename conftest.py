@@ -9,6 +9,7 @@ from celery import current_app
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from apps.user.utils.types import UserRole
 from core.db import create_all_tables, delete_all_tables
 from core.db.dependencies.session import get_engine
 from core.db.utils import (
@@ -74,6 +75,33 @@ async def db(db_name, settings):
     await delete_all_tables(_engine)
     await drop_database_if_exists(db_name, settings._admin_uri)
     await _engine.dispose()
+
+
+@pytest.fixture
+async def admin(db):  # pylint: disable=unused-argument
+    from apps.user.models import User
+
+    return await User(
+        username="j.admin",
+        first_name="John",
+        last_name="Admin",
+        email="john.admin@example.org",
+        password=(lambda: "admin")(),
+        role=UserRole.admin,
+    ).save()
+
+
+@pytest.fixture
+async def user(db):  # pylint: disable=unused-argument
+    from apps.user.models import User
+
+    return await User(
+        username="j.smith",
+        first_name="John",
+        last_name="Smith",
+        email="john.smith@example.org",
+        password=(lambda: "password")(),
+    ).save()
 
 
 @pytest.fixture(scope="function")

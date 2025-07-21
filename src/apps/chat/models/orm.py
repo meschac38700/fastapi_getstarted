@@ -1,3 +1,4 @@
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
 
 from apps.chat.models.base import ChatMessageBaseModel, ChatRoomBaseModel
@@ -7,6 +8,8 @@ from core.db.mixins import BaseTable
 
 
 class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
+    __table_args__ = (UniqueConstraint("name", "owner_id", name="chatroom_owner_id"),)
+
     owner_id: int | None = Field(
         foreign_key="users.id", default=None, ondelete="CASCADE"
     )
