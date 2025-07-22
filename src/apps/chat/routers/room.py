@@ -1,8 +1,11 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import select
 
+from apps.chat.dependencies.access import ChatRoomAccess
 from apps.chat.models import ChatRoom
 from apps.user.dependencies.roles import AdminAccess
 from core.db.dependencies import SessionDep
@@ -29,3 +32,8 @@ async def get_rooms(db: SessionDep) -> Page[ChatRoom]:
     """
     query = select(ChatRoom).order_by(ChatRoom.created_at)
     return await apaginate(db, query)
+
+
+@routers.get("/{room_id}", name="room-get")
+def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
+    return room
