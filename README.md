@@ -51,7 +51,6 @@ $ source ./.venv/bin/activate
 #### Setup `direnv`
 
 > [!NOTE]
->
 > This is optional but recommended to automatically export the environment variables
 > needed to run the local server.
 >
@@ -173,7 +172,7 @@ apps/
     │   └── load_initial_posts.py
     ├── templates
     │   └── blog
-    │      └── list_posts.html
+    │       └── list_posts.html
     ├── tests
     │   ├── tasks
     │   │   ├── __init__.py
@@ -457,8 +456,8 @@ apps/
     │   ├── post.py
     │   ├── statistical.py
     │   └── schemas
-    │     ├── __init__.py
-    │     └── post.py
+    │   │   ├── __init__.py
+    │   │   └── post.py
     └──  routers
          ├── __init__.py
          ├── post.py
@@ -504,9 +503,212 @@ They provide the flexibility and control needed for real-time, adaptable access 
 Now that we understand the difference between `Depends` and `Permissions`,
 Let's see how to implement them in our `Blog` application.
 
+
+##### Implementing `Depends` for authentication and Ownership
+`Depends` is perfect for reusable, programmatic checks that are part of the request flow.
+
+<details markdown="1">
+<summary>blog.dependencies.access.py:</summary>
+
 ```Python
-# coming soon: I'm thinking of an example
+from fastapi import Depends, HTTPException, status
+
+from apps.blog.models import Post
+from apps.authentication.dependencies.oauth2 import current_user
+
+
+async def get_post_if_owner(pk: int, user: Depends(current_user)):
+    """Dependency to get a post and ensure the current user is its owner."""
+    post = await Post.get(id=pk)
+    if post is None:
+        detail = f"Post {pk} not found."
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+
+    if post.author_id != user.id:
+        detail = "Not authorized to access this post"
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+
+    return post
 ```
+
+Then use it in certain Post routers
+```Python
+# blog.routers.post.py
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, status, HTTPException
+
+from apps.blog.dependencies.access import get_post_if_owner
+from apps.post.models.schema import PostCreate, PostUpdate
+from apps.blog.models import Post
+
+routers = APIRouter(prefix="/posts")
+
+@routers.get("/{pk}/")
+async def get_post(post: Annotated[Post, Depends(get_post_if_owner)]):
+    return post
+
+@routers.put("/{pk}/")
+async def update_post(post: Annotated[Post, Depends(get_post_if_owner)], post_data: PostUpdate):
+    post.update_from_dict(post_data.model_dump(exclude_unset=True))
+    return await post.save()
+
+@routers.delete("/{pk}/")
+async def delete_post(post: Annotated[Post, Depends(get_post_if_owner)]):
+    return await post.delete()
+```
+</details>
+
+##### Implementing `Permissions` for dynamic control
+Permissions, in contrast to `Depends`, involve <b>dynamic checks based on data stored in the database</b>(or a dedicated permission service).</br>
+
+Let's imagine we want to restrict viewing post statitics to certain users or an "admin".</br>
+
+We can add a `can_view_stats` permission to users or `group`.
+
+You can either use fixtures (recommended) or manually create the permission.
+
+There's a command to install fixtures listed in the `INITIAL_FIXTURES` variable within your `settings/constants.py` file.
+
+Once you've created your fixture file (`blog.fixtures.blog_initial_permissions.yaml`), <br>
+add its file name to this variable and run the following command:</br>
+
+```Python
+class AppConstants:
+    ...
+    INITIAL_FIXTURES = [
+      ...,
+      "blog_initial_permissions",
+    ]
+    ...
+```
+
+```console
+python src/manage.py fixtures
+```
+
+<details markdown="1">
+<summary>The fixture could look like this:</summary>
+
+```YAML
+- model: authorization.Permission
+  properties:
+    name: can_view_stats
+    target_table: poststatistical
+```
+</details>
+
+For the manual approach (not recommended):
+
+```console
+$ cd src
+$ python
+Python 3.13.0 (main, Oct 16 2024, 03:23:02) [Clang 18.1.8 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import asyncio
+>>> from apps.user.models import User
+>>> from apps.authorization.models import Group, Permission
+>>> can_view_stats = asyncio.run(Permission.get(name="can_view_stats"))
+>>> user = asyncio.run(User.first())
+>>> group = asyncio.run(Group.first())
+>>> asyncio.run(user.add_permission(can_view_stats))
+>>> asyncio.run(group.add_permission(can_view_stats))
+```
+
+<details markdown="1">
+<summary>The python module approach could look like this:</summary>
+
+```python
+# file foo.py
+import asyncio
+from apps.user.models import User
+from apps.authorization.models import Group, Permission
+
+
+async def get_user_and_group():
+    return await asyncio.gather(
+        User.first(),
+        Group.first()
+    )
+
+async def apply_view_stats_permission(user: User, group: Group):
+    """Apply the 'can_view_stats' permission to a user and a group."""
+    can_view_stats = await Permission.get(name="can_view_stats").save()
+    await user.add_permission(can_view_stats)
+    # And to the group
+    await group.add_permission(can_view_stats)
+
+
+if __name__ == "__main__":
+    user, group = get_user_and_group()
+    asyncio.run(apply_view_stats_permission(user, group))
+```
+
+</details>
+
+Let's see how to use that permission in your application:
+<details markdown="1">
+<summary>apps.blog.routers.statistical.py</summary>
+
+> [!NOTE]
+> You can apply permissions either to the user or to a group.
+> In this example, we check either option.
+> If the user or their group has the permission, or if the user is an admin,
+> then they are authorized to view the Post's stats.
+
+```Python
+from fastapi import APIRouter, Depends
+
+from apps.post.models import PostStatistical
+from apps.authorization.dependencies import permission_required
+
+routers = APIRouter(prefix="/{post_id}/statisticals")
+
+# GET /blog/posts/{post_id}/statiticals/
+@routers.get("/",
+    dependencies=[
+        Depends(
+            permission_required(permissions=["can_view_stats"], groups=["can_view_stats"])
+        )
+    ]
+)
+async def post_statisticals(post_id: int):
+    return await PostStatistical.filter(post_id=post_id)
+
+```
+
+> [!NOTE]
+> As you can also see, the other advantage of permissions here is
+> that we don't have to write any extra lines of code; simply adding the permission
+> to the database is all it takes, and the decorator at the router level.
+
+</details>
+
+
+<details markdown="1">
+<summary>This is what our blog app looks like so far, with everything we've added:</summary>
+
+```
+apps/
+└── blog
+    ├── dependencies
+    │   ├── __init__.py
+    │   └── access.py
+    ├── fixtures
+    │   └── blog_initial_permissions.yaml
+    ├── models
+    │   ├── __init__.py
+    │   ├── post.py
+    │   ├── statistical.py
+    │   └── schemas
+    │   │   ├── __init__.py
+    │   │   └── post.py
+    └──  routers
+         ├── __init__.py
+         ├── post.py
+         └── statistical.py
+```
+</details>
 
 ---
 <a id="fixtures"></a>
@@ -626,13 +828,20 @@ class TestPostCrudOperations(AsyncTestCase):
 ```
 apps/
 └── blog
+    ├── dependencies
+    │   ├── __init__.py
+    │   └── access.py
+    ├── fixtures
+    │   ├── blog_initial_permissions.yaml
+    │   └── testing
+    │       └── posts.yaml
     ├── models
     │   ├── __init__.py
     │   ├── post.py
     │   ├── statistical.py
     │   └── schemas
-    │     ├── __init__.py
-    │     └── post.py
+    │       ├── __init__.py
+    │       └── post.py
     ├── routers
     │     ├── __init__.py
     │     ├── post.py
@@ -659,21 +868,28 @@ Let's implement an example signal with the Post model.
 ```
 apps/
 └── blog
+    ├── dependencies
+    │   ├── __init__.py
+    │   └── access.py
+    ├── fixtures
+    │   ├── blog_initial_permissions.yaml
+    │   └── testing
+    │       └── posts.yaml
     ├── models
     │   ├── __init__.py
     │   ├── post.py
     │   ├── statistical.py
     │   └── schemas
-    │     ├── __init__.py
-    │     └── post.py
+    │       ├── __init__.py
+    │       └── post.py
     ├── routers
-    │     ├── __init__.py
-    │     ├── post.py
-    │     └── statistical.py
+    │   ├── __init__.py
+    │   ├── post.py
+    │   └── statistical.py
     ├── signals
-    │     ├── __init__.py
-    │     ├── after_create.py
-    │     └── before_create.py
+    │   ├── __init__.py
+    │   ├── after_create.py
+    │   └── before_create.py
     └── tests
         ├── test_signals.py
         └── test_post_crud_operations.py
