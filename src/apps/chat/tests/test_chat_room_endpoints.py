@@ -19,13 +19,13 @@ async def subscriber(db):  # pylint: disable=unused-argument
 
 @pytest.fixture()
 async def room(db, user: User):  # pylint: disable=unused-argument
-    return await ChatRoom(name="my-chat-room").save()
+    return await ChatRoom(name="my-chat-room", owner=user).save()
 
 
 @pytest.fixture
 async def chat_message(db, subscriber, room: ChatRoom) -> ChatMessage:  # pylint: disable=unused-argument
     return await ChatMessage(
-        content="Hello World!", author_id=subscriber.id, room_id=room.id
+        content="Hello World!", author=subscriber, room=room
     ).save()
 
 
@@ -69,14 +69,12 @@ async def test_get_chat_room(
     await client.user_login(subscriber)
     response = await client.get(app.url_path_for("room-get", room_id=room.id))
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {
-        "detail": "You do not have sufficient rights to this resource."
-    }
+    assert response.json() == {"detail": "Insufficient rights to carry out this action"}
 
     await client.force_login(user)
     response = await client.get(app.url_path_for("room-get", room_id=-1))
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     response = await client.get(app.url_path_for("room-get", room_id=room.id))
     assert response.status_code == status.HTTP_200_OK
@@ -113,7 +111,7 @@ async def test_get_room_messages_by_subscriber(
     # Not found
     response = await client.get(app.url_path_for("room-messages", room_id=-1))
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.get(app.url_path_for("room-messages"))
@@ -170,7 +168,7 @@ async def test_add_message_to_chat_room(
         app.url_path_for("room-message-add", room_id=-1), json=data
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.post(
@@ -204,7 +202,7 @@ async def test_remove_message_from_chat_room(
         json={"message_id": chat_message.id},
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.patch(
@@ -235,7 +233,7 @@ async def test_user_subscribes_to_a_room(
         app.url_path_for("room-subscribe", room_id=-1),
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
@@ -261,7 +259,7 @@ async def test_user_unsubscribes_to_a_room(
         app.url_path_for("room-unsubscribe", room_id=-1),
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.patch(app.url_path_for("room-unsubscribe", room_id=room.id))
@@ -354,9 +352,7 @@ async def test_delete_chat_room(
         app.url_path_for("room-delete", room_id=room.id),
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {
-        "detail": "You do not have sufficient rights to this resource."
-    }
+    assert response.json() == {"detail": "Insufficient rights to carry out this action"}
 
     await client.force_login(user)
 
@@ -365,7 +361,7 @@ async def test_delete_chat_room(
         app.url_path_for("room-delete", room_id=-1),
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "Room not found."}
+    assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.delete(
