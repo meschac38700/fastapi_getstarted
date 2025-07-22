@@ -471,6 +471,44 @@ apps/
 > You can run the development server to check it.
 
 ---
+<a id="permissions"></a>
+### Authorization (Permissions/Groups)
+#### Why Permissions?
+It's a common thought: why bother with a complex permission system when a simple "Depends" seems to do the trick?</br>
+While both might appear similar at first glance, they are actually complementary, not contradictory.</br>
+You can certainly define a router using "Depends" for access control, and the reverse is also true.</br>
+However, it's crucial to see permissions as a more advanced and dynamic control system.</br>
+</br>
+##### Let's Look at Concrete Examples:</br>
+If you've ever used social media apps like Twitch, Facebook, or WhatsApp, you've probably encountered features such as:
+  - <b>Blocking a friend</b> or limiting online visibility to specific friends (Facebook)
+  - <b>Blocking a viewer in chat</b> (Twitch)
+  - <b>Limiting who can see your status</b> or profile picture (WhatsApp)
+
+All these features rely on a permission system behind the scenes.</br>
+Where "Depends" is configured once and remains static, permissions allow us to make user action control dynamic,</br>
+even after the application is deployed.</br>
+
+###### Consider the Twitch example again:
+The chat is available to any viewer, as long as they are logged into the platform.</br>
+However, the streamer can block this access if a viewer spams or misbehaves.</br>
+We can imagine that Twitch has a permission system in place to enable this action.</br>
+Through their settings, a streamer can add or remove a permission for a viewer.</br>
+(Of course, it's not presented this way to the streamer, who simply sees "Block" or "Unblock," but a similar process is happening in the background.)</br>
+</br>
+This is the core benefit of permissions.</br>
+They provide the flexibility and control needed for real-time, adaptable access management in complex applications.
+</br>
+</br>
+
+Now that we understand the difference between `Depends` and `Permissions`,
+Let's see how to implement them in our `Blog` application.
+
+```Python
+# coming soon: I'm thinking of an example
+```
+
+---
 <a id="fixtures"></a>
 ### Fixtures package
 Now that we've added some endpoints, we need to test our application.
