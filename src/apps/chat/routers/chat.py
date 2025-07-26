@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from starlette.websockets import WebSocket
 
-from apps.chat.models.orm import ChatRoom
+from apps.chat.models.orm import ChatMessage, ChatRoom
 from apps.chat.services.manager import ChatWebSocketManager
 from apps.user.models.user import User
 from core.templating.utils import render
@@ -12,8 +12,9 @@ websocket_manager = ChatWebSocketManager()
 
 
 @routers.get("/")
-def chat(request: Request):
-    return render(request, "chat/index.html")
+async def chat(request: Request):
+    messages = await ChatMessage.all()
+    return render(request, "chat/index.html", {"messages": messages})
 
 
 @routers.websocket("/{room_name}/")
