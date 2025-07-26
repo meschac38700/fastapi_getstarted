@@ -161,12 +161,12 @@ async def test_add_message_to_chat_room(
         app.url_path_for("room-message-add", room_id=room.id), json=data
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {"detail": "You are not subscribed to this room."}
+    assert response.json() == {"detail": "Insufficient rights to carry out this action"}
 
     await room.subscribe(subscriber)
 
     # Not found
-    response = await client.patch(
+    response = await client.post(
         app.url_path_for("room-message-add", room_id=-1), json=data
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
