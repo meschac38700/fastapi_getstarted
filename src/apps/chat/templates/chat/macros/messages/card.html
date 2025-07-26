@@ -1,0 +1,12 @@
+{% from 'chat/macros/messages/text.html' import message_text %}
+
+{% macro message_card(message) %}
+    <div class="message-card">
+        <div class="message-card-picture">
+            <img src="https://picsum.photos/id/237/100/100" alt="author avatar">
+        </div>
+        <div class="message-card-content">
+            {{ message_text(message.content, author_name=message.author.full_name) }}
+        </div>
+    </div>
+{% endmacro %}

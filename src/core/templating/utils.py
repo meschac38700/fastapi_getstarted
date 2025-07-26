@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from core.security.csrf import get_csrf_protect
 from core.templating.loaders import app_template_loader
@@ -14,9 +15,8 @@ def render_string(
 ) -> str:
     """Render application template with given context in string format."""
     _context = context or {}
-    return app_template_loader.get_template(template_name).render(
-        {**_context, "request": request}
-    )
+    template = Jinja2Templates(None, env=app_template_loader)
+    return template.get_template(template_name).render({**_context, "request": request})
 
 
 def render(

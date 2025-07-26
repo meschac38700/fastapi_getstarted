@@ -167,6 +167,9 @@ apps/
     │   ├── __init__.py
     │   ├── after_create_post.py
     │   └── before_create_post.py
+    ├── statics
+    │   └── blog
+    │       └── styles.css
     ├── tasks
     │   ├── __init__.py
     │   └── load_initial_posts.py
