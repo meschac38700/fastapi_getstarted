@@ -114,16 +114,15 @@ async def test_get_room_messages_by_subscriber(
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
-    response = await client.get(app.url_path_for("room-messages"))
+    response = await client.get(app.url_path_for("room-messages", room_id=room.id))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == []
-
-    room.messages.append(chat_message)
-    await room.save()
-
-    response = await client.get(app.url_path_for("room-messages"))
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [chat_message.model_dump(mode="json")]
+    assert response.json() == {
+        "items": [chat_message.model_dump(mode="json")],
+        "total": 1,
+        "page": 1,
+        "size": 50,
+        "pages": 1,
+    }
 
 
 @pytest.mark.usefixtures("db")
@@ -137,12 +136,15 @@ async def test_get_room_messages_by_chat_owner(
     await client.user_login(user)
 
     # Success
-    room.messages.append(chat_message)
-    await room.save()
-
     response = await client.get(app.url_path_for("room-messages", room_id=room.id))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [chat_message.model_dump(mode="json")]
+    assert response.json() == {
+        "items": [chat_message.model_dump(mode="json")],
+        "total": 1,
+        "page": 1,
+        "size": 50,
+        "pages": 1,
+    }
 
 
 @pytest.mark.usefixtures("db")
