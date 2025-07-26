@@ -1,12 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import select
 
 from apps.authentication.dependencies.oauth2 import current_user
-from apps.chat.dependencies.access import ChatRoomAccess
+from apps.chat.dependencies.access import (
+    ChatMessageDeleteAccess,
+    ChatRoomAccess,
+)
 from apps.chat.models import ChatMessage, ChatRoom
 from apps.chat.models.schemas.message import ChatMessageCreate
 from apps.user.dependencies.roles import AdminAccess
@@ -55,7 +58,7 @@ async def get_room_messages(
 
 
 @routers.post("/{room_id}/messages/", name="room-message-add")
-async def add_message_to_room(
+async def add_room_message(
     message: ChatMessageCreate,
     room: Annotated[ChatRoom, Depends(ChatRoomAccess())],
     auth_user: User = Depends(current_user()),
@@ -63,3 +66,14 @@ async def add_message_to_room(
     return await ChatMessage(
         **message.model_dump(), author_id=auth_user.id, room_id=room.id
     ).save()
+
+
+@routers.delete(
+    "/{room_id}/messages/{message_id}",
+    name="room-message-delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_room_message(
+    message: Annotated[ChatMessage, Depends(ChatMessageDeleteAccess())],
+):
+    return await message.delete()
