@@ -17,6 +17,17 @@ async def subscriber(db):  # pylint: disable=unused-argument
     ).save()
 
 
+@pytest.fixture
+async def jane(subscriber, db):  # pylint: disable=unused-argument
+    return await User(
+        username="j.user",
+        first_name="Jane",
+        last_name="DOE",
+        email="jane.doe@example.org",
+        password=(lambda: "subscriber")(),
+    ).save()
+
+
 @pytest.fixture()
 async def room(db, user: User):  # pylint: disable=unused-argument
     return await ChatRoom(name="my-chat-room", owner=user).save()
@@ -192,27 +203,61 @@ async def test_remove_message_from_chat_room(
     room: ChatRoom,
     chat_message: ChatMessage,
     app: FastAPI,
+    subscriber: User,
     user: User,
+    admin: User,
 ):
+    # Not authorized
+    response = await client.delete(
+        app.url_path_for(
+            "room-message-delete", room_id=room.id, message_id=chat_message.id
+        ),
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    # Forbidden for a room owner
     await client.user_login(user)
-    room.messages.append(chat_message)
-    await room.save()
+
+    response = await client.delete(
+        app.url_path_for(
+            "room-message-delete", room_id=room.id, message_id=chat_message.id
+        ),
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    await client.force_login(subscriber)
 
     # Not found
-    response = await client.patch(
-        app.url_path_for("room-message-remove", room_id=-1),
-        json={"message_id": chat_message.id},
+    response = await client.delete(
+        app.url_path_for("room-message-delete", room_id=-1, message_id=chat_message.id),
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
-    # Success
-    response = await client.patch(
-        app.url_path_for("room-message-remove", room_id=room.id),
-        json={"message_id": chat_message.id},
+    # Success by message author
+    response = await client.delete(
+        app.url_path_for(
+            "room-message-delete", room_id=room.id, message_id=chat_message.id
+        ),
     )
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == chat_message.model_dump(mode="json")
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    await room.refresh()
+    assert room.messages == []
+
+    # Success by admin
+    msg = await ChatMessage(
+        room_id=room.id, content="Hello everybody.", author_id=user.id
+    ).save()
+    await room.refresh()
+    assert len(room.messages) == 1
+    assert room.messages[0].id == msg.id
+
+    await client.force_login(admin)
+    response = await client.delete(
+        app.url_path_for("room-message-delete", room_id=room.id, message_id=msg.id),
+    )
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
     await room.refresh()
     assert room.messages == []
