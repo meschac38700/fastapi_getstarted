@@ -13,7 +13,8 @@ class ChatRoomAccess(AccessDependency[ChatRoom]):
 
     def test_access(self) -> bool:
         is_owner = self.room.owner == self.user
-        return self.user.is_admin or is_owner
+        is_member = self.user in self.room.members
+        return self.user.is_admin or is_owner or is_member
 
     async def __call__(
         self, room_id: int, user: User = Depends(current_user())
