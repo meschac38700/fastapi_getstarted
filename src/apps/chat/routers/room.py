@@ -6,7 +6,7 @@ from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import select
 
 from apps.chat.dependencies.access import ChatRoomAccess
-from apps.chat.models import ChatRoom
+from apps.chat.models import ChatMessage, ChatRoom
 from apps.user.dependencies.roles import AdminAccess
 from core.db.dependencies import SessionDep
 
@@ -34,6 +34,18 @@ async def get_rooms(db: SessionDep) -> Page[ChatRoom]:
     return await apaginate(db, query)
 
 
-@routers.get("/{room_id}", name="room-get")
+@routers.get("/{room_id}/", name="room-get")
 def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
     return room
+
+
+@routers.get("/{room_id}/messages/", name="room-messages")
+async def get_room_messages(
+    db: SessionDep, room: Annotated[ChatRoom, Depends(ChatRoomAccess())]
+) -> Page[ChatMessage]:
+    query = (
+        select(ChatMessage)
+        .where(ChatMessage.room_id == room.id)
+        .order_by(ChatMessage.created_at)
+    )
+    return await apaginate(db, query)
