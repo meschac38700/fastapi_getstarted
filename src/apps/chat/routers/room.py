@@ -5,9 +5,12 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import select
 
+from apps.authentication.dependencies.oauth2 import current_user
 from apps.chat.dependencies.access import ChatRoomAccess
 from apps.chat.models import ChatMessage, ChatRoom
+from apps.chat.models.schemas.message import ChatMessageCreate
 from apps.user.dependencies.roles import AdminAccess
+from apps.user.models import User
 from core.db.dependencies import SessionDep
 
 routers = APIRouter()
@@ -49,3 +52,14 @@ async def get_room_messages(
         .order_by(ChatMessage.created_at)
     )
     return await apaginate(db, query)
+
+
+@routers.post("/{room_id}/messages/", name="room-message-add")
+async def add_message_to_room(
+    message: ChatMessageCreate,
+    room: Annotated[ChatRoom, Depends(ChatRoomAccess())],
+    auth_user: User = Depends(current_user()),
+):
+    return await ChatMessage(
+        **message.model_dump(), author_id=auth_user.id, room_id=room.id
+    ).save()
