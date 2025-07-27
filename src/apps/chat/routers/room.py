@@ -93,3 +93,18 @@ async def room_subscription(
         await room.save()
 
     return {"success": True}
+
+
+@routers.patch(
+    "/{room_id}/unsubscribe/",
+    name="room-unsubscribe",
+)
+async def room_unsubscription(
+    room: Annotated[ChatRoom, Depends(RoomDepends())],
+    auth_user: User = Depends(current_user()),
+):
+    if auth_user in room.members:
+        room.members.remove(auth_user)
+        await room.save()
+
+    return {"success": True}
