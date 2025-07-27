@@ -422,4 +422,4 @@ async def test_delete_chat_room(
         app.url_path_for("room-delete", room_id=room.id),
     )
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert ChatRoom.get(name=room.name) is None
+    assert await ChatRoom.get(id=room.id) is None
