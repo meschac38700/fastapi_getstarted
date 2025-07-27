@@ -336,7 +336,7 @@ async def test_create_chat_room(
 async def test_create_chat_room_error_already_exists(
     client: AsyncClientTest, user: User, app: FastAPI
 ) -> None:
-    chat_room = await ChatRoom(name="test", owner_id=user.id)
+    chat_room = await ChatRoom(name="test", owner_id=user.id).save()
     assert chat_room.id is not None
 
     await client.user_login(user)
