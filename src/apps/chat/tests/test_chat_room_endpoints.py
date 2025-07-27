@@ -367,12 +367,14 @@ async def test_edit_chat_room(
         app.url_path_for("room-edit", room_id=room.id), json=data
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {"detail": "You are not allowed to edit this room."}
+    assert response.json() == {"detail": "Insufficient rights to carry out this action"}
 
     await client.force_login(user)
     response = await client.patch(
         app.url_path_for("room-edit", room_id=room.id), json=data
     )
+    await room.refresh()
+
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {**room.model_dump(mode="json"), "name": data["name"]}
 
@@ -382,6 +384,8 @@ async def test_edit_chat_room(
     response = await client.patch(
         app.url_path_for("room-edit", room_id=room.id), json=data
     )
+    await room.refresh()
+
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {**room.model_dump(mode="json"), "name": data["name"]}
 
