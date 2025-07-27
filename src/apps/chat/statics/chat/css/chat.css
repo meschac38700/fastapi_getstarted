@@ -18,7 +18,7 @@ body {
 /* ===== MENU ===== */
 .menu {
   float: left;
-  height: 700px;;
+  height: 700px;
   width: 70px;
   background: #4768b5;
   background: -webkit-linear-gradient(#4768b5, #35488e);
@@ -108,7 +108,7 @@ body {
   height:38px;
   width:100%;
   border:none;
-  font-family: 'Montserrat', sans-serif;;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .discussions .search .searchbar *::-webkit-input-placeholder {
@@ -229,7 +229,6 @@ body {
   height: calc(100% - (160px + 2rem));
   max-height: 508px;
   overflow-y: auto;
-  flex: none;
 }
 
 .chat .messages-chat .message {
@@ -339,7 +338,6 @@ body {
   border:none !important;
   height: 50px;
   padding: .4rem;
-  border: none;
   outline: none;
   box-shadow: none;
 }
