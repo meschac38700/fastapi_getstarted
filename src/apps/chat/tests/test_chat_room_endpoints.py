@@ -198,7 +198,7 @@ async def test_add_message_to_chat_room(
 
 
 @pytest.mark.usefixtures("db")
-async def test_remove_message_from_chat_room(
+async def test_delete_message_from_chat_room(
     client: AsyncClientTest,
     room: ChatRoom,
     chat_message: ChatMessage,
@@ -270,7 +270,6 @@ async def test_user_subscribes_to_a_room(
 
     # Unauthorize
     response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
-    assert response.status_code == status.HTTP_200_OK
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     await client.user_login(subscriber)
