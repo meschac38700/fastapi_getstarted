@@ -10,6 +10,7 @@ from apps.chat.dependencies.access import (
     ChatMessageDeleteAccess,
     ChatRoomAccess,
 )
+from apps.chat.dependencies.db import RoomDepends
 from apps.chat.models import ChatMessage, ChatRoom
 from apps.chat.models.schemas.message import ChatMessageCreate
 from apps.user.dependencies.roles import AdminAccess
@@ -77,3 +78,18 @@ async def delete_room_message(
     message: Annotated[ChatMessage, Depends(ChatMessageDeleteAccess())],
 ):
     return await message.delete()
+
+
+@routers.patch(
+    "/{room_id}/subscribe/",
+    name="room-subscribe",
+)
+async def room_subscription(
+    room: Annotated[ChatRoom, Depends(RoomDepends())],
+    auth_user: User = Depends(current_user()),
+):
+    if auth_user not in room.members:
+        room.members.append(auth_user)
+        await room.save()
+
+    return {"success": True}
