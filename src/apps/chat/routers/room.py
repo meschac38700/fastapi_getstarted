@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from apps.authentication.dependencies.oauth2 import current_user
 from apps.chat.dependencies.access import (
@@ -119,5 +120,10 @@ async def room_unsubscription(
 async def create_room(
     room_data: ChatRoomCreate, auth_user: User = Depends(current_user())
 ):
-    room = await ChatRoom(**room_data.model_dump(), owner_id=auth_user.id).save()
-    return ChatRoom.model_validate(room)
+    try:
+        room = await ChatRoom(**room_data.model_dump(), owner_id=auth_user.id).save()
+        return ChatRoom.model_validate(room)
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Chat room already exists."
+        ) from e
