@@ -41,6 +41,10 @@ class ChatRoomEditAccess(ChatRoomAccess):
         return self.user.is_admin or self.is_chat_owner()
 
 
+class ChatRoomDeleteAccess(ChatRoomEditAccess):
+    pass
+
+
 class ChatMessageAccess(AccessDependency[ChatRoom]):
     def test_access(self) -> bool:
         return self.user.is_admin or self.is_room_owner() or self.is_message_author()

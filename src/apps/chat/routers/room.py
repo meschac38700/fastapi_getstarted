@@ -10,6 +10,7 @@ from apps.authentication.dependencies.oauth2 import current_user
 from apps.chat.dependencies.access import (
     ChatMessageDeleteAccess,
     ChatRoomAccess,
+    ChatRoomDeleteAccess,
     ChatRoomEditAccess,
 )
 from apps.chat.dependencies.db import RoomDepends
@@ -142,3 +143,12 @@ async def edit_room(
     room.update_from_dict(chat_room_data.model_dump())
     await room.save()
     return ChatRoom.model_validate(room)
+
+
+@routers.delete(
+    "/{room_id}/",
+    name="room-delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_room(room: Annotated[ChatRoom, Depends(ChatRoomDeleteAccess())]):
+    return await room.delete()
