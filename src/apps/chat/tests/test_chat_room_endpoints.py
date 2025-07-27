@@ -334,7 +334,7 @@ async def test_create_chat_room(
 
 
 async def test_create_chat_room_error_already_exists(
-    client: AsyncClientTest, user: User, app: FastAPI
+    client: AsyncClientTest, user: User, admin: User, app: FastAPI
 ) -> None:
     chat_room = await ChatRoom(name="test", owner_id=user.id).save()
     assert chat_room.id is not None
@@ -345,6 +345,14 @@ async def test_create_chat_room_error_already_exists(
     )
     assert response.status_code == status.HTTP_409_CONFLICT
     assert response.json() == {"detail": "Chat room already exists."}
+
+    # Should pass even though it's the same chat room name, we are another user
+    await client.force_login(admin)
+    response = await client.post(
+        app.url_path_for("room-create"), json={"name": chat_room.name}
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert await ChatRoom.get(name=chat_room.name, owner_id=admin.id) is not None
 
 
 async def test_edit_chat_room(
