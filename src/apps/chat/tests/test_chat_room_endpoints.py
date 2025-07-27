@@ -285,6 +285,8 @@ async def test_user_subscribes_to_a_room(
     response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
     assert response.status_code == status.HTTP_200_OK
 
+    assert response.json() == {"success": True}
+
     await room.refresh()
     assert len(room.members) == 1
 
@@ -310,6 +312,8 @@ async def test_user_unsubscribes_to_a_room(
     # Success
     response = await client.patch(app.url_path_for("room-unsubscribe", room_id=room.id))
     assert response.status_code == status.HTTP_200_OK
+
+    assert response.json() == {"success": True}
 
     await room.refresh()
     assert len(room.members) == 0
