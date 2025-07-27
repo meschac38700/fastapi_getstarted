@@ -13,6 +13,7 @@ from apps.chat.dependencies.access import (
 from apps.chat.dependencies.db import RoomDepends
 from apps.chat.models import ChatMessage, ChatRoom
 from apps.chat.models.schemas.message import ChatMessageCreate
+from apps.chat.models.schemas.room import ChatRoomCreate
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 from core.db.dependencies import SessionDep
@@ -108,3 +109,15 @@ async def room_unsubscription(
         await room.save()
 
     return {"success": True}
+
+
+@routers.post(
+    "/",
+    name="room-create",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_room(
+    room_data: ChatRoomCreate, auth_user: User = Depends(current_user())
+):
+    room = await ChatRoom(**room_data.model_dump(), owner_id=auth_user.id).save()
+    return ChatRoom.model_validate(room)
