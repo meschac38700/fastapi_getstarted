@@ -1,8 +1,8 @@
-"""Add chat models: ChatRoom & ChatMessage
+"""Migrations for chat app
 
-Revision ID: 580db7c8be84
+Revision ID: 2d6a5bcc27ad
 Revises: c5da92aa72eb
-Create Date: 2025-07-19 19:34:06.031266
+Create Date: 2025-07-27 12:15:27.889931
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "580db7c8be84"
+revision: str = "2d6a5bcc27ad"
 down_revision: Union[str, None] = "c5da92aa72eb"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -35,6 +35,7 @@ def upgrade() -> None:
         sa.Column("owner_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(["owner_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name", "owner_id", name="chatroom_owner_id"),
     )
     op.create_table(
         "chatmessage",
@@ -60,6 +61,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["room_id"], ["chatroom.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("room_id", "user_id"),
+        sa.UniqueConstraint("room_id", "user_id", name="chatroom_user_id"),
     )
     # ### end Alembic commands ###
 
