@@ -10,11 +10,12 @@ from apps.authentication.dependencies.oauth2 import current_user
 from apps.chat.dependencies.access import (
     ChatMessageDeleteAccess,
     ChatRoomAccess,
+    ChatRoomEditAccess,
 )
 from apps.chat.dependencies.db import RoomDepends
 from apps.chat.models import ChatMessage, ChatRoom
 from apps.chat.models.schemas.message import ChatMessageCreate
-from apps.chat.models.schemas.room import ChatRoomCreate
+from apps.chat.models.schemas.room import ChatRoomCreate, ChatRoomUpdate
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 from core.db.dependencies import SessionDep
@@ -127,3 +128,17 @@ async def create_room(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Chat room already exists."
         ) from e
+
+
+@routers.patch(
+    "/{room_id}/",
+    name="room-edit",
+    status_code=status.HTTP_200_OK,
+)
+async def edit_room(
+    room: Annotated[ChatRoom, Depends(ChatRoomEditAccess())],
+    chat_room_data: ChatRoomUpdate,
+):
+    room.update_from_dict(chat_room_data.model_dump())
+    await room.save()
+    return ChatRoom.model_validate(room)

@@ -12,9 +12,13 @@ class ChatRoomAccess(AccessDependency[ChatRoom]):
     user: User
 
     def test_access(self) -> bool:
-        is_owner = self.room.owner == self.user
-        is_member = self.user in self.room.members
-        return self.user.is_admin or is_owner or is_member
+        return self.user.is_admin or self.is_chat_owner() or self.is_member()
+
+    def is_member(self):
+        return self.user in self.room.members
+
+    def is_chat_owner(self):
+        return self.user == self.room.owner
 
     async def __call__(
         self, room_id: int, user: User = Depends(current_user())
@@ -30,6 +34,11 @@ class ChatRoomAccess(AccessDependency[ChatRoom]):
         if not self.test_access():
             self.raise_access_denied()
         return self.room
+
+
+class ChatRoomEditAccess(ChatRoomAccess):
+    def test_access(self) -> bool:
+        return self.user.is_admin or self.is_chat_owner()
 
 
 class ChatMessageAccess(AccessDependency[ChatRoom]):
