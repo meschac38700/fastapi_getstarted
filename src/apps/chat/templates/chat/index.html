@@ -15,40 +15,32 @@
 <body>
     <div class="container">
         <div class="row chat-container">
-            {% include "chat/includes/navigation/menu.html" %}
 
-            <section class="discussions">
+            <section class="rooms">
                 {{ search_input() }}
-                <div class="discussion message-active">
-                    <div class="photo" style="background-image: url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80);">
-                        <div class="online"></div>
+                {% for room in rooms %}
+                    <div class="room" data-name="{{ room.name }}" data-id="{{ room.id }}">
+                        <div class="photo room-icon">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <div class="desc-contact">
+                            <p class="name">{{ room.name }}</p>
+                            <p class="message"></p>
+                        </div>
+                        <div class="timer">{{ room.created_at.strftime("%Y-%m-%d %H:%m:%S")}}</div>
                     </div>
-                    <div class="desc-contact">
-                        <p class="name">Séphora Leib</p>
-                        <p class="message">What are you doing tonight ? Want to go take a drink ?</p>
-                    </div>
-                    <div class="timer">12 sec</div>
-                </div>
+                {% endfor %}
             </section>
             <section class="chat">
                 <!-- Chat header -->
                 <div class="header-chat">
-                    <i class="icon fa fa-user-o" aria-hidden="true"></i>
+                    <i class="fa-solid fa-users-rays icon"></i>
                     <p class="name">Séphora LEIB</p>
                     <i class="icon clickable fa fa-ellipsis-h right" aria-hidden="true"></i>
                 </div>
                 <!-- Chat body -->
-                <div class="messages-chat">
-                    <div class="message">
-                        <div class="photo" style="background-image: url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80);">
-                            <div class="online"></div>
-                        </div>
-                        <p class="text"> Hi, how are you ? </p>
-                    </div>
+                <div class="messages-chat" id="room-conversation">
 
-                    <div class="message text-only">
-                        <p class="text"> What are you doing tonight ? Want to go take a drink ?</p>
-                    </div>
                 </div>
                 <!-- Chat footer -->
                 <div class="footer-chat">
@@ -68,27 +60,34 @@
     </div>
 
     <script type="text/javascript">
-        // TODO(Eliam): WIP
-        const channelName = "Bar"
-        const ws = new WebSocket(`ws://localhost:8000/chat/${channelName}/`)
 
-        ws.onmessage = function (event) {
-            const messages = document.getElementById("messages")
-            const message  = document.createElement("li")
-            const content = document.createTextNode(event.data)
-            message.appendChild(content)
-            messages.appendChild(message)
-        }
+        (function(){
+            let selectedRoom = ""
 
-        function sendMessage(e) {
-            e.preventDefault()
-            e.stopPropagation()
+            // TODO(Eliam): WIP
+            if( selectedRoom ){
+                const ws = new WebSocket(`ws://localhost:8000/chat/${selectedRoom}/`)
 
-            const input = document.getElementById("messageTest")
-            ws.send(input.value)
-            input.value = ""
-        }
+                ws.onmessage = function (event) {
+                    const messages = document.getElementById("messages")
+                    const message = document.createElement("li")
+                    const content = document.createTextNode(event.data)
+                    message.appendChild(content)
+                    messages.appendChild(message)
+                }
+            }
+            function sendMessage(e) {
+                e.preventDefault()
+                e.stopPropagation()
+
+                const input = document.getElementById("message")
+                ws.send(input.value)
+                input.value = ""
+            }
+        })()
+
     </script>
+    <script src="{{ url_for('static', path='/chat/js/room-conversation.js') }}" data-room-conversation="{{request.url_for('room-messages', room_id=-1)}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
