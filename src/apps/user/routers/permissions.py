@@ -14,7 +14,7 @@ routers = APIRouter()
 
 
 @routers.get("/permissions/", name="List current authenticated user's permissions")
-async def get_authenticated_user_permissions(auth_user: User = Depends(current_user())):
+async def get_authenticated_user_permissions(auth_user: User = Depends(current_user)):
     return auth_user.get_permissions()
 
 

@@ -54,7 +54,7 @@ def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
 )
 async def room_subscription(
     room: Annotated[ChatRoom, Depends(RoomDepends())],
-    auth_user: User = Depends(current_user()),
+    auth_user: User = Depends(current_user),
 ):
     if auth_user not in room.members:
         room.members.append(auth_user)
@@ -69,7 +69,7 @@ async def room_subscription(
 )
 async def room_unsubscription(
     room: Annotated[ChatRoom, Depends(RoomDepends())],
-    auth_user: User = Depends(current_user()),
+    auth_user: User = Depends(current_user),
 ):
     if auth_user in room.members:
         room.members.remove(auth_user)
@@ -84,7 +84,7 @@ async def room_unsubscription(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_room(
-    room_data: ChatRoomCreate, auth_user: User = Depends(current_user())
+    room_data: ChatRoomCreate, auth_user: User = Depends(current_user)
 ):
     try:
         room = await ChatRoom(**room_data.model_dump(), owner_id=auth_user.id).save()

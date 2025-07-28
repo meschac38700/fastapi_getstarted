@@ -34,7 +34,7 @@ async def get_room_messages(
 async def add_room_message(
     message: ChatMessageCreate,
     room: Annotated[ChatRoom, Depends(ChatRoomAccess())],
-    auth_user: User = Depends(current_user()),
+    auth_user: User = Depends(current_user),
 ):
     return await ChatMessage(
         **message.model_dump(), author_id=auth_user.id, room_id=room.id

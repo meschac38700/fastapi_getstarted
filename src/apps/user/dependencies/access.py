@@ -14,7 +14,7 @@ class UserAccess[T = User](AccessDependency[User]):
     def test_access(self) -> bool:
         pass
 
-    async def __call__(self, user: User = Depends(current_user())) -> T:
+    async def __call__(self, user: User = Depends(current_user)) -> T:
         self.user = user
         test_pass = self.test_access()
 

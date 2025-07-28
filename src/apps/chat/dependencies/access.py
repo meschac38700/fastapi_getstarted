@@ -21,7 +21,7 @@ class ChatRoomAccess(AccessDependency[ChatRoom]):
         return self.user == self.room.owner
 
     async def __call__(
-        self, room_id: int, user: User = Depends(current_user())
+        self, room_id: int, user: User = Depends(current_user)
     ) -> ChatRoom:
         try:
             self.room = await ChatRoom.get_or_404(id=room_id)
@@ -56,7 +56,7 @@ class ChatMessageAccess(AccessDependency[ChatRoom]):
         return self.user.id == self.message.author_id
 
     async def __call__(
-        self, room_id: int, message_id: int, user: User = Depends(current_user())
+        self, room_id: int, message_id: int, user: User = Depends(current_user)
     ) -> ChatMessage:
         try:
             self.room = await ChatRoom.get_or_404(id=room_id)

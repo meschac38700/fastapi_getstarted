@@ -40,8 +40,8 @@ async def test_validate_csrf_token(
     token = response.text
 
     # make a POST request with csrf a valid token
-    token_header = {settings.header_name: token}
-    response = await client.post(setup_test_routes, headers=token_header)
+    token_header = {settings.token_key: token}
+    response = await client.post(setup_test_routes, data=token_header)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"detail": "OK"}

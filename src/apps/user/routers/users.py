@@ -40,7 +40,7 @@ async def get_user(pk: int):
     ],
 )
 async def update_user(
-    pk: int, user: UserCreate, auth_user: User = Depends(current_user())
+    pk: int, user: UserCreate, auth_user: User = Depends(current_user)
 ):
     stored_user = await User.get(id=pk)
     if stored_user is None:
@@ -70,9 +70,7 @@ async def update_user(
         )
     ],
 )
-async def patch_user(
-    pk: int, user: UserPatch, auth_user: User = Depends(current_user())
-):
+async def patch_user(pk: int, user: UserPatch, auth_user: User = Depends(current_user)):
     stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
@@ -112,7 +110,7 @@ async def post_user(user: UserCreate):
         )
     ],
 )
-async def delete_user(pk: int, user: User = Depends(current_user())):
+async def delete_user(pk: int, user: User = Depends(current_user)):
     stored_user = await User.get(id=pk)
 
     if stored_user is None:

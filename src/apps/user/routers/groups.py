@@ -10,7 +10,7 @@ routers = APIRouter()
 
 
 @routers.get("/groups/", name="List authenticated user's groups")
-def get_authenticated_user_groups(auth_user: User = Depends(current_user())):
+def get_authenticated_user_groups(auth_user: User = Depends(current_user)):
     return auth_user.groups
 
 

@@ -1,22 +1,27 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette.responses import RedirectResponse
 
 from apps.authentication.dependencies import oauth2_scheme
 from apps.authentication.models import JWTToken
 from apps.authentication.models.schema import JWTTokenRead
 from apps.user.models import User
+from apps.user.models.schema.create import UserCreate
+from core.auth import utils as auth_utils
+from core.auth.forms import SessionAuthRequestForm, SessionRegisterRequestForm
+from core.security.csrf import csrf_required
+from core.templating.utils import render
 from settings import settings
 
 routers = APIRouter(tags=["Authentication"], prefix=settings.AUTH_PREFIX_URL)
 
 
-@routers.post("/token", name="Generate JWT Token")
-async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> JWTTokenRead:
+async def verify_user(
+    form_data: OAuth2PasswordRequestForm | SessionAuthRequestForm,
+) -> User:
     user = await User.get(username=form_data.username)
     if user is None:
         detail = "Authentication error: user not found."
@@ -26,6 +31,14 @@ async def login(
     if not valid_password:
         detail = "Authentication error: credentials are invalid."
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=detail)
+    return user
+
+
+@routers.post("/token", name="Generate JWT Token")
+async def login(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+) -> JWTTokenRead:
+    user = await verify_user(form_data)
     token = await JWTToken.get_or_create(user)
     return JWTTokenRead.model_validate(token)
 
@@ -36,3 +49,45 @@ async def login(
 async def refresh(token: JWTToken = Depends(oauth2_scheme())):
     await token.refresh()
     return JWTTokenRead.model_validate(token)
+
+
+@routers.get("/session/", name="session-login")
+async def session_login_view(request: Request):
+    return render(request, "authentication/login.html")
+
+
+@routers.post("/session/", name="session-login", dependencies=[Depends(csrf_required)])
+async def session_login(
+    request: Request, form_data: Annotated[SessionAuthRequestForm, Depends()]
+):
+    """Login using session auth."""
+    user = await verify_user(form_data)
+    auth_utils.session_save_user(request, user)
+    return RedirectResponse(
+        settings.session_auth_redirect_success, status.HTTP_302_FOUND
+    )
+
+
+@routers.post("/session/logout/", name="session-logout")
+async def session_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(request.url_for("session-login"), status.HTTP_302_FOUND)
+
+
+@routers.get("/session/register/", name="session-register")
+async def session_register_view(request: Request):
+    return render(request, "authentication/register.html")
+
+
+@routers.post(
+    "/session/register/", name="session-register", dependencies=[Depends(csrf_required)]
+)
+async def session_register(
+    request: Request, user_data: Annotated[SessionRegisterRequestForm, Depends()]
+):
+    valid_user_data = UserCreate.model_validate(user_data.to_dict())
+    user = await User(**valid_user_data.model_dump()).save()
+    auth_utils.session_save_user(request, user)
+    return RedirectResponse(
+        settings.session_auth_redirect_success, status.HTTP_302_FOUND
+    )

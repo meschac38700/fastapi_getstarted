@@ -4,6 +4,7 @@ import jwt
 from fastapi import Request
 from fastapi.security.utils import get_authorization_scheme_param
 
+from apps.user.models import User
 from core.auth.types import JWTPayload
 from settings import settings
 
@@ -29,3 +30,11 @@ def get_token_expire_datetime(created_at: datetime.datetime | None = None):
     start_dt = created_at or datetime.datetime.now(datetime.timezone.utc)
     dt = start_dt + datetime.timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return dt.replace(tzinfo=datetime.timezone.utc)
+
+
+def session_save_user(request: Request, user: User):
+    """Save user info into the session."""
+    request.session[settings.session_user_key] = {
+        "name": user.full_name,
+        "username": user.username,
+    }
