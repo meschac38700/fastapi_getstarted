@@ -15,7 +15,11 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
     )
     owner: User = Relationship(sa_relationship_kwargs={"lazy": "joined"})
     messages: list["ChatMessage"] = Relationship(
-        sa_relationship_kwargs={"lazy": "joined"}, back_populates="room"
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "order_by": "asc(ChatMessage.created_at)",
+        },
+        back_populates="room",
     )
     members: list[User] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=ChatRoomUserLink
