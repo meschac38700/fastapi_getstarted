@@ -1,8 +1,8 @@
-"""Migrations for chat app
+"""Generate chat app migrations
 
-Revision ID: 2d6a5bcc27ad
+Revision ID: 5fb32a6d6799
 Revises: c5da92aa72eb
-Create Date: 2025-07-27 12:15:27.889931
+Create Date: 2025-07-28 08:24:00.309575
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "2d6a5bcc27ad"
+revision: str = "5fb32a6d6799"
 down_revision: Union[str, None] = "c5da92aa72eb"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
