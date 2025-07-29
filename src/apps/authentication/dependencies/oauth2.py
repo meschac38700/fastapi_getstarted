@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Union
 
 from fastapi import HTTPException, Request
 from fastapi.params import Depends
@@ -18,17 +19,12 @@ async def current_session_user(request: Request):
     return user
 
 
-def oauth2_scheme(auto_error: bool = True):
+def oauth2_scheme():
     async def wrapper(
-        token=Depends(
-            OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL, auto_error=auto_error)
+        token: Union[str | None] = Depends(
+            OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)
         ),
-        session_user=Depends(current_session_user),
     ) -> JWTToken:
-        """Manage both session and token authentication."""
-        if session_user is not None:
-            return await JWTToken.get(user=session_user)
-
         stored_token = await JWTToken.get(access_token=token)
 
         if stored_token is None:
@@ -54,11 +50,19 @@ def oauth2_scheme(auto_error: bool = True):
     return wrapper
 
 
-def current_user(
-    token: JWTToken = Depends(oauth2_scheme(auto_error=False)),
+async def current_user(
+    request: Request,
+    session_user: User = Depends(current_session_user),
 ) -> User:
-    if token is None:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED, detail="Not authenticated"
-        )
+    """Retrieve the current user either in the session or in the jwt token."""
+    if session_user is not None:
+        return session_user
+
+    # Manually check retrieve user in jwt token to avoid an undesirable behavior
+    # where the check on the token takes over with "Depends" approach
+    token_check_callback = oauth2_scheme()
+    oauth2 = OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)
+    token_str = await oauth2(request=request)
+    token: JWTToken = await token_check_callback(token_str)
+
     return token.user
