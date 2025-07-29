@@ -21,6 +21,19 @@ class AppConstants:
     """
     TOKEN_REFRESH_DELAY_MINUTES = 30
 
+    """
+        All URL paths that begin with the paths listed
+        below are exempt from authentication.
+    """
+    EXEMPT_AUTH_URLS = {
+        AUTH_PREFIX_URL,
+        "/auth.*",
+        "/docs/?.*",
+        "/static/.*",
+        ".*/?openapi.json.*",
+        "/redoc",
+    }
+
     # Templating
     TEMPLATE_DIR = "templates"
     STATIC_URL = "/static/"
