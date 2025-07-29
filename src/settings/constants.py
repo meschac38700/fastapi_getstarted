@@ -32,6 +32,7 @@ class AppConstants:
         "/static/.*",
         ".*/?openapi.json.*",
         "/redoc",
+        "/default/?.*",
     }
 
     # Templating

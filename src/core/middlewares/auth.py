@@ -30,7 +30,7 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Only focus on our app (also skip tests)
-        if request.headers.get("host") != settings.server_address:
+        if not request.url.hostname.startswith(settings.server_address):
             return await call_next(request)
 
         # Skip Ajax/API requests

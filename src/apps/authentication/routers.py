@@ -51,7 +51,7 @@ async def refresh(token: JWTToken = Depends(oauth2_scheme())):
     return JWTTokenRead.model_validate(token)
 
 
-@routers.get("/session/", name="session-login")
+@routers.get("/session/", name="session-login", description="Return login HTML page.")
 async def session_login_view(request: Request):
     return render(request, "authentication/login.html")
 
@@ -68,13 +68,20 @@ async def session_login(
     )
 
 
-@routers.post("/session/logout/", name="session-logout")
-async def session_logout(request: Request):
+@routers.post(
+    "/logout/", name="session-logout", dependencies=[Depends(oauth2_scheme())]
+)
+async def session_logout(request: Request, token: JWTToken = Depends(oauth2_scheme())):
     request.session.clear()
+    await token.delete()
     return RedirectResponse(request.url_for("session-login"), status.HTTP_302_FOUND)
 
 
-@routers.get("/session/register/", name="session-register")
+@routers.get(
+    "/session/register/",
+    name="session-register",
+    description="Return register HTML page.",
+)
 async def session_register_view(request: Request):
     return render(request, "authentication/register.html")
 

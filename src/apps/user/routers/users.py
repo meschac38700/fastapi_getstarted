@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from apps.authentication.dependencies import oauth2_scheme
 from apps.authentication.dependencies.oauth2 import current_user
 from apps.authorization.dependencies import permission_required
 from apps.authorization.models import Permission
@@ -36,7 +37,8 @@ async def get_user(pk: int):
     dependencies=[
         Depends(
             permission_required(permissions=[perms["update"]], groups=[perms["update"]])
-        )
+        ),
+        Depends(oauth2_scheme()),
     ],
 )
 async def update_user(
@@ -67,7 +69,8 @@ async def update_user(
     dependencies=[
         Depends(
             permission_required(permissions=[perms["update"]], groups=[perms["update"]])
-        )
+        ),
+        Depends(oauth2_scheme()),
     ],
 )
 async def patch_user(pk: int, user: UserPatch, auth_user: User = Depends(current_user)):
@@ -107,7 +110,8 @@ async def post_user(user: UserCreate):
             permission_required(
                 permissions=[perms["delete"]], groups=[perms["delete"]]
             ),
-        )
+        ),
+        Depends(oauth2_scheme()),
     ],
 )
 async def delete_user(pk: int, user: User = Depends(current_user)):

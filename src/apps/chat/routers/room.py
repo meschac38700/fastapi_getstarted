@@ -43,7 +43,10 @@ async def get_rooms(db: SessionDep) -> Page[ChatRoom]:
     return await apaginate(db, query)
 
 
-@routers.get("/{room_id}/", name="room-get")
+@routers.get(
+    "/{room_id}/",
+    name="room-get",
+)
 def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
     return room
 

@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from apps.authentication.dependencies import oauth2_scheme
 from apps.authentication.dependencies.oauth2 import current_user
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
@@ -9,7 +10,11 @@ from apps.user.models import User
 routers = APIRouter()
 
 
-@routers.get("/groups/", name="List authenticated user's groups")
+@routers.get(
+    "/groups/",
+    name="List authenticated user's groups",
+    dependencies=[Depends(oauth2_scheme())],
+)
 def get_authenticated_user_groups(auth_user: User = Depends(current_user)):
     return auth_user.groups
 
@@ -17,7 +22,7 @@ def get_authenticated_user_groups(auth_user: User = Depends(current_user)):
 @routers.get(
     "/{pk}/groups/",
     name="Admin endpoint: List the specified user's groups",
-    dependencies=[Depends(AdminAccess())],
+    dependencies=[Depends(AdminAccess()), Depends(oauth2_scheme())],
 )
 async def get_user_groups(pk: int):
     stored_user = await User.get(id=pk)
