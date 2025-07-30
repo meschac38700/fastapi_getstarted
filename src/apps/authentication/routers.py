@@ -6,6 +6,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import RedirectResponse
 
 from apps.authentication.dependencies import oauth2_scheme
+from apps.authentication.dependencies.oauth2 import (
+    current_session_user,
+    current_user,
+)
 from apps.authentication.models import JWTToken
 from apps.authentication.models.schema import JWTTokenRead
 from apps.user.models import User
@@ -68,12 +72,14 @@ async def session_login(
     )
 
 
-@routers.post(
-    "/logout/", name="session-logout", dependencies=[Depends(oauth2_scheme())]
-)
-async def session_logout(request: Request, token: JWTToken = Depends(oauth2_scheme())):
+@routers.post("/logout/", name="session-logout")
+async def session_logout(request: Request, auth_user: User = Depends(current_user)):
     request.session.clear()
-    await token.delete()
+
+    token = await JWTToken.get(user=auth_user)
+    if token is not None:
+        await token.delete()
+
     return RedirectResponse(request.url_for("session-login"), status.HTTP_302_FOUND)
 
 
@@ -83,6 +89,12 @@ async def session_logout(request: Request, token: JWTToken = Depends(oauth2_sche
     description="Return register HTML page.",
 )
 async def session_register_view(request: Request):
+    auth_user = await current_session_user(request)
+    if auth_user is not None:
+        return RedirectResponse(
+            settings.session_auth_redirect_success, status.HTTP_302_FOUND
+        )
+
     return render(request, "authentication/register.html")
 
 

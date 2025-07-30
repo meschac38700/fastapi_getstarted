@@ -205,3 +205,27 @@ def setup_test_routes(app):
         return JSONResponse(status_code=200, content={"detail": "OK"})
 
     return endpoint
+
+
+@pytest.fixture
+async def csrf_token(serializer, client, app):
+    """Mock csrf token for testing purposes."""
+    from fastapi import status
+    from fastapi_csrf_protect import CsrfProtect
+
+    token = "unsigned_token"
+
+    class CSRFProtect(CsrfProtect):
+        def generate_csrf_tokens(self, _: str | None = None):
+            signed_token = serializer.dumps(token)
+            return (token, signed_token)
+
+    with patch(
+        "core.templating.utils.get_csrf_protect", side_effect=CSRFProtect
+    ) as mock_csrf_protect:
+        # First get request to generate the csrf token which is mocked to a constant value
+        response = await client.get(app.url_path_for("session-login"))
+        assert response.status_code == status.HTTP_200_OK
+
+        yield token
+        mock_csrf_protect.assert_called()

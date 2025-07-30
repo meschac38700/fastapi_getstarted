@@ -1,13 +1,18 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from starlette.responses import RedirectResponse
 from starlette.websockets import WebSocket
 
-from apps.authentication.dependencies.oauth2 import current_user
+from apps.authentication.dependencies.oauth2 import (
+    current_session_user,
+    current_user,
+)
 from apps.chat.models.orm import ChatRoom
 from apps.chat.services.manager import ChatWebSocketManager
 from apps.user.models.user import User
 from core.templating.utils import render
+from settings import settings
 
 routers = APIRouter(tags=["chat"], prefix="/chat")
 
@@ -19,6 +24,10 @@ websocket_manager = ChatWebSocketManager()
     name="chat-template",
 )
 async def chat(request: Request):
+    auth_user = await current_session_user(request)
+    if auth_user is None:
+        return RedirectResponse(url=settings.SESSION_AUTH_URL)
+
     query = await ChatRoom.all()
     return render(request, "chat/index.html", {"rooms": query})
 

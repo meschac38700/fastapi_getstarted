@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Union
 
 from fastapi import HTTPException, Request
 from fastapi.params import Depends
@@ -21,9 +20,7 @@ async def current_session_user(request: Request):
 
 def oauth2_scheme():
     async def wrapper(
-        token: Union[str | None] = Depends(
-            OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)
-        ),
+        token: str | None = Depends(OAuth2PasswordBearer(tokenUrl=settings.AUTH_URL)),
     ) -> JWTToken:
         stored_token = await JWTToken.get(access_token=token)
 

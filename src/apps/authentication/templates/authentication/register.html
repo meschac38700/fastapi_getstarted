@@ -12,23 +12,23 @@
     <div class="background">
         <div class="shape"></div>
         <div class="shape"></div>
+        <form method="POST" action="{{ request.url_for('session-register') }}">
+            <h3>Register Here</h3>
+
+            <label for="username">Username</label>
+            <input type="text" placeholder="Email or Phone" name="username" id="username">
+
+            <label for="firstname">FirstName</label>
+            <input type="password" placeholder="FirstName" name="firstname" id="firstname">
+
+            <label for="lastname">LastName</label>
+            <input type="password" placeholder="Password" name="lastname" id="lastname">
+
+            <label for="password">Password</label>
+            <input type="password" placeholder="Password" name="password" id="password">
+
+            <button type="submit">Sign up</button>
+        </form>
     </div>
-    <form method="POST" action="{{ request.url_for('session-register') }}">
-        <h3>Login Here</h3>
-
-        <label for="username">Username</label>
-        <input type="text" placeholder="Email or Phone" name="username" id="username">
-
-        <label for="firstname">FirstName</label>
-        <input type="password" placeholder="FirstName" name="firstname" id="firstname">
-
-        <label for="lastname">LastName</label>
-        <input type="password" placeholder="Password" name="lastname" id="lastname">
-
-        <label for="password">Password</label>
-        <input type="password" placeholder="Password" name="password" id="password">
-
-        <button type="submit">Sign up</button>
-    </form>
 </body>
 </html>
