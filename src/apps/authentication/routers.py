@@ -6,12 +6,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import RedirectResponse
 
 from apps.authentication.dependencies import oauth2_scheme
-from apps.authentication.dependencies.oauth2 import (
-    current_session_user,
-    current_user,
-)
+from apps.authentication.dependencies.oauth2 import current_user
 from apps.authentication.models import JWTToken
 from apps.authentication.models.schema import JWTTokenRead
+from apps.user.dependencies.access import AnonymousUserAccess
 from apps.user.models import User
 from apps.user.models.schema.create import UserCreate
 from core.auth import utils as auth_utils
@@ -55,12 +53,24 @@ async def refresh(token: JWTToken = Depends(oauth2_scheme())):
     return JWTTokenRead.model_validate(token)
 
 
-@routers.get("/session/", name="session-login", description="Return login HTML page.")
+@routers.get(
+    "/session/",
+    name="session-login",
+    description="Return login HTML page.",
+    dependencies=[Depends(AnonymousUserAccess())],
+)
 async def session_login_view(request: Request):
     return render(request, "authentication/login.html")
 
 
-@routers.post("/session/", name="session-login", dependencies=[Depends(csrf_required)])
+@routers.post(
+    "/session/",
+    name="session-login",
+    dependencies=[
+        Depends(csrf_required),
+        Depends(AnonymousUserAccess()),
+    ],
+)
 async def session_login(
     request: Request, form_data: Annotated[SessionAuthRequestForm, Depends()]
 ):
@@ -87,19 +97,16 @@ async def session_logout(request: Request, auth_user: User = Depends(current_use
     "/session/register/",
     name="session-register",
     description="Return register HTML page.",
+    dependencies=[Depends(AnonymousUserAccess())],
 )
 async def session_register_view(request: Request):
-    auth_user = await current_session_user(request)
-    if auth_user is not None:
-        return RedirectResponse(
-            settings.session_auth_redirect_success, status.HTTP_302_FOUND
-        )
-
     return render(request, "authentication/register.html")
 
 
 @routers.post(
-    "/session/register/", name="session-register", dependencies=[Depends(csrf_required)]
+    "/session/register/",
+    name="session-register",
+    dependencies=[Depends(csrf_required), Depends(AnonymousUserAccess())],
 )
 async def session_register(
     request: Request, user_data: Annotated[SessionRegisterRequestForm, Depends()]

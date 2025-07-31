@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi_pagination import add_pagination
 from starlette.staticfiles import StaticFiles
 
+from apps.user.dependencies.exceptions import access_denied_exception_handler
 from core.db.dependencies.session import get_engine
 from core.db.signals.main import setup_signals
 from core.lifespan import setup, teardown
@@ -47,6 +48,7 @@ app.mount(
 
 custom_openapi(app)
 csrf_exception_handler(app)
+access_denied_exception_handler(app)
 # TODO(Eliam): improve that, implement an auto recovery of middlewares.
 cors_middleware(app)
 session_login_required(app)

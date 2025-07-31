@@ -3,6 +3,7 @@ from abc import abstractmethod
 from fastapi import Depends
 
 from apps.authentication.dependencies.oauth2 import current_user
+from apps.user.dependencies.exceptions import AccessDeniedError
 from apps.user.models import User
 from core.routers.dependencies import AccessDependency
 
@@ -22,3 +23,14 @@ class UserAccess[T = User](AccessDependency[User]):
             self.raise_access_denied()
 
         return user
+
+
+class AnonymousUserAccess(UserAccess[User]):
+    def test_access(self) -> bool:
+        return True
+
+    async def __call__(self, user: User = Depends(current_user)):
+        if user is not None:
+            raise AccessDeniedError()
+
+        return None
