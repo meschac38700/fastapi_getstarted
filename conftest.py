@@ -44,8 +44,8 @@ def app():
 
 
 @pytest.fixture
-def base_url():
-    return "https://test.test"
+def base_url(settings):
+    return settings.TEST_BASE_URL
 
 
 @pytest.fixture
@@ -182,7 +182,7 @@ def serializer(settings):
 
 
 @pytest.fixture()
-def setup_test_routes(app):
+def setup_test_routes(app, request):
     """
     Sets up some FastAPI endpoints for test purposes.
     """
@@ -192,12 +192,12 @@ def setup_test_routes(app):
     from core.security.csrf import csrf_required
     from core.templating.utils import render
 
-    endpoint = "/test/"
+    endpoint = "/test/" + request.node.name + "/"
 
     @app.get(endpoint, response_class=HTMLResponse)
-    async def read(request: Request) -> HTMLResponse:
+    async def read(req: Request) -> HTMLResponse:
         # generate token
-        return render(request, "index.html")
+        return render(req, "index.html")
 
     # use csrf_required Depends to validate csrf token
     @app.post(endpoint, response_class=JSONResponse)

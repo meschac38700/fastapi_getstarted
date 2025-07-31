@@ -48,3 +48,5 @@ class AppConstants:
             apps/authentication/{static_folder_name}
     """
     STATIC_ROOT = "statics"
+
+    TEST_BASE_URL = "https://test.code"

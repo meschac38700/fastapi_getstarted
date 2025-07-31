@@ -29,12 +29,12 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
         if self.is_exempt_path(current_path):
             return await call_next(request)
 
-        # Only focus on our app (also skip tests)
-        if not request.url.hostname.startswith(settings.server_address):
+        # Skip tests
+        if str(request.url).startswith(settings.TEST_BASE_URL):
             return await call_next(request)
 
         # Skip Ajax/API requests
-        if request.headers.get("x-requestd-with") == "XMLHttpRequest":
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return await call_next(request)
 
         # Skip requests with JWT (Authorization: Bearer)
