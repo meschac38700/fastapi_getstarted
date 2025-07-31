@@ -49,6 +49,9 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
             else None
         )
         if not session_user:
+            print(
+                "-------------------- REDIRECTED BY MIDDLEWARE... --------------------"
+            )
             return RedirectResponse(url=settings.SESSION_AUTH_URL)
 
         return await call_next(request)
