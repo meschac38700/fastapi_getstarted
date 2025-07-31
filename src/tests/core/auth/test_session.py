@@ -98,5 +98,5 @@ async def test_register_new_user_with_session_auth(client, app, csrf_token, sett
 
     # try to access to register view while authenticated -> redirect
     response = await client.get(app.url_path_for("session-register"))
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert response.next_request.url.path == settings.session_auth_redirect_success

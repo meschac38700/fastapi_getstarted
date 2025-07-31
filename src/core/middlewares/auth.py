@@ -29,10 +29,6 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
         if self.is_exempt_path(current_path):
             return await call_next(request)
 
-        # Skip tests
-        if str(request.url).startswith(settings.TEST_BASE_URL):
-            return await call_next(request)
-
         # Skip Ajax/API requests
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return await call_next(request)
@@ -49,9 +45,6 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
             else None
         )
         if not session_user:
-            print(
-                "-------------------- REDIRECTED BY MIDDLEWARE... --------------------"
-            )
             return RedirectResponse(url=settings.SESSION_AUTH_URL)
 
         return await call_next(request)
