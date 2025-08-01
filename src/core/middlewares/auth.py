@@ -29,14 +29,16 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
         if self.is_exempt_path(current_path):
             return await call_next(request)
 
-        # Skip if not requesting for an HTML response
-        if str(request.url).startswith(
-            settings.TEST_BASE_URL
-        ) and "application/json" in request.headers.get("Accept"):
+        application_json = "application/json" in request.headers.get("Accept")
+        # Skip if it's test environment and not requesting for an HTML response
+        if application_json:
             return await call_next(request)
 
         # Skip Ajax/API requests
-        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        if (
+            application_json
+            or request.headers.get("x-requested-with") == "XMLHttpRequest"
+        ):
             return await call_next(request)
 
         # Skip requests with JWT (Authorization: Bearer)
