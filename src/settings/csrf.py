@@ -10,7 +10,7 @@ class CSRFSettings(AppBaseSettings):
     """
     Redirect user after session authentication succeeded.
     """
-    session_auth_redirect_success: Optional[str] = "/chat/"
+    session_auth_redirect_success: Optional[str] = "/web/chat/"
     session_user_key: Optional[str] = "user"
     cookie_path: Optional[str] = "/"
     cookie_domain: Optional[str] = None
