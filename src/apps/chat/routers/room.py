@@ -22,7 +22,7 @@ from core.db.dependencies import SessionDep
 routers = APIRouter(prefix="/rooms", tags=["chat", "rooms"])
 
 
-@routers.get("/", name="room-all", dependencies=[Depends(AdminAccess())])
+@routers.get("/", name="room-list", dependencies=[Depends(AdminAccess())])
 async def get_rooms(db: SessionDep) -> Page[ChatRoom]:
     """Get all rooms.
 

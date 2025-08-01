@@ -12,7 +12,7 @@ from settings import settings
 routers = APIRouter(tags=["Authentication"], prefix=settings.AUTH_PREFIX_URL)
 
 
-@routers.post("/token/", name="Generate JWT Token")
+@routers.post("/token/", name="jwt-auth")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> JWTTokenRead:
@@ -22,7 +22,7 @@ async def login(
 
 
 @routers.post(
-    "/token/refresh/", name="Refresh JWT token", dependencies=[Depends(oauth2_scheme())]
+    "/token/refresh/", name="jwt-auth-refresh", dependencies=[Depends(oauth2_scheme())]
 )
 async def refresh(token: JWTToken = Depends(oauth2_scheme())):
     await token.refresh()

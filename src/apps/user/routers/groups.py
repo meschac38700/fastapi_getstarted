@@ -12,7 +12,8 @@ routers = APIRouter()
 
 @routers.get(
     "/groups/",
-    name="List authenticated user's groups",
+    name="user-own-groups",
+    description="List authenticated user's groups",
     dependencies=[Depends(oauth2_scheme())],
 )
 def get_authenticated_user_groups(auth_user: User = Depends(current_user)):
@@ -21,7 +22,8 @@ def get_authenticated_user_groups(auth_user: User = Depends(current_user)):
 
 @routers.get(
     "/{pk}/groups/",
-    name="Admin endpoint: List the specified user's groups",
+    name="user-get-groups",
+    description="Admin endpoint: List the specified user's groups",
     dependencies=[Depends(AdminAccess()), Depends(oauth2_scheme())],
 )
 async def get_user_groups(pk: int):

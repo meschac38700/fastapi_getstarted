@@ -47,16 +47,16 @@ async def test_get_chat_rooms(
     subscriber: User,
     room: ChatRoom,
 ):
-    response = await client.get(app.url_path_for("room-all"))
+    response = await client.get(app.url_path_for("room-list"))
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     await client.user_login(subscriber)
-    response = await client.get(app.url_path_for("room-all"))
+    response = await client.get(app.url_path_for("room-list"))
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == {"detail": "Insufficient rights to carry out this action"}
 
     await client.force_login(admin)
-    response = await client.get(app.url_path_for("room-all"))
+    response = await client.get(app.url_path_for("room-list"))
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "items": [room.model_dump(mode="json")],

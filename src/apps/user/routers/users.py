@@ -20,19 +20,24 @@ perms = {
 _NOT_FOUND_MSG = "User not found."
 
 
-@routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
+@routers.get(
+    "/", name="user-list", description="Get all users", status_code=HTTPStatus.OK
+)
 async def get_users(offset: int = 0, limit=100):
     return await User.all(offset=offset, limit=limit)
 
 
-@routers.get("/{pk}/", name="Get single user", status_code=HTTPStatus.OK)
+@routers.get(
+    "/{pk}/", name="user-get", description="Get single user", status_code=HTTPStatus.OK
+)
 async def get_user(pk: int):
     return await User.get(id=pk)
 
 
 @routers.put(
     "/{pk}/",
-    name="Update user",
+    name="user-update",
+    description="Update a user",
     status_code=HTTPStatus.OK,
     dependencies=[
         Depends(
@@ -65,7 +70,8 @@ async def update_user(
 @routers.patch(
     "/{pk}/",
     status_code=HTTPStatus.OK,
-    name="Patch user",
+    name="user-patch",
+    description="Patch user",
     dependencies=[
         Depends(
             permission_required(permissions=[perms["update"]], groups=[perms["update"]])
@@ -96,6 +102,8 @@ async def patch_user(pk: int, user: UserPatch, auth_user: User = Depends(current
 
 @routers.post(
     "/",
+    name="user-create",
+    description="Create a new user",
     status_code=HTTPStatus.CREATED,
 )
 async def post_user(user: UserCreate):
@@ -105,6 +113,8 @@ async def post_user(user: UserCreate):
 @routers.delete(
     "/{pk}/",
     status_code=HTTPStatus.NO_CONTENT,
+    name="user-delete",
+    description="Delete a user",
     dependencies=[
         Depends(
             permission_required(

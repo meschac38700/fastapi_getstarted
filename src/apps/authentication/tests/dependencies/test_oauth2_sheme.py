@@ -16,7 +16,7 @@ class TestOAuth2Scheme(AsyncTestCase):
         self.user = await User.get(username="test")
         await Permission.generate_crud_objects(User.table_name())
 
-    async def test_deleted_token_should_invalid_authentication(self):
+    async def test_deleted_token_should_invalid_authentication(self, app):
         update_permission = Permission.format_permission_name(
             "update", User.table_name()
         )
@@ -25,12 +25,14 @@ class TestOAuth2Scheme(AsyncTestCase):
         await self.client.login(self.user.username)
 
         response = await self.client.patch(
-            f"/users/{self.user.id}/", json={"last_name": "DOE"}
+            app.url_path_for("user-patch", pk=self.user.id), json={"last_name": "DOE"}
         )
         assert HTTPStatus.OK == response.status_code
 
         await (await JWTToken.get(user_id=self.user.id)).delete()
 
-        response = await self.client.patch("/users/1/", json={"last_name": "DOE"})
+        response = await self.client.patch(
+            app.url_path_for("user-patch", pk=1), json={"last_name": "DOE"}
+        )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
         assert "Invalid authentication token." == response.json()["detail"]

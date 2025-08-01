@@ -16,7 +16,8 @@ routers = APIRouter()
 
 @routers.get(
     "/permissions/",
-    name="List current authenticated user's permissions",
+    name="user-own-permissions",
+    description="List current authenticated user's permissions",
     dependencies=[Depends(oauth2_scheme())],
 )
 async def get_authenticated_user_permissions(auth_user: User = Depends(current_user)):
@@ -25,7 +26,8 @@ async def get_authenticated_user_permissions(auth_user: User = Depends(current_u
 
 @routers.get(
     "/{pk}/permissions/",
-    name="Admin endpoint: List the specified user's permissions",
+    name="user-get-permissions",
+    description="Admin endpoint: List the specified user's permissions",
     dependencies=[Depends(AdminAccess())],
 )
 async def get_user_permissions(pk: int):
@@ -38,7 +40,8 @@ async def get_user_permissions(pk: int):
 
 @routers.patch(
     "/{pk}/permissions/add/",
-    name="Admin endpoint: Add some permissions to a certain user",
+    name="user-add-permissions",
+    description="Admin endpoint: Add some permissions to a certain user",
     dependencies=[Depends(AdminAccess())],
 )
 async def add_permissions_user(pk: int, permissions: PermissionList):
@@ -54,7 +57,8 @@ async def add_permissions_user(pk: int, permissions: PermissionList):
 
 @routers.patch(
     "/{pk}/permissions/remove/",
-    name="Admin endpoint: Remove some permissions to a certain user",
+    name="user-remove-permissions",
+    description="Admin endpoint: Remove some permissions to a certain user",
     dependencies=[Depends(AdminAccess())],
 )
 async def remove_permissions_user(pk: int, permissions: PermissionList):

@@ -19,21 +19,25 @@ class TestUserGroup(AsyncTestCase):
             User.get(role=UserRole.admin),
         )
 
-    async def test_get_own_groups_using_admin_endpoint_denied(self):
-        response = await self.client.get(f"/users/{self.staff.id}/groups/")
+    async def test_get_own_groups_using_admin_endpoint_denied(self, app):
+        response = await self.client.get(
+            app.url_path_for("user-get-groups", pk=self.staff.id)
+        )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
         # endpoint reserved to admin user
-        response = await self.client.get(f"/users/{self.staff.id}/groups/")
+        response = await self.client.get(
+            app.url_path_for("user-get-groups", pk=self.staff.id)
+        )
         assert HTTPStatus.FORBIDDEN == response.status_code
         assert (
             "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
-    async def test_get_own_user_groups(self):
-        response = await self.client.get("/users/groups/")
+    async def test_get_own_user_groups(self, app):
+        response = await self.client.get(app.url_path_for("user-own-groups"))
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
@@ -45,14 +49,16 @@ class TestUserGroup(AsyncTestCase):
         ]
         await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
 
-        response = await self.client.get("/users/groups/")
+        response = await self.client.get(app.url_path_for("user-own-groups"))
         assert HTTPStatus.OK == response.status_code
 
         assert len(response.json()) >= len(expected_groups)
         assert all(perm["name"] in expected_groups for perm in response.json())
 
-    async def test_admin_get_user_groups(self):
-        response = await self.client.get(f"/users/{self.active.id}/groups/")
+    async def test_admin_get_user_groups(self, app):
+        response = await self.client.get(
+            app.url_path_for("user-get-groups", pk=self.active.id)
+        )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.admin)
@@ -65,14 +71,18 @@ class TestUserGroup(AsyncTestCase):
         ]
         await self.active.add_to_groups(await Group.filter(name__in=expected_groups))
 
-        response = await self.client.get(f"/users/{self.active.id}/groups/")
+        response = await self.client.get(
+            app.url_path_for("user-get-groups", pk=self.active.id)
+        )
         assert HTTPStatus.OK == response.status_code
         assert len(response.json()) >= len(expected_groups)
         assert all(group["name"] in expected_groups for group in response.json())
 
         # Get groups of staff user
         await self.staff.add_to_groups(await Group.filter(name__in=expected_groups))
-        response = await self.client.get(f"/users/{self.staff.id}/groups/")
+        response = await self.client.get(
+            app.url_path_for("user-get-groups", pk=self.staff.id)
+        )
         assert HTTPStatus.OK == response.status_code
 
         assert len(response.json()) >= len(expected_groups)
