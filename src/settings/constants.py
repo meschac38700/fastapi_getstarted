@@ -12,8 +12,10 @@ class AppConstants:
 
     # Authentication
     AUTH_PREFIX_URL = "/auth"
-    AUTH_URL = f"{AUTH_PREFIX_URL}/token"
-    SESSION_AUTH_URL = f"{AUTH_PREFIX_URL}/session/"
+    API_ROUTER_PREFIX = "/api"
+    WEB_ROUTER_PREFIX = "/web"
+    AUTH_URL = f"{API_ROUTER_PREFIX}{AUTH_PREFIX_URL}/token/"
+    SESSION_AUTH_URL = f"{WEB_ROUTER_PREFIX}{AUTH_PREFIX_URL}/session"
     ACCESS_TOKEN_EXPIRE_MINUTES = 30
     """
         Maximum time, in minutes, after the token expires during which it can still be refreshed,
@@ -27,7 +29,7 @@ class AppConstants:
     """
     EXEMPT_AUTH_URLS = {
         AUTH_PREFIX_URL,
-        "/auth.*",
+        ".*/auth.*",
         "/docs/?.*",
         "/static/.*",
         ".*/?openapi.json.*",

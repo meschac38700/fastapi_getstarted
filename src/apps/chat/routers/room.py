@@ -19,7 +19,7 @@ from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 from core.db.dependencies import SessionDep
 
-routers = APIRouter()
+routers = APIRouter(prefix="/rooms", tags=["chat", "rooms"])
 
 
 @routers.get("/", name="room-all", dependencies=[Depends(AdminAccess())])
