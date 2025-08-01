@@ -23,7 +23,8 @@ class AppRouter:
             │   └── initial-heroes.yaml
             ├── models
             │   └── __init__.py
-            └── routers.py (OR module and routers variable should be named/export as 'routers')
+            └── routers.py (OR a package with an export router instance of APIRouter in __init__.py file)
+            └── web.py (OR a package with an export router instance of APIRouter in __init__.py file)
     """
 
     def __init__(self):

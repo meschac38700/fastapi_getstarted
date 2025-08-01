@@ -119,7 +119,7 @@ $ python src/manage.py fixtures
 - [Models](#models)
   - [Schemas](#schemas)
   - [Migrations](#migrations)
-- [Routers](#routers)
+- [Routers & Web](#routers)
 - [Fixtures](#fixtures)
 - [Signals](#signals)
 
@@ -161,6 +161,9 @@ apps/
     │   │   └── patch.py
     │   └── post.py
     ├── routers
+    │   ├── __init__.py
+    │   └── posts.py
+    ├── web
     │   ├── __init__.py
     │   └── posts.py
     ├── signals
@@ -467,6 +470,9 @@ apps/
          └── statistical.py
 ```
 </details>
+
+### Web package
+Identical to the router package except this is where you need to define all the routes used to render HTML.
 
 > [!IMPORTANT]
 > At this point, your blog application is fully functional.
