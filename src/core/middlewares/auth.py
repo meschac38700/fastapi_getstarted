@@ -29,31 +29,15 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
         if self.is_exempt_path(current_path):
             return await call_next(request)
 
-        application_json = "application/json" in request.headers.get("Accept")
-        # Skip if it's test environment and not requesting for an HTML response
-        if application_json:
-            return await call_next(request)
-
-        # Skip Ajax/API requests
-        if (
-            application_json
-            or request.headers.get("x-requested-with") == "XMLHttpRequest"
-        ):
-            return await call_next(request)
-
-        # Skip requests with JWT (Authorization: Bearer)
-        auth_header = request.headers.get("Authorization", "")
-        if auth_header.startswith("Bearer "):
-            return await call_next(request)
-
-        # Template view only: Check session auth
-        session_user = (
-            request.session.get(settings.session_user_key)
-            if hasattr(request, "session")
-            else None
-        )
-        if not session_user:
-            return RedirectResponse(url=settings.SESSION_AUTH_URL)
+        if request.url.path.startswith(settings.WEB_ROUTER_PREFIX):
+            # Template view only: Check session auth
+            session_user = (
+                request.session.get(settings.session_user_key)
+                if hasattr(request, "session")
+                else None
+            )
+            if not session_user:
+                return RedirectResponse(url=settings.SESSION_AUTH_URL)
 
         return await call_next(request)
 
