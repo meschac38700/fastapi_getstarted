@@ -28,6 +28,11 @@ def update_settings(database: str, settings):
 
 
 @pytest.fixture
+def html_headers():
+    return {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
+
+
+@pytest.fixture
 def settings():
     from settings import settings
 

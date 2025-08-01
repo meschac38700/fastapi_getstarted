@@ -1,4 +1,5 @@
 from httpx import AsyncClient
+from httpx._types import HeaderTypes
 
 from apps.authentication.models import JWTToken
 from apps.user.models import User
@@ -6,6 +7,12 @@ from apps.user.models import User
 
 class AsyncClientTest(AsyncClient):
     _token: JWTToken | None = None
+
+    def __init__(self, *, headers: HeaderTypes | None = None, **kwargs):
+        _headers = headers or {
+            "Accept": "application/json",
+        }
+        super().__init__(headers=_headers, **kwargs)
 
     async def user_login(self, user: User):
         self._token = await JWTToken.get_or_create(user)

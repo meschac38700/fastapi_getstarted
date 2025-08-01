@@ -9,9 +9,9 @@ from core.unittest.client import AsyncClientTest
 
 
 async def test_get_session_login_form(
-    client: AsyncClientTest, app: FastAPI, http_request
+    client: AsyncClientTest, app: FastAPI, http_request, html_headers
 ):
-    response = await client.get(app.url_path_for("session-login"))
+    response = await client.get(app.url_path_for("session-login"), headers=html_headers)
     assert response.status_code == status.HTTP_200_OK
     html_response = response.content.decode()
     expected_html = render_string(http_request, "authentication/login.html")
@@ -27,14 +27,10 @@ async def test_get_session_login_form(
 
 
 async def test_session_login(
-    client: AsyncClientTest,
-    app: FastAPI,
-    user,
-    csrf_token,
-    settings,
+    client: AsyncClientTest, app: FastAPI, user, csrf_token, settings, html_headers
 ):
     # pre check
-    response = await client.get(app.url_path_for("chat-template"))
+    response = await client.get(app.url_path_for("chat-template"), headers=html_headers)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
     login_data = {
@@ -53,7 +49,7 @@ async def test_session_login(
     assert response.status_code == status.HTTP_200_OK
 
 
-async def test_session_logout(client, app, user, csrf_token, settings):
+async def test_session_logout(client, app, user, csrf_token, settings, html_headers):
     # ensure that user is not logged
     assert client.cookies.get(settings.session_cookie) is None
 
@@ -63,7 +59,9 @@ async def test_session_logout(client, app, user, csrf_token, settings):
         "username": user.username,
         "password": (lambda: "password")(),
     }
-    response = await client.post(app.url_path_for("session-login"), data=login_data)
+    response = await client.post(
+        app.url_path_for("session-login"), data=login_data, headers=html_headers
+    )
     assert response.status_code == status.HTTP_302_FOUND  # redirection after connexion
 
     # check user is logged
@@ -76,7 +74,9 @@ async def test_session_logout(client, app, user, csrf_token, settings):
 
 
 @pytest.mark.usefixtures("db")
-async def test_register_new_user_with_session_auth(client, app, csrf_token, settings):
+async def test_register_new_user_with_session_auth(
+    client, app, csrf_token, settings, html_headers
+):
     user_data = {
         settings.token_key: csrf_token,
         "username": "session",
@@ -86,7 +86,9 @@ async def test_register_new_user_with_session_auth(client, app, csrf_token, sett
     }
     assert client.cookies.get(settings.session_cookie) is None
 
-    response = await client.post(app.url_path_for("session-register"), data=user_data)
+    response = await client.post(
+        app.url_path_for("session-register"), data=user_data, headers=html_headers
+    )
     assert response.status_code == status.HTTP_302_FOUND
     assert response.cookies.get(settings.session_cookie) is not None
     assert client.cookies.get(settings.session_cookie) is not None
@@ -97,6 +99,8 @@ async def test_register_new_user_with_session_auth(client, app, csrf_token, sett
     assert created_user.check_password(user_data["password"])
 
     # try to access to register view while authenticated -> redirect
-    response = await client.get(app.url_path_for("session-register"))
+    response = await client.get(
+        app.url_path_for("session-register"), headers=html_headers
+    )
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert response.next_request.url.path == settings.session_auth_redirect_success
