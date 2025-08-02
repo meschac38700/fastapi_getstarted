@@ -16,7 +16,8 @@ _NOT_FOUND_MSG = "Permission not found."
 
 @routers.get(
     "/",
-    name="List all app permissions",
+    name="permission-list",
+    description="Get all app permissions",
     dependencies=[Depends(AdminAccess())],
 )
 async def get_permissions(
@@ -41,7 +42,8 @@ async def get_permissions(
 
 @routers.post(
     "/",
-    name="Create new Permission",
+    name="permission-create",
+    description="Create new Permission",
     dependencies=[Depends(AdminAccess())],
     status_code=HTTPStatus.CREATED,
 )
@@ -51,7 +53,8 @@ async def create_permission(permission_data: PermissionCreate):
 
 @routers.patch(
     "/{pk}/",
-    name="Patch a Permission",
+    name="permission-patch",
+    description="Patch a Permission",
     dependencies=[Depends(AdminAccess())],
 )
 async def patch_permission(pk: int, permission_data: PermissionUpdate):
@@ -70,7 +73,8 @@ async def patch_permission(pk: int, permission_data: PermissionUpdate):
 
 @routers.put(
     "/{pk}/",
-    name="Update a Permission",
+    name="permission-update",
+    description="Update a Permission",
     dependencies=[Depends(AdminAccess())],
 )
 async def put_permission(pk: int, permission_data: PermissionCreate):
@@ -87,7 +91,8 @@ async def put_permission(pk: int, permission_data: PermissionCreate):
 
 @routers.delete(
     "/{pk}/",
-    name="Delete a Permission",
+    name="permission-delete",
+    description="Delete a Permission",
     dependencies=[Depends(AdminAccess())],
     status_code=HTTPStatus.NO_CONTENT,
 )

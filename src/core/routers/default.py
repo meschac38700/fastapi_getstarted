@@ -54,24 +54,24 @@ def register_default_endpoints(app: FastAPI):
     default_tags = ["Default"]
     default_endpoints = [
         {
-            "path": "/",
+            "path": "/default/",
             "endpoint": secret_key,
             "methods": ["GET"],
-            "name": "secret_key",
+            "name": "secret-key",
             "tags": default_tags,
         },
         {
-            "path": "/healthcheck",
+            "path": "/default/healthcheck/",
             "endpoint": health_check,
             "methods": ["GET"],
-            "name": "health_check",
+            "name": "health-check",
             "tags": default_tags,
         },
         {
-            "path": "/fixtures",
+            "path": "/default/fixtures/",
             "endpoint": load_fixtures,
             "methods": ["POST"],
-            "name": "fixtures",
+            "name": "load-fixtures",
             "tags": default_tags,
         },
     ]

@@ -120,3 +120,38 @@ def extract_app_name_from_path(file_path: Path):
         return app_name
     except ValueError:
         return None
+
+
+def static_packages() -> list[tuple[str, str]]:
+    """Return list of static packages for each application inside apps package."""
+    app_paths = get_application_paths(required_module=settings.STATIC_ROOT)
+
+    return [
+        (linux_path_to_module_path(app_path), settings.STATIC_ROOT)
+        for app_path in app_paths
+    ]
+
+
+def retrieve_template_tags():
+    """Retrieve all defined template tags.
+
+    First get tags from core.templating.templatetags
+    then go through apps folder and extract all tags from templatetags folder.
+    TODO(Eliam): Re-work on this, make a global register system
+     like Django Library(django.template.Library)
+    """
+    core_tags_path = settings.BASE_DIR / "core/templating/templatetags"
+    core_tags_module = import_module(linux_path_to_module_path(core_tags_path))
+    all_tags = [
+        getattr(core_tags_module, tag_name) for tag_name in core_tags_module.__all__
+    ]
+
+    for app_path in get_application_paths(required_module="templatetags"):
+        # For now, we assume that the tags have been exported in the init file,
+        # but later with the library system, we will move to a "registration" approach.
+        module_path = linux_path_to_module_path(app_path / "templatetags")
+        tag_module = import_module(module_path)
+        all_tags.extend(
+            [getattr(tag_module, tag_name) for tag_name in tag_module.__all__]
+        )
+    return all_tags

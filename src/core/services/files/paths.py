@@ -13,7 +13,7 @@ def relative_from(
 
     :param p_path: Path to make relative to one of the provided folders: 'from_folder' or from_path
     :param from_path: Path root from which the given path should be relative
-    :param from_folder: Name of the folder to which the given path should be relative
+    :param folder_name: Name of the folder to which the given path should be relative
 
     :return: Relative path
 

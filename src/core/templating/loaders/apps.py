@@ -42,4 +42,8 @@ class AppTemplateLoader(BaseTemplateLoader):
 
 @lru_cache
 def environment():
-    return Environment(loader=AppTemplateLoader(), autoescape=select_autoescape())
+    return Environment(
+        loader=AppTemplateLoader(),
+        autoescape=select_autoescape(),
+        extensions=file_services.apps.retrieve_template_tags(),
+    )

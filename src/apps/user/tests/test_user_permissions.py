@@ -20,24 +20,32 @@ class TestUserPermission(AsyncTestCase):
             User.get(role=UserRole.admin),
         )
 
-    async def test_get_user_permissions_not_found(self):
+    async def test_get_user_permissions_not_found(self, app):
         await self.client.user_login(self.admin)
 
-        response = await self.client.get(f"/users/{-1}/permissions/")
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=-1)
+        )
         assert HTTPStatus.NOT_FOUND == response.status_code
         assert response.json() == {"detail": "User not found."}
 
-    async def test_get_another_user_permissions_denied(self):
-        response = await self.client.get("/users/permissions/")
+    async def test_get_another_user_permissions_denied(self, app):
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.active.id)
+        )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
 
-        response = await self.client.get(f"/users/{self.active.id}/permissions/")
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.active.id)
+        )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
-    async def test_get_own_user_permissions_using_admin_endpoint_denied(self):
-        response = await self.client.get(f"/users/{self.staff.id}/permissions/")
+    async def test_get_own_user_permissions_using_admin_endpoint_denied(self, app):
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.staff.id)
+        )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
@@ -49,14 +57,16 @@ class TestUserPermission(AsyncTestCase):
         ]
         await self.add_permissions(self.staff, expected_permissions)
 
-        response = await self.client.get(f"/users/{self.staff.id}/permissions/")
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.staff.id)
+        )
         assert HTTPStatus.FORBIDDEN == response.status_code
         assert (
             "Insufficient rights to carry out this action" == response.json()["detail"]
         )
 
-    async def test_get_own_user_permissions_allowed(self):
-        response = await self.client.get("/users/permissions/")
+    async def test_get_own_user_permissions_allowed(self, app):
+        response = await self.client.get(app.url_path_for("user-own-permissions"))
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.staff)
@@ -68,14 +78,16 @@ class TestUserPermission(AsyncTestCase):
         ]
         await self.add_permissions(self.staff, expected_permissions)
 
-        response = await self.client.get("/users/permissions/")
+        response = await self.client.get(app.url_path_for("user-own-permissions"))
         assert HTTPStatus.OK == response.status_code
 
         assert len(response.json()) >= len(expected_permissions)
         assert all(perm["name"] in expected_permissions for perm in response.json())
 
-    async def test_admin_get_user_permissions_allowed(self):
-        response = await self.client.get(f"/users/{self.staff.id}/permissions/")
+    async def test_admin_get_user_permissions_allowed(self, app):
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.staff.id)
+        )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.admin)
@@ -88,7 +100,9 @@ class TestUserPermission(AsyncTestCase):
         ]
         await self.add_permissions(self.active, expected_permissions)
 
-        response = await self.client.get(f"/users/{self.active.id}/permissions/")
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.active.id)
+        )
         assert HTTPStatus.OK == response.status_code
 
         assert len(response.json()) >= len(expected_permissions)
@@ -96,13 +110,15 @@ class TestUserPermission(AsyncTestCase):
 
         # Get permissions of staff user
         await self.add_permissions(self.staff, expected_permissions)
-        response = await self.client.get(f"/users/{self.staff.id}/permissions/")
+        response = await self.client.get(
+            app.url_path_for("user-get-permissions", pk=self.staff.id)
+        )
         assert HTTPStatus.OK == response.status_code
 
         assert len(response.json()) >= len(expected_permissions)
         assert all(perm["name"] in expected_permissions for perm in response.json())
 
-    async def test_add_permissions_to_user_not_found(self):
+    async def test_add_permissions_to_user_not_found(self, app):
         data = {
             "permissions": [
                 Permission.format_permission_name("create", User.table_name()),
@@ -111,11 +127,13 @@ class TestUserPermission(AsyncTestCase):
         }
         await self.client.user_login(self.admin)
 
-        response = await self.client.patch(f"/users/{-1}/permissions/add/", json=data)
+        response = await self.client.patch(
+            app.url_path_for("user-add-permissions", pk=-1), json=data
+        )
         assert HTTPStatus.NOT_FOUND == response.status_code
         assert response.json() == {"detail": "User not found."}
 
-    async def test_add_permissions_to_user(self):
+    async def test_add_permissions_to_user(self, app):
         user = await User(
             username="add_permission",
             first_name="Test",
@@ -134,13 +152,13 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(user)
 
         response = await self.client.patch(
-            f"/users/{user.id}/permissions/add/", json=data
+            app.url_path_for("user-add-permissions", pk=user.id), json=data
         )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
-            f"/users/{user.id}/permissions/add/", json=data
+            app.url_path_for("user-add-permissions", pk=user.id), json=data
         )
         assert HTTPStatus.OK == response.status_code
 
@@ -149,7 +167,7 @@ class TestUserPermission(AsyncTestCase):
         expected_perms_response = [perm.model_dump(mode="json") for perm in perms]
         assert response.json() == expected_perms_response
 
-    async def test_remove_permissions_to_user_not_found(self):
+    async def test_remove_permissions_to_user_not_found(self, app):
         data = {
             "permissions": [
                 Permission.format_permission_name("create", User.table_name()),
@@ -159,12 +177,12 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(self.admin)
 
         response = await self.client.patch(
-            f"/users/{-1}/permissions/remove/", json=data
+            app.url_path_for("user-remove-permissions", pk=-1), json=data
         )
         assert HTTPStatus.NOT_FOUND == response.status_code
         assert response.json() == {"detail": "User not found."}
 
-    async def test_remove_permissions_to_user(self):
+    async def test_remove_permissions_to_user(self, app):
         data = {
             "permissions": [
                 Permission.format_permission_name("create", User.table_name()),
@@ -185,13 +203,13 @@ class TestUserPermission(AsyncTestCase):
         await self.client.user_login(user)
 
         response = await self.client.patch(
-            f"/users/{user.id}/permissions/remove/", json=data
+            app.url_path_for("user-remove-permissions", pk=user.id), json=data
         )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
-            f"/users/{user.id}/permissions/remove/", json=data
+            app.url_path_for("user-remove-permissions", pk=user.id), json=data
         )
         assert HTTPStatus.OK == response.status_code
 

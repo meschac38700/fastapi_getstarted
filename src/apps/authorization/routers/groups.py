@@ -13,7 +13,12 @@ routers = APIRouter()
 _NOT_FOUND_MSG = "Group not found."
 
 
-@routers.get("/", name="List all groups", dependencies=[Depends(AdminAccess())])
+@routers.get(
+    "/",
+    name="group-list",
+    description="Get all groups",
+    dependencies=[Depends(AdminAccess())],
+)
 async def get_groups(
     name: str | None = None,
     target_table: str | None = None,
@@ -34,7 +39,8 @@ async def get_groups(
 
 @routers.post(
     "/",
-    name="Create new Group",
+    name="group-create",
+    description="Create a new group",
     dependencies=[Depends(AdminAccess())],
     status_code=HTTPStatus.CREATED,
 )
@@ -44,7 +50,8 @@ async def create_group(group_data: GroupCreate):
 
 @routers.patch(
     "/{pk}/",
-    name="Patch a Group",
+    name="group-patch",
+    description="Patch a group",
     dependencies=[Depends(AdminAccess())],
 )
 async def patch_group(pk: int, group_data: GroupUpdate):
@@ -63,7 +70,8 @@ async def patch_group(pk: int, group_data: GroupUpdate):
 
 @routers.put(
     "/{pk}/",
-    name="Update a Group",
+    name="group-update",
+    description="Update a group",
     dependencies=[Depends(AdminAccess())],
 )
 async def put_group(pk: int, group_data: GroupCreate):
@@ -80,7 +88,8 @@ async def put_group(pk: int, group_data: GroupCreate):
 
 @routers.delete(
     "/{pk}/",
-    name="Delete a Group",
+    name="group-delete",
+    description="Delete a group",
     dependencies=[Depends(AdminAccess())],
     status_code=HTTPStatus.NO_CONTENT,
 )
@@ -94,7 +103,8 @@ async def delete_group(pk: int):
 
 @routers.patch(
     "/{pk}/users/add/",
-    name="Add some users to a certain group",
+    name="group-add-user",
+    description="Add some users to a certain group",
     dependencies=[Depends(AdminAccess())],
 )
 async def add_users_to_group(pk: int, users: UserList):
@@ -109,7 +119,8 @@ async def add_users_to_group(pk: int, users: UserList):
 
 @routers.patch(
     "/{pk}/users/remove/",
-    name="Remove some user to a certain group",
+    name="group-remove-user",
+    description="Remove some user to a certain group",
     dependencies=[Depends(AdminAccess())],
 )
 async def remove_users_to_group(pk: int, users: UserList):
@@ -124,7 +135,8 @@ async def remove_users_to_group(pk: int, users: UserList):
 
 @routers.patch(
     "/{pk}/permissions/add/",
-    name="Add some permissions to a certain group",
+    name="group-add-permissions",
+    description="Add some permissions to a certain group",
     dependencies=[Depends(AdminAccess())],
 )
 async def add_permissions_to_group(pk: int, permissions: PermissionList):
@@ -139,7 +151,8 @@ async def add_permissions_to_group(pk: int, permissions: PermissionList):
 
 @routers.patch(
     "/{pk}/permissions/remove/",
-    name="Remove some permissions to a certain group",
+    name="group-remove-permissions",
+    description="Remove some permissions to a certain group",
     dependencies=[Depends(AdminAccess())],
 )
 async def remove_permissions_to_group(pk: int, permissions: PermissionList):

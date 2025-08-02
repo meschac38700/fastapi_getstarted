@@ -15,7 +15,7 @@ class TestUserGroup(AsyncTestCase):
         self.staff = await User.get(role=UserRole.staff)
         self.active = await User.get(role=UserRole.active)
 
-    async def test_add_users_to_group(self):
+    async def test_add_users_to_group(self, app):
         group = await Group(
             name="active_users",
             target_table=User.table_name(),
@@ -28,13 +28,13 @@ class TestUserGroup(AsyncTestCase):
         }
         await self.client.user_login(self.staff)
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/users/add/", json=data
+            app.url_path_for("group-add-user", pk=group.id), json=data
         )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/users/add/", json=data
+            app.url_path_for("group-add-user", pk=group.id), json=data
         )
 
         assert HTTPStatus.OK == response.status_code
@@ -45,7 +45,7 @@ class TestUserGroup(AsyncTestCase):
         ]
         assert response.json() == expected_response
 
-    async def test_remove_users_to_group(self):
+    async def test_remove_users_to_group(self, app):
         group_admin = await Group(
             name="administrators",
             target_table="test",
@@ -63,13 +63,13 @@ class TestUserGroup(AsyncTestCase):
         }
         await self.client.user_login(self.staff)
         response = await self.client.patch(
-            f"/authorizations/groups/{group_admin.id}/users/remove/", json=data
+            app.url_path_for("group-remove-user", pk=group_admin.id), json=data
         )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
-            f"/authorizations/groups/{group_admin.id}/users/remove/", json=data
+            app.url_path_for("group-remove-user", pk=group_admin.id), json=data
         )
         assert HTTPStatus.OK == response.status_code
         expected_response = [

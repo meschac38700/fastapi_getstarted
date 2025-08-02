@@ -7,6 +7,8 @@ class SecretSettings(AppBaseSettings):
 
     sentry_dsn: str = ""
 
+    gravatar_api_key: str = ""
+
     # security
     _PASSWORD_HASHERS = [
         "core.auth.hashers.bcrypt.BCryptPasswordHasher",

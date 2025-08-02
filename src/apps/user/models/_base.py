@@ -1,3 +1,5 @@
+import hashlib
+
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field
@@ -33,6 +35,18 @@ class UserBaseModel(PermissionMixin, BaseTable, UserBase):
             index=True,
         ),
     )
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
+    @property
+    def email_hash(self):
+        return hashlib.sha256((self.email or self.username).encode("utf-8")).hexdigest()
+
+    @property
+    def avatar_url(self) -> str:
+        return f"https://0.gravatar.com/avatar/{self.email_hash}"
 
     @property
     def is_admin(self) -> bool:

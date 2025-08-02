@@ -21,12 +21,12 @@ perms = {
 _NOT_FOUND_MSG = "Hero not found."
 
 
-@routers.get("/{pk}/", name="Get hero by id.")
+@routers.get("/{pk}/", name="hero-get", description="Get hero by id.")
 async def get_hero(pk: int):
     return await Hero.get(id=pk)
 
 
-@routers.get("/", name="Get heroes")
+@routers.get("/", name="hero-list", description="Get all heroes")
 async def get_heroes(
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
@@ -36,7 +36,8 @@ async def get_heroes(
 
 @routers.post(
     "/",
-    name="Create hero",
+    name="hero-create",
+    description="Create a hero",
     response_model=Hero,
     status_code=HTTPStatus.CREATED,
     dependencies=[
@@ -51,7 +52,8 @@ async def create_hero(hero: HeroCreate):
 
 @routers.put(
     "/{pk}/",
-    name="Update hero",
+    name="hero-update",
+    description="Update a hero",
     response_model=Hero,
     status_code=HTTPStatus.OK,
     dependencies=[
@@ -75,7 +77,8 @@ async def update_hero(pk: int, hero: HeroCreate):
 
 @routers.patch(
     "/{pk}/",
-    name="Patch hero",
+    name="hero-patch",
+    description="Patch a hero",
     response_model=Hero,
     status_code=HTTPStatus.OK,
     dependencies=[
@@ -99,7 +102,8 @@ async def patch_hero(pk: int, hero: HeroPatch):
 
 @routers.delete(
     "/{pk}/",
-    name="Delete hero",
+    name="hero-delete",
+    description="Delete a hero",
     status_code=HTTPStatus.NO_CONTENT,
     dependencies=[
         Depends(
