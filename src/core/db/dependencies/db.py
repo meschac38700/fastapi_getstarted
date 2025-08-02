@@ -143,7 +143,8 @@ class DBService:
         limit: int = 100,
         **filters,
     ):
-        order_by = model.resolve_order_by(order_by)
+        _order_by = order_by or "id"
+        order_by = model.resolve_order_by(_order_by)
         filter_by = model.resolve_filters(**filters)
         data_list = await session.scalars(
             select(model)
