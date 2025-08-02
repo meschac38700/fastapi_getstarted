@@ -6,6 +6,12 @@ from ._base import AppBaseSettings
 
 class CSRFSettings(AppBaseSettings):
     cookie_key: Optional[str] = "fastapi-csrf-token"
+    session_cookie: Optional[str] = "session"
+    """
+    Redirect user after session authentication succeeded.
+    """
+    session_auth_redirect_success: Optional[str] = "/web/chat/"
+    session_user_key: Optional[str] = "user"
     cookie_path: Optional[str] = "/"
     cookie_domain: Optional[str] = None
     """
@@ -27,7 +33,7 @@ class CSRFSettings(AppBaseSettings):
     """
     cookie_samesite: Literal["strict", "lax", "none"] = "strict"
     cookie_secure: Optional[bool] = False
-    header_name: Optional[str] = "X-CSRF-Token"
+    header_name: Optional[str] = None
     header_type: Optional[str] = None
     httponly: Optional[bool] = True
     max_age: Optional[int] = 3600
@@ -35,8 +41,8 @@ class CSRFSettings(AppBaseSettings):
         Set[Literal["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]]
     ] = None
     secret_key: Optional[str] = None
-    token_location: Optional[str] = "header"
-    token_key: Optional[str] = None
+    token_location: Optional[str] = "body"
+    token_key: Optional[str] = "csrf_token"
 
 
 @lru_cache

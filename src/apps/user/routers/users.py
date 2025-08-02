@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from apps.authentication.dependencies import oauth2_scheme
 from apps.authentication.dependencies.oauth2 import current_user
 from apps.authorization.dependencies import permission_required
 from apps.authorization.models import Permission
@@ -19,28 +20,34 @@ perms = {
 _NOT_FOUND_MSG = "User not found."
 
 
-@routers.get("/", name="Get all users", status_code=HTTPStatus.OK)
+@routers.get(
+    "/", name="user-list", description="Get all users", status_code=HTTPStatus.OK
+)
 async def get_users(offset: int = 0, limit=100):
     return await User.all(offset=offset, limit=limit)
 
 
-@routers.get("/{pk}/", name="Get single user", status_code=HTTPStatus.OK)
+@routers.get(
+    "/{pk}/", name="user-get", description="Get single user", status_code=HTTPStatus.OK
+)
 async def get_user(pk: int):
     return await User.get(id=pk)
 
 
 @routers.put(
     "/{pk}/",
-    name="Update user",
+    name="user-update",
+    description="Update a user",
     status_code=HTTPStatus.OK,
     dependencies=[
         Depends(
             permission_required(permissions=[perms["update"]], groups=[perms["update"]])
-        )
+        ),
+        Depends(oauth2_scheme()),
     ],
 )
 async def update_user(
-    pk: int, user: UserCreate, auth_user: User = Depends(current_user())
+    pk: int, user: UserCreate, auth_user: User = Depends(current_user)
 ):
     stored_user = await User.get(id=pk)
     if stored_user is None:
@@ -63,16 +70,16 @@ async def update_user(
 @routers.patch(
     "/{pk}/",
     status_code=HTTPStatus.OK,
-    name="Patch user",
+    name="user-patch",
+    description="Patch user",
     dependencies=[
         Depends(
             permission_required(permissions=[perms["update"]], groups=[perms["update"]])
-        )
+        ),
+        Depends(oauth2_scheme()),
     ],
 )
-async def patch_user(
-    pk: int, user: UserPatch, auth_user: User = Depends(current_user())
-):
+async def patch_user(pk: int, user: UserPatch, auth_user: User = Depends(current_user)):
     stored_user = await User.get(id=pk)
     if stored_user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=_NOT_FOUND_MSG)
@@ -95,6 +102,8 @@ async def patch_user(
 
 @routers.post(
     "/",
+    name="user-create",
+    description="Create a new user",
     status_code=HTTPStatus.CREATED,
 )
 async def post_user(user: UserCreate):
@@ -104,15 +113,18 @@ async def post_user(user: UserCreate):
 @routers.delete(
     "/{pk}/",
     status_code=HTTPStatus.NO_CONTENT,
+    name="user-delete",
+    description="Delete a user",
     dependencies=[
         Depends(
             permission_required(
                 permissions=[perms["delete"]], groups=[perms["delete"]]
             ),
-        )
+        ),
+        Depends(oauth2_scheme()),
     ],
 )
-async def delete_user(pk: int, user: User = Depends(current_user())):
+async def delete_user(pk: int, user: User = Depends(current_user)):
     stored_user = await User.get(id=pk)
 
     if stored_user is None:

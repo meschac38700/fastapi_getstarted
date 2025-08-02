@@ -19,10 +19,10 @@ from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 from core.db.dependencies import SessionDep
 
-routers = APIRouter()
+routers = APIRouter(prefix="/rooms", tags=["chat", "rooms"])
 
 
-@routers.get("/", name="room-all", dependencies=[Depends(AdminAccess())])
+@routers.get("/", name="room-list", dependencies=[Depends(AdminAccess())])
 async def get_rooms(db: SessionDep) -> Page[ChatRoom]:
     """Get all rooms.
 
@@ -43,7 +43,10 @@ async def get_rooms(db: SessionDep) -> Page[ChatRoom]:
     return await apaginate(db, query)
 
 
-@routers.get("/{room_id}/", name="room-get")
+@routers.get(
+    "/{room_id}/",
+    name="room-get",
+)
 def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
     return room
 
@@ -54,7 +57,7 @@ def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
 )
 async def room_subscription(
     room: Annotated[ChatRoom, Depends(RoomDepends())],
-    auth_user: User = Depends(current_user()),
+    auth_user: User = Depends(current_user),
 ):
     if auth_user not in room.members:
         room.members.append(auth_user)
@@ -69,7 +72,7 @@ async def room_subscription(
 )
 async def room_unsubscription(
     room: Annotated[ChatRoom, Depends(RoomDepends())],
-    auth_user: User = Depends(current_user()),
+    auth_user: User = Depends(current_user),
 ):
     if auth_user in room.members:
         room.members.remove(auth_user)
@@ -84,7 +87,7 @@ async def room_unsubscription(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_room(
-    room_data: ChatRoomCreate, auth_user: User = Depends(current_user())
+    room_data: ChatRoomCreate, auth_user: User = Depends(current_user)
 ):
     try:
         room = await ChatRoom(**room_data.model_dump(), owner_id=auth_user.id).save()

@@ -44,12 +44,17 @@ def app():
 
 
 @pytest.fixture
-async def client(app):
+def base_url(settings):
+    return settings.TEST_BASE_URL
+
+
+@pytest.fixture
+async def client(app, base_url):
     from httpx import ASGITransport
 
     from core.unittest.client import AsyncClientTest
 
-    client = AsyncClientTest(transport=ASGITransport(app=app), base_url="https://test")
+    client = AsyncClientTest(transport=ASGITransport(app=app), base_url=base_url)
     yield client
     await client.aclose()
 
@@ -107,11 +112,21 @@ async def user(db):  # pylint: disable=unused-argument
     ).save()
 
 
+@pytest.fixture
+def url_for(app, base_url):
+    def _url_for(endpoint, **kwargs):
+        return base_url + app.url_path_for(endpoint, **kwargs)
+
+    return _url_for
+
+
 @pytest.fixture(scope="function")
-def http_request():
+def http_request(url_for):
     from fastapi import Request
 
-    return Request(scope={"type": "http"})
+    request = Request(scope={"type": "http"})
+    request.url_for = url_for
+    return request
 
 
 @pytest.fixture(scope="function")
@@ -167,7 +182,7 @@ def serializer(settings):
 
 
 @pytest.fixture()
-def setup_test_routes(app):
+def setup_test_routes(app, request):
     """
     Sets up some FastAPI endpoints for test purposes.
     """
@@ -177,12 +192,12 @@ def setup_test_routes(app):
     from core.security.csrf import csrf_required
     from core.templating.utils import render
 
-    endpoint = "/test/"
+    endpoint = "/test/" + request.node.name + "/"
 
     @app.get(endpoint, response_class=HTMLResponse)
-    async def read(request: Request) -> HTMLResponse:
+    async def read(req: Request) -> HTMLResponse:
         # generate token
-        return render(request, "index.html")
+        return render(req, "index.html")
 
     # use csrf_required Depends to validate csrf token
     @app.post(endpoint, response_class=JSONResponse)
@@ -190,3 +205,27 @@ def setup_test_routes(app):
         return JSONResponse(status_code=200, content={"detail": "OK"})
 
     return endpoint
+
+
+@pytest.fixture
+async def csrf_token(serializer, client, app):
+    """Mock csrf token for testing purposes."""
+    from fastapi import status
+    from fastapi_csrf_protect import CsrfProtect
+
+    token = "unsigned_token"
+
+    class CSRFProtect(CsrfProtect):
+        def generate_csrf_tokens(self, _: str | None = None):
+            signed_token = serializer.dumps(token)
+            return (token, signed_token)
+
+    with patch(
+        "core.templating.utils.get_csrf_protect", side_effect=CSRFProtect
+    ) as mock_csrf_protect:
+        # First get request to generate the csrf token which is mocked to a constant value
+        response = await client.get(app.url_path_for("session-login"))
+        assert response.status_code == status.HTTP_200_OK
+
+        yield token
+        mock_csrf_protect.assert_called()

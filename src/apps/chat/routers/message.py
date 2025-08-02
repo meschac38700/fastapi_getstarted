@@ -18,7 +18,10 @@ from core.db.dependencies import SessionDep
 routers = APIRouter()
 
 
-@routers.get("/", name="room-messages")
+@routers.get(
+    "/",
+    name="room-messages",
+)
 async def get_room_messages(
     db: SessionDep, room: Annotated[ChatRoom, Depends(ChatRoomAccess())]
 ) -> Page[ChatMessage]:
@@ -30,11 +33,14 @@ async def get_room_messages(
     return await apaginate(db, query)
 
 
-@routers.post("/", name="room-message-add")
+@routers.post(
+    "/",
+    name="room-message-add",
+)
 async def add_room_message(
     message: ChatMessageCreate,
     room: Annotated[ChatRoom, Depends(ChatRoomAccess())],
-    auth_user: User = Depends(current_user()),
+    auth_user: User = Depends(current_user),
 ):
     return await ChatMessage(
         **message.model_dump(), author_id=auth_user.id, room_id=room.id

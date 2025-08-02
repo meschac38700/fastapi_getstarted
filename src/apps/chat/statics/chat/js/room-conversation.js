@@ -22,10 +22,10 @@
     })
 
     async function fetchRoomMessages(url){
-        const response = await fetch(url)
-        const roomMessages = await response.json()
+        const response = await fetch(url, {method: 'GET', credentials: "same-origin"})
         debugger
-        return roomMessages.items
+        const roomMessages = await response.json()
+        return roomMessages?.items
     }
 
     /**

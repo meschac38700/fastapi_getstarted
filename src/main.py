@@ -4,11 +4,17 @@ from fastapi import FastAPI
 from fastapi_pagination import add_pagination
 from starlette.staticfiles import StaticFiles
 
+from apps.user.dependencies.exceptions import access_denied_exception_handler
 from core.db.dependencies.session import get_engine
 from core.db.signals.main import setup_signals
 from core.lifespan import setup, teardown
-from core.middlewares import cors_middleware
+from core.middlewares import (
+    cors_middleware,
+    session_login_required,
+    session_middleware,
+)
 from core.monitoring.sentry import sentry_init
+from core.openapi.custom import custom_openapi
 from core.routers import register_default_endpoints
 from core.routers.register import AppRouter
 from core.security.csrf import csrf_exception_handler
@@ -40,8 +46,13 @@ app.mount(
     name="static",
 )
 
+custom_openapi(app)
 csrf_exception_handler(app)
+access_denied_exception_handler(app)
+# TODO(Eliam): improve that, implement an auto recovery of middlewares.
 cors_middleware(app)
+session_login_required(app)
+session_middleware(app)
 register_default_endpoints(app)
 # register routers from apps directory
 AppRouter().register_all(app)
