@@ -118,13 +118,17 @@ class DBService:
         model: SQLModel,
         *,
         session: AsyncSession = None,
+        order_by: str | None = "id",
         offset: int = 0,
         limit: int = 100,
     ):
         """Get all items of the given model."""
-
+        _order_by = order_by or "id"
+        order_by = model.resolve_order_by(_order_by)
         # based on https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#dynamic-asyncio
-        data = await session.scalars(select(model).offset(offset).limit(limit))
+        data = await session.scalars(
+            select(model).order_by(order_by).offset(offset).limit(limit)
+        )
 
         return data.unique().all()
 
@@ -134,13 +138,19 @@ class DBService:
         model: SQLModel,
         *,
         session: AsyncSession = None,
+        order_by: str = "id",
         offset: int = 0,
         limit: int = 100,
         **filters,
     ):
+        order_by = model.resolve_order_by(order_by)
         filter_by = model.resolve_filters(**filters)
         data_list = await session.scalars(
-            select(model).where(*filter_by).offset(offset).limit(limit)
+            select(model)
+            .where(*filter_by)
+            .order_by(order_by)
+            .offset(offset)
+            .limit(limit)
         )
         return data_list.unique().all()
 

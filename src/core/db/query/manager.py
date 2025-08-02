@@ -67,22 +67,26 @@ class ModelManager:
     async def all(
         self,
         *,
+        order_by: str | None = None,
         offset: int = 0,
         limit: int = 100,
     ):
         """Get all items of the given model."""
-        return await self.db_service.all(self.model_class, offset=offset, limit=limit)
+        return await self.db_service.all(
+            self.model_class, offset=offset, limit=limit, order_by=order_by
+        )
 
     @connection_manager
     async def filter(
         self,
         *,
+        order_by: str | None = None,
         offset: int = 0,
         limit: int = 100,
         **filters,
     ):
         return await self.db_service.filter(
-            self.model_class, **filters, offset=offset, limit=limit
+            self.model_class, **filters, offset=offset, limit=limit, order_by=order_by
         )
 
     @connection_manager

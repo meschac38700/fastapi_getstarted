@@ -39,17 +39,26 @@ class ModelQuery(QueryExpressionManager):
 
     @classmethod
     async def filter(
-        cls, *, offset: int = 0, limit: int = 100, **filters
+        cls,
+        *,
+        order_by: str | None = None,
+        offset: int = 0,
+        limit: int = 100,
+        **filters,
     ) -> list[Self]:
-        return await cls.objects().filter(**filters, offset=offset, limit=limit)
+        return await cls.objects().filter(
+            **filters, offset=offset, limit=limit, order_by=order_by
+        )
 
     @classmethod
     async def count(cls, **filters) -> int:
         return await cls.objects().count(**filters)
 
     @classmethod
-    async def all(cls, *, offset: int = 0, limit: int = 100) -> list[Self]:
-        return await cls.objects().all(offset=offset, limit=limit)
+    async def all(
+        cls, *, order_by: str | None = None, offset: int = 0, limit: int = 100
+    ) -> list[Self]:
+        return await cls.objects().all(offset=offset, limit=limit, order_by=order_by)
 
     async def save(self) -> Self:
         return await self.objects().insert(self)
