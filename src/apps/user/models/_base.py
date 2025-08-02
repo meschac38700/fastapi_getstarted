@@ -8,6 +8,7 @@ from apps.authorization.models.mixins import PermissionMixin
 from apps.user.utils.types import UserRole, UserStatus
 from core.db import SQLTable
 from core.db.mixins import BaseTable
+from core.db.models import AuthUser
 
 
 class UserBase(SQLTable):
@@ -20,7 +21,7 @@ class UserBase(SQLTable):
     age: int | None = None
 
 
-class UserBaseModel(PermissionMixin, BaseTable, UserBase):
+class UserBaseModel(PermissionMixin, BaseTable, UserBase, AuthUser):
     role: UserRole = Field(
         default=UserRole.active,
         sa_column=sa.Column(
