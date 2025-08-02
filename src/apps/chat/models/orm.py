@@ -1,5 +1,7 @@
-from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship
+from sqlalchemy import UniqueConstraint, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from sqlmodel import Field, Relationship, col
 
 from apps.chat.models.base import ChatMessageBaseModel, ChatRoomBaseModel
 from apps.chat.models.relation_links import ChatRoomUserLink
@@ -32,6 +34,24 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
     async def unsubscribe(self, member: User):
         self.members.remove(member)
         return await self.save()
+
+    @classmethod
+    async def get_member_rooms(cls, session: AsyncSession, user_id: int):
+        """Retrieve all rooms where the current user is a member of or owner of."""
+        statement = (
+            select(cls)
+            .join(ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id)
+            .where(
+                or_(
+                    col(cls.owner_id) == user_id,
+                    col(ChatRoomUserLink.user_id) == user_id,
+                )
+            )
+            .options(selectinload(col(cls.members)))
+            .distinct()
+        )
+        res = await session.execute(statement)
+        return res.all()
 
 
 class ChatMessage(ChatMessageBaseModel, BaseTable, table=True):

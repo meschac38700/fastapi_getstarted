@@ -1,12 +1,14 @@
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, Request
 from starlette.websockets import WebSocket
 
-from apps.authentication.dependencies.oauth2 import current_user
+from apps.authentication.dependencies.oauth2 import (
+    current_session_user,
+    current_user,
+)
 from apps.chat.models.orm import ChatRoom
 from apps.chat.services.manager import ChatWebSocketManager
 from apps.user.models.user import User
+from core.db.dependencies import SessionDep
 from core.templating.utils import render
 
 routers = APIRouter(tags=["chat"], prefix="/chat")
@@ -18,9 +20,11 @@ websocket_manager = ChatWebSocketManager()
     "/",
     name="chat-template",
 )
-async def chat(request: Request):
-    query = await ChatRoom.all()
-    return render(request, "chat/index.html", {"rooms": query})
+async def chat(
+    request: Request, db: SessionDep, auth_user: User = Depends(current_user)
+):
+    rooms = await ChatRoom.get_member_rooms(db, auth_user.id)
+    return render(request, "chat/index.html", {"rooms": rooms})
 
 
 @routers.websocket(
@@ -30,7 +34,7 @@ async def chat(request: Request):
 async def chat_room(
     websocket: WebSocket,
     room_id: int,
-    auth_user: Annotated[User, Depends(current_user)],
 ):
+    author = await current_session_user(websocket)
     room = await ChatRoom.get_or_404(id=room_id)
-    await websocket_manager.init_connection(websocket, room, auth_user)
+    await websocket_manager.init_connection(websocket, room, author)
