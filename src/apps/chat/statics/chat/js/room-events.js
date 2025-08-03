@@ -1,5 +1,6 @@
 (function (){
     const roomConversationBaseURL = document.currentScript.dataset.roomConversation;
+    const roomConversationContainer = document.getElementById("room-conversation")
 
     const roomElements = document.querySelectorAll(".rooms .room");
     roomElements.forEach(roomElement => {
@@ -18,7 +19,6 @@
     * @returns undefined
     **/
     function renderRoomConversationHTML(roomMessages){
-        const roomConversationContainer = document.getElementById("room-conversation")
         roomConversationContainer.innerHTML = roomMessages.map(
             roomMessage => window.createMessage(roomMessage)
         ).join("")
@@ -46,7 +46,7 @@
 
             renderRoomConversationHTML(rooms)
             window.initWSConnection(roomID)
-
+            window.scrollToBottom(roomConversationContainer)
         }
         toggleHTMLClass(roomElements, this)
     }

@@ -61,6 +61,7 @@
 
         </div>
     </div>
+    <script src="{{ url_for('static', path='/chat/js/utils.js' )}}" data-api-url="{{ request.url_for('room-create') }}"></script>
     <script src="{{ url_for('static', path='/chat/js/new-rooms.js' )}}" data-api-url="{{ request.url_for('room-create') }}"></script>
     <script src="{{ url_for('static', path='/chat/js/new-messages.js') }}" data-current-user-id="{{request.user.id}}" data-ws-url="{{request.url_for('room-websocket', room_id=-1)}}"></script>
     <script src="{{ url_for('static', path='/chat/js/room-events.js') }}" data-room-conversation="{{request.url_for('room-messages', room_id=-1)}}"></script>
