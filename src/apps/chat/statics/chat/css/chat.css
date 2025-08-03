@@ -155,6 +155,26 @@ body {
   color:#515151;
 }
 
+.side-section .new-room{
+    --size: 3rem;
+    position: absolute;
+    bottom: 2rem;
+    right: 1rem;
+    border-radius: 50%;
+    width: var(--size);
+    height: var(--size);
+    font-size: var(--size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.side-section .new-room i {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .timer {
   font-family:'Open Sans', sans-serif;
   font-size: 11px;
