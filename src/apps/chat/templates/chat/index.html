@@ -17,6 +17,7 @@
         <div class="row chat-container">
 
             <section class="side-section">
+                {% include 'chat/includes/new_room_form.html' %}
                 {{ search_input() }}
                 <div class="rooms">
                     {% for room in rooms %}
@@ -32,7 +33,7 @@
                         </div>
                     {% endfor %}
                 </div>
-                <button type="button" class="btn btn-primary new-room"><i class="bi bi-plus-circle-fill"></i></button>
+                <button type="button" class="btn btn-primary new-room" id="new-room"><i class="bi bi-plus-circle-fill"></i></button>
             </section>
             <section class="chat">
                 <!-- Chat header -->
@@ -60,8 +61,9 @@
 
         </div>
     </div>
+    <script src="{{ url_for('static', path='/chat/js/new-rooms.js' )}}" data-api-url="{{ request.url_for('room-create') }}"></script>
     <script src="{{ url_for('static', path='/chat/js/new-messages.js') }}" data-ws-url="{{request.url_for('room-websocket', room_id=-1)}}"></script>
-    <script src="{{ url_for('static', path='/chat/js/room-conversation.js') }}" data-room-conversation="{{request.url_for('room-messages', room_id=-1)}}"></script>
+    <script src="{{ url_for('static', path='/chat/js/room-events.js') }}" data-room-conversation="{{request.url_for('room-messages', room_id=-1)}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>

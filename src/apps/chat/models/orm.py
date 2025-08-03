@@ -1,7 +1,7 @@
-from sqlalchemy import UniqueConstraint, or_, select
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlmodel import Field, Relationship, col
+from sqlmodel import Field, Relationship, col, or_, select
 
 from apps.chat.models.base import ChatMessageBaseModel, ChatRoomBaseModel
 from apps.chat.models.relation_links import ChatRoomUserLink
@@ -40,7 +40,7 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
         """Retrieve all rooms where the current user is a member of or owner of."""
         statement = (
             select(cls)
-            .join(ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id)
+            .outerjoin(ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id)
             .where(
                 or_(
                     col(cls.owner_id) == user_id,
@@ -52,7 +52,8 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
             .order_by(col(cls.updated_at).desc())
         )
         res = await session.execute(statement)
-        return res.all()
+        results = res.scalars().unique().all()
+        return results
 
 
 class ChatMessage(ChatMessageBaseModel, BaseTable, table=True):

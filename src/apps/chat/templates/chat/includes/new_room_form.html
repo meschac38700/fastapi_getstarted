@@ -1,0 +1,9 @@
+<form class="new-room-form d-flex flex-column" id="new-room-form">
+    {% csrf_token %}
+    <h1 class="title mb-4">Create a new room</h1>
+    <div class="form-group mb-4">
+        <label for="room-name" class="form-label">Room name</label>
+        <input type="text" class="form-control room-name" name="name" id="room-name" placeholder="Type the room name here"></input>
+    </div>
+    <button class="submit-room btn btn-primary d-block mr-auto" type="submit">Create</button>
+</form>
