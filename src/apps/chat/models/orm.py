@@ -49,6 +49,7 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
             )
             .options(selectinload(col(cls.members)))
             .distinct()
+            .order_by(col(cls.updated_at).desc())
         )
         res = await session.execute(statement)
         return res.all()
