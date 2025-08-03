@@ -1,11 +1,16 @@
 (() => {
     const wsURL = document.currentScript.dataset.wsUrl
+    const currentUserId = +document.currentScript.dataset.currentUserId
 
     function createMessage(message){
         let msg = ""
+        let msgClass = ""
+        if (message.author_id === currentUserId)
+            msgClass = "own"
+
         if (message.author_id !== window.lastMessageAuthor)
             msg = `
-                <div class="message">
+                <div class="message ${msgClass}">
                     <div class="photo" style="background-image: url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80);">
                         <div class="online"></div>
                     </div>
@@ -14,7 +19,7 @@
             `
         else
             msg = `
-                <div class="message text-only">
+                <div class="message text-only ${msgClass}">
                     <p class="text">${ message.content }</p>
                 </div>
             `

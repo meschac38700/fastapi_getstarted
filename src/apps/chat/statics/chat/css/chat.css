@@ -241,7 +241,7 @@ body {
 }
 
 .chat .messages-chat {
-  padding: 25px 35px;
+  padding: 10px 20px;
   flex-grow: 1;
   height: calc(100% - (160px + 2rem));
   max-height: 508px;
@@ -278,14 +278,34 @@ body {
 
 
 .chat .messages-chat .text {
-  margin: 0 35px;
+  margin: 0;
+  margin-left: 10px;
   background-color: #f6f6f6;
   padding: 15px;
   border-radius: 12px;
 }
 
+.chat .messages-chat .own .text{
+    margin-right: 10px;
+}
+
+.chat .messages-chat .message.own{
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row-reverse;
+}
+.chat .messages-chat .message.own .text{
+    background: linear-gradient(#b1c6f9, #6c81d0) !important;
+    color: #000f46;
+}
+
 .text-only {
   margin-left: 45px;
+  margin-right: 0;
+}
+.text-only.own {
+    margin-right: 45px;
+    margin-left: 0;
 }
 
 .time {
