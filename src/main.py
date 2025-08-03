@@ -8,11 +8,7 @@ from apps.user.dependencies.exceptions import access_denied_exception_handler
 from core.db.dependencies.session import get_engine
 from core.db.signals.main import setup_signals
 from core.lifespan import setup, teardown
-from core.middlewares import (
-    cors_middleware,
-    session_login_required,
-    session_middleware,
-)
+from core.middlewares import register_middlewares
 from core.monitoring.sentry import sentry_init
 from core.openapi.custom import custom_openapi
 from core.routers import register_default_endpoints
@@ -50,9 +46,9 @@ custom_openapi(app)
 csrf_exception_handler(app)
 access_denied_exception_handler(app)
 # TODO(Eliam): improve that, implement an auto recovery of middlewares.
-cors_middleware(app)
-session_login_required(app)
-session_middleware(app)
+register_middlewares(app)
+
+# Routers registration.
 register_default_endpoints(app)
 # register routers from apps directory
 AppRouter().register_all(app)

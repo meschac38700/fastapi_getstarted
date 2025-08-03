@@ -2,9 +2,11 @@ import re
 from typing import Any, Callable, ParamSpec
 
 from fastapi import FastAPI, Request, Response
+from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import RedirectResponse
 
+from core.auth.backend import AuthBackend
 from settings import settings
 
 P = ParamSpec("P")
@@ -42,5 +44,6 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-def session_login_required(app: FastAPI):
+def auth_related_middlewares(app: FastAPI):
     app.add_middleware(SessionAuthRequiredMiddleware)
+    app.add_middleware(AuthenticationMiddleware, backend=AuthBackend())
