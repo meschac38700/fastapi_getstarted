@@ -67,6 +67,6 @@ class ChatWebSocketManager(metaclass=Singleton):
     async def _save_message(self, message: str, room_id: int, user_id: int):
         """Persist the given message in the database."""
         _msg_obj = await ChatMessage(
-            content=message, room_id=room_id, user_id=user_id
+            content=message, room_id=room_id, author_id=user_id
         ).save()
         return _msg_obj.model_dump(mode="json")
