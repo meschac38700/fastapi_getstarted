@@ -41,6 +41,9 @@
             document.querySelector(".chat").classList.add("active");
 
         if(!this.classList.contains("active")){
+            // update room name
+            document.querySelector(".header-chat .name").innerText = this.dataset.name
+
             const roomID = this.dataset.id;
             const rooms = await fetchRoomMessages(roomID)
 
