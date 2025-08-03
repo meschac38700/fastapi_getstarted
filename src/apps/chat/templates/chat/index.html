@@ -16,20 +16,22 @@
     <div class="container">
         <div class="row chat-container">
 
-            <section class="rooms">
+            <section class="side-section">
                 {{ search_input() }}
-                {% for room in rooms %}
-                    <div class="room" data-name="{{ room.name }}" data-id="{{ room.id }}">
-                        <div class="photo room-icon">
-                            <i class="fa-solid fa-users-viewfinder"></i>
+                <div class="rooms">
+                    {% for room in rooms %}
+                        <div class="room" data-name="{{ room.name }}" data-id="{{ room.id }}">
+                            <div class="photo room-icon">
+                                <i class="fa-solid fa-users-viewfinder"></i>
+                            </div>
+                            <div class="desc-contact">
+                                <p class="name">{{ room.name }}</p>
+                                <p class="message"></p>
+                            </div>
+                            <div class="timer">{{ room.created_at.strftime("%Y-%m-%d %H:%m:%S")}}</div>
                         </div>
-                        <div class="desc-contact">
-                            <p class="name">{{ room.name }}</p>
-                            <p class="message"></p>
-                        </div>
-                        <div class="timer">{{ room.created_at.strftime("%Y-%m-%d %H:%m:%S")}}</div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </section>
             <section class="chat">
                 <!-- Chat header -->
@@ -40,7 +42,6 @@
                 </div>
                 <!-- Chat body -->
                 <div class="messages-chat" id="room-conversation">
-
                 </div>
                 <!-- Chat footer -->
                 <div class="footer-chat">

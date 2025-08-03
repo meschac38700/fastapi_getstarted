@@ -18,7 +18,7 @@ body {
 
 /* === CONVERSATIONS === */
 
-.rooms {
+.side-section {
   position: relative;
   width: 470px;
   height: 700px;
@@ -31,6 +31,11 @@ body {
   background: linear-gradient(#4768b5, #35488e);
   display: inline-block;
   padding-top: calc(90px + .8rem);
+}
+
+.side-section .rooms{
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 .rooms .room {
@@ -47,7 +52,7 @@ body {
   padding: .4rem 1rem;
 }
 
-.rooms .search {
+.side-section .search {
   display:flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +67,7 @@ body {
   border-bottom-right-radius: 2rem;
 }
 
-.rooms .search .searchbar {
+.side-section .search .searchbar {
   height: 40px;
   background-color: #FFF;
   width: 70%;
@@ -74,7 +79,7 @@ body {
   cursor: pointer;
 }
 
-.rooms .search .searchbar input {
+.side-section .search .searchbar input {
   margin-left: 15px;
   height:38px;
   width:100%;
@@ -83,16 +88,16 @@ body {
   outline: none;
 }
 
-.rooms .search .searchbar *::-webkit-input-placeholder {
+.side-section .search .searchbar *::-webkit-input-placeholder {
     color: #E0E0E0;
 }
-.rooms .search .searchbar input *:-moz-placeholder {
+.side-section .search .searchbar input *:-moz-placeholder {
     color: #E0E0E0;
 }
-.rooms .search .searchbar input *::-moz-placeholder {
+.side-section .search .searchbar input *::-moz-placeholder {
     color: #E0E0E0;
 }
-.rooms .search .searchbar input *:-ms-input-placeholder {
+.side-section .search .searchbar input *:-ms-input-placeholder {
     color: #E0E0E0;
 }
 
