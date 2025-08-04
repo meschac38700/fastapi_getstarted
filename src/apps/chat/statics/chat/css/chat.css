@@ -39,6 +39,11 @@ body {
 .side-section .rooms{
     overflow-y: auto;
     max-height: 100%;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+.side-section .rooms::-webkit-scrollbar {
+    display: none;
 }
 
 .rooms .room {
@@ -249,6 +254,11 @@ body {
   height: calc(100% - (160px + 2rem));
   max-height: 508px;
   overflow-y: auto;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+.chat .messages-chat::-webkit-scrollbar {
+    display: none;
 }
 
 .chat .messages-chat .message {
