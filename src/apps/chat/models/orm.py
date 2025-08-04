@@ -1,12 +1,15 @@
 from typing import Any
 
+import sqlalchemy as sa
 from sqlalchemy import UniqueConstraint
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import Field, Relationship, col, or_, select
 
 from apps.chat.models.base import ChatMessageBaseModel, ChatRoomBaseModel
 from apps.chat.models.relation_links import ChatRoomUserLink
+from apps.chat.models.utils import ChatVisibility
 from apps.user.models import User
 from core.db.mixins import BaseTable
 
@@ -27,6 +30,14 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
     )
     members: list[User] = Relationship(
         sa_relationship_kwargs={"lazy": "joined"}, link_model=ChatRoomUserLink
+    )
+    visibility: ChatVisibility = Field(
+        default=ChatVisibility.private,
+        sa_column=sa.Column(
+            postgresql.ENUM(ChatVisibility, name="visibility"),
+            default=ChatVisibility.private,
+            index=True,
+        ),
     )
 
     async def subscribe(self, member: User):
