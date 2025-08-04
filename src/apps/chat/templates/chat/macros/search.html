@@ -1,12 +1,9 @@
-{% macro search_input(type="room") %}
+{% macro search_input() %}
   <div class="discussion search">
     <div class="searchbar">
       <i class="fa fa-search" aria-hidden="true"></i>
-      <input type="text" id="search" data-type="{{type}}" placeholder="Search..."></input>
+      <input type="text" id="room-search" placeholder="Search..."></input>
     </div>
+    <a href="" id="reset-filter"></a>
   </div>
-  <script type="text/javascript">
-    const input = document.querySelector("#search");
-    const apiUrl = input.dataset.type === "room" ? "Nok" : "ok"
-  </script>
 {% endmacro %}

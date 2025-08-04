@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -36,8 +38,11 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
         return await self.save()
 
     @classmethod
-    async def get_member_rooms(cls, session: AsyncSession, user_id: int):
+    async def get_member_rooms(
+        cls, session: AsyncSession, user_id: int, *, filters: dict["str", Any] = None
+    ):
         """Retrieve all rooms where the current user is a member of or owner of."""
+        _additional_filters = cls.resolve_filters(**(filters or {}))
         statement = (
             select(cls)
             .outerjoin(ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id)
@@ -45,6 +50,7 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
                 or_(
                     col(cls.owner_id) == user_id,
                     col(ChatRoomUserLink.user_id) == user_id,
+                    *_additional_filters,
                 )
             )
             .options(selectinload(col(cls.members)))

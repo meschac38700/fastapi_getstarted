@@ -41,7 +41,7 @@
         })
         const room = await response.json()
         // create new room HTML
-        createRoomHTML(room)
+        document.querySelector(".rooms").appendChild(createRoomHTML(room))
         // reset form and hide it
         this.reset()
         this.classList.remove("active")
@@ -59,7 +59,6 @@
     }
 
     function createRoomHTML(room){
-        const roomsContainer = document.querySelector(".rooms")
         const roomHTML = document.createElement("DIV")
         roomHTML.setAttribute("class", "room")
         roomHTML.dataset.name = room.name
@@ -75,6 +74,7 @@
             <div class="timer">${ formatDatetime(room.created_at) }</div>
         `
         window.initEvents(roomHTML)
-        roomsContainer.appendChild(roomHTML)
+        return roomHTML
     }
+    window.createRoomHTML = createRoomHTML
 })()

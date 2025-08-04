@@ -38,3 +38,25 @@ async def chat_room(
     author = await current_session_user(websocket)
     room = await ChatRoom.get_or_404(id=room_id)
     await websocket_manager.init_connection(websocket, room, author)
+
+
+@routers.get(
+    "/filter/rooms/",
+    name="room-filter",
+    description="Filter rooms by name",
+)
+async def filter_rooms(
+    db: SessionDep,
+    room_name: str | None = None,
+    auth_user: User = Depends(current_user),
+):
+    """Filter rooms by name."""
+    if room_name is None:
+        return await ChatRoom.get_member_rooms(db, auth_user.id)
+
+    if auth_user.is_admin:
+        return await ChatRoom.filter(name__istartswith=room_name)
+
+    return await ChatRoom.get_member_rooms(
+        db, auth_user.id, filters={"name__istartswith": room_name}
+    )
