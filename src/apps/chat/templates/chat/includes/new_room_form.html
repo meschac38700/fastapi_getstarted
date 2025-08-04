@@ -5,5 +5,8 @@
         <label for="room-name" class="form-label">Room name</label>
         <input type="text" class="form-control room-name" name="name" id="room-name" placeholder="Type the room name here"></input>
     </div>
-    <button class="submit-room btn btn-primary d-block mr-auto" type="submit">Create</button>
+    <div class="d-flex justify-content-between align-items-center room-create-actions">
+        <button type="reset" class="btn btn-light cancel-room-creation" id="cancel-room-creation">cancel</button>
+        <button class="submit-room btn btn-primary d-block mr-auto" type="submit">Create</button>
+    </div>
 </form>

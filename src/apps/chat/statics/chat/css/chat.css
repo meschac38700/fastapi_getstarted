@@ -1,3 +1,6 @@
+*, *::before, *::after{
+    box-sizing: border-box;
+}
 body {
   padding: 5%;
   background-color: #F5F5F5;
@@ -411,4 +414,12 @@ body {
 .clickable {
   cursor: pointer;
 
+}
+
+.room-create-actions > *{
+    width: 8rem;
+    text-transform: capitalize;
+}
+.room-create-actions .cancel-room-creation{
+    border: 1px solid #cecece;
 }

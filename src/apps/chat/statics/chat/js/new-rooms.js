@@ -9,13 +9,12 @@
     newRoomButton.addEventListener("click", function(e){
         e.preventDefault();
         e.stopPropagation();
-
         // show form
         roomForm.classList.add("active")
-        // listen for form submission
+    })
 
-        // create room
-
+    roomForm.addEventListener("reset", async function(e){
+        this.classList.remove("active")
     })
 
     roomForm.addEventListener("submit", async function(e){
