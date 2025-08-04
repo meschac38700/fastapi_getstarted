@@ -29,6 +29,11 @@
                                 <p class="message"></p>
                             </div>
                             <div class="timer">{{ room.created_at.strftime("%Y-%m-%d %H:%m:%S")}}</div>
+                            {%  if room.visibility.value == "public" %}
+                                <i class="bi bi-unlock-fill visibility" title="This room is public"></i>
+                            {% else %}
+                                <i class="bi bi-lock-fill visibility" title="This room is private"></i>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>

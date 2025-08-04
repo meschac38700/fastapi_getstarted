@@ -28,8 +28,12 @@
 
         const submitter = this.querySelector("[type=submit]")
         const formData = new FormData(this, submitter)
-        const body = JSON.stringify(Object.fromEntries(formData.entries()))
 
+        // normalize visibility value
+        const visibilityValue = formData.get("visibility")?.toLowerCase() === "on"? "public": "private"
+        formData.set("visibility", visibilityValue)
+
+        const body = JSON.stringify(Object.fromEntries(formData.entries()))
         const response = await fetch(apiURL, {
             method: "POST",
             credentials: "same-origin",
@@ -72,6 +76,11 @@
                 <p class="message"></p>
             </div>
             <div class="timer">${ formatDatetime(room.created_at) }</div>
+            ${
+                room.visibility === "public" ?
+                '<i class="bi bi-unlock-fill visibility" title="This room is public"></i>':
+                '<i class="bi bi-lock-fill visibility" title="This room is private"></i>'
+            }
         `
         window.initEvents(roomHTML)
         return roomHTML

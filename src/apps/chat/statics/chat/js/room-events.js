@@ -28,19 +28,20 @@
             if(!roomElement.isEqualNode(self))
                 roomElement.classList.remove("active");
         });
-        self.classList.toggle('active');
-
+        return self.classList.toggle('active');
     }
 
      async function handleClick(e){
         e.preventDefault();
         e.stopPropagation();
+
         if(this.classList.contains("active"))
             document.querySelector(".chat").classList.remove("active");
         else
             document.querySelector(".chat").classList.add("active");
 
-        if(!this.classList.contains("active")){
+        const show = toggleHTMLClass(roomElements, this)
+        if(show){
             // update room name
             document.querySelector(".header-chat .name").innerText = this.dataset.name
 
@@ -51,7 +52,6 @@
             window.initWSConnection(roomID)
             window.scrollToBottom(roomConversationContainer)
         }
-        toggleHTMLClass(roomElements, this)
     }
 
     function addRoomListeners(roomHTMLElement){
