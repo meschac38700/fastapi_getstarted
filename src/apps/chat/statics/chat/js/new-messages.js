@@ -1,5 +1,4 @@
 (() => {
-    const wsURL = document.currentScript.dataset.wsUrl
     const currentUserId = +document.currentScript.dataset.currentUserId
 
     function createMessage(message){
@@ -29,31 +28,21 @@
 
     window.createMessage = createMessage
 
-    function initWSConnection(roomID){
-        const WSUrl = wsURL.replace("/-1/", `/${roomID}/`)
-        const ws = new WebSocket(WSUrl)
+    const form = document.getElementById("message-form")
+    form.addEventListener("submit", function(e){
+        e.preventDefault()
+        e.stopPropagation()
 
-        ws.onmessage = function (event) {
-            const messages = document.getElementById("room-conversation")
-            const message = window.createMessage(JSON.parse(JSON.parse(event.data)))
-            messages.innerHTML += message
-            window.scrollToBottom(messages)
+        const messageInput = this.querySelector("#message")
+        const newMessage = messageInput.value.trim()
+        if(newMessage){
+            const payload = {
+                message: newMessage,
+                action: "send",
+                room_id: window.currentRoomId
+            }
+            window.ws.send(JSON.stringify(payload))
         }
-
-        const form = document.getElementById("ws-form")
-        form.addEventListener("submit", function(e){
-            e.preventDefault()
-            e.stopPropagation()
-
-            const messageInput = this.querySelector("#message")
-            const newMessage = messageInput.value.trim()
-            if(newMessage)
-                ws.send(newMessage)
-
-            messageInput.value = ""
-        })
-    }
-    window.initWSConnection = initWSConnection
-
-
+        messageInput.value = ""
+    })
 })()

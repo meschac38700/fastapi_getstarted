@@ -82,7 +82,7 @@
                 '<i class="bi bi-lock-fill visibility" title="This room is private"></i>'
             }
         `
-        window.initEvents(roomHTML)
+        window.addRoomListeners(roomHTML)
         return roomHTML
     }
     window.createRoomHTML = createRoomHTML

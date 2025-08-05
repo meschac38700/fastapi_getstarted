@@ -28,16 +28,12 @@ async def chat(
 
 
 @routers.websocket(
-    "/{room_id}/",
-    name="room-websocket",
+    "/",
+    name="websocket-connect",
 )
-async def chat_room(
-    websocket: WebSocket,
-    room_id: int,
-):
+async def chat_room(websocket: WebSocket):
     author = await current_session_user(websocket)
-    room = await ChatRoom.get_or_404(id=room_id)
-    await websocket_manager.init_connection(websocket, room, author)
+    await websocket_manager.init_connection(websocket, author)
 
 
 @routers.get(
