@@ -57,9 +57,14 @@ body {
   cursor: pointer;
   border-radius: 5px;
   margin-bottom: .4rem;
-  transition: height .1s ease-out;
+  transition: border .1s ease-out;
   padding: .4rem 1rem;
 }
+.rooms .room.active {
+  background-color: #FFF;
+  border: solid 2px #08b71c;
+}
+
 .rooms .room .visibility{
   position: absolute;
   bottom: 4px;
@@ -128,12 +133,6 @@ body {
 }
 .side-section .search .searchbar input *:-ms-input-placeholder {
     color: #E0E0E0;
-}
-
-.rooms .room.active {
-  height: 90px;
-  background-color: #FFF;
-  border: solid 2px #08b71c;
 }
 
 .rooms .room .photo {
@@ -228,6 +227,7 @@ body {
   border-radius: 15px;
   white-space: nowrap;
   word-break: keep-all;
+  transform: translateY(-80%);
 }
 
 .chat {
