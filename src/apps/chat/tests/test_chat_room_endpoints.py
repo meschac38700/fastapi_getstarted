@@ -264,25 +264,31 @@ async def test_delete_message_from_chat_room(
 
 
 async def test_user_subscribes_to_a_room(
-    room: ChatRoom, subscriber: User, client: AsyncClientTest, app: FastAPI
+    room: ChatRoom, subscriber: User, client: AsyncClientTest, app: FastAPI, csrf_token
 ) -> None:
     assert len(room.members) == 0
 
     # Unauthorize
-    response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
+    response = await client.patch(
+        app.url_path_for("room-subscribe", room_id=room.id),
+        data={"csrf_token": csrf_token},
+    )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     await client.user_login(subscriber)
 
     # Not found
     response = await client.patch(
-        app.url_path_for("room-subscribe", room_id=-1),
+        app.url_path_for("room-subscribe", room_id=-1), data={"csrf_token": csrf_token}
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
-    response = await client.patch(app.url_path_for("room-subscribe", room_id=room.id))
+    response = await client.patch(
+        app.url_path_for("room-subscribe", room_id=room.id),
+        data={"csrf_token": csrf_token},
+    )
     assert response.status_code == status.HTTP_200_OK
 
     assert response.json() == {"success": True}
@@ -292,12 +298,15 @@ async def test_user_subscribes_to_a_room(
 
 
 async def test_user_unsubscribes_to_a_room(
-    room: ChatRoom, subscriber, client: AsyncClientTest, app: FastAPI
+    room: ChatRoom, subscriber, client: AsyncClientTest, app: FastAPI, csrf_token
 ) -> None:
     await room.subscribe(subscriber)
     assert len(room.members) == 1
 
-    response = await client.patch(app.url_path_for("room-unsubscribe", room_id=room.id))
+    response = await client.patch(
+        app.url_path_for("room-unsubscribe", room_id=room.id),
+        data={"csrf_token": csrf_token},
+    )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     await client.user_login(subscriber)
@@ -305,12 +314,16 @@ async def test_user_unsubscribes_to_a_room(
     # Not found
     response = await client.patch(
         app.url_path_for("room-unsubscribe", room_id=-1),
+        data={"csrf_token": csrf_token},
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
-    response = await client.patch(app.url_path_for("room-unsubscribe", room_id=room.id))
+    response = await client.patch(
+        app.url_path_for("room-unsubscribe", room_id=room.id),
+        data={"csrf_token": csrf_token},
+    )
     assert response.status_code == status.HTTP_200_OK
 
     assert response.json() == {"success": True}
@@ -320,9 +333,9 @@ async def test_user_unsubscribes_to_a_room(
 
 
 async def test_create_chat_room(
-    client: AsyncClientTest, user: User, app: FastAPI
+    client: AsyncClientTest, user: User, app: FastAPI, csrf_token
 ) -> None:
-    data = {"name": "my lovely friends"}
+    data = {"name": "my lovely friends", "csrf_token": csrf_token}
     response = await client.post(app.url_path_for("room-create"), json=data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -334,14 +347,15 @@ async def test_create_chat_room(
 
 
 async def test_create_chat_room_error_already_exists(
-    client: AsyncClientTest, user: User, admin: User, app: FastAPI
+    client: AsyncClientTest, user: User, admin: User, app: FastAPI, csrf_token
 ) -> None:
     chat_room = await ChatRoom(name="test", owner_id=user.id).save()
     assert chat_room.id is not None
 
     await client.user_login(user)
     response = await client.post(
-        app.url_path_for("room-create"), json={"name": chat_room.name}
+        app.url_path_for("room-create"),
+        json={"name": chat_room.name, "csrf_token": csrf_token},
     )
     assert response.status_code == status.HTTP_409_CONFLICT
     assert response.json() == {"detail": "Chat room already exists."}
@@ -349,7 +363,8 @@ async def test_create_chat_room_error_already_exists(
     # Should pass even though it's the same chat room name, we are another user
     await client.force_login(admin)
     response = await client.post(
-        app.url_path_for("room-create"), json={"name": chat_room.name}
+        app.url_path_for("room-create"),
+        json={"name": chat_room.name, "csrf_token": csrf_token},
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert await ChatRoom.get(name=chat_room.name, owner_id=admin.id) is not None
@@ -358,14 +373,14 @@ async def test_create_chat_room_error_already_exists(
 async def test_edit_chat_room(
     client: AsyncClientTest,
     subscriber: User,
-    admin: User,
     user: User,
     room: ChatRoom,
     app: FastAPI,
+    csrf_token,
 ) -> None:
-    data = {"name": room.name + " Edited !"}
+    data = {"name": room.name + " Edited !", "csrf_token": csrf_token}
     response = await client.patch(
-        app.url_path_for("room-edit", room_id=room.id), json=data
+        app.url_path_for("room-edit", room_id=room.id), data=data
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -386,8 +401,12 @@ async def test_edit_chat_room(
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {**room.model_dump(mode="json"), "name": data["name"]}
 
+
+async def test_edit_chat_room_with_admin(
+    client: AsyncClientTest, admin: User, room: ChatRoom, app: FastAPI, csrf_token
+):
     # Test with admin user
-    data = {"name": "admin room"}
+    data = {"name": "admin room", "csrf_token": csrf_token}
     await client.force_login(admin)
     response = await client.patch(
         app.url_path_for("room-edit", room_id=room.id), json=data
@@ -399,7 +418,11 @@ async def test_edit_chat_room(
 
 
 async def test_delete_chat_room(
-    client: AsyncClientTest, room: ChatRoom, user: User, subscriber: User, app: FastAPI
+    client: AsyncClientTest,
+    room: ChatRoom,
+    user: User,
+    subscriber: User,
+    app: FastAPI,
 ) -> None:
     # Unauthorize
     response = await client.delete(

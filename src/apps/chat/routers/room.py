@@ -18,6 +18,7 @@ from apps.chat.models.schemas.room import ChatRoomCreate, ChatRoomUpdate
 from apps.user.dependencies.roles import AdminAccess
 from apps.user.models import User
 from core.db.dependencies import SessionDep
+from core.security.csrf import csrf_required
 
 routers = APIRouter(prefix="/rooms", tags=["chat", "rooms"])
 
@@ -54,6 +55,9 @@ def get_room(room: Annotated[ChatRoom, Depends(ChatRoomAccess())]) -> ChatRoom:
 @routers.patch(
     "/{room_id}/subscribe/",
     name="room-subscribe",
+    dependencies=[
+        Depends(csrf_required),
+    ],
 )
 async def room_subscription(
     room: Annotated[ChatRoom, Depends(RoomDepends())],
@@ -69,6 +73,9 @@ async def room_subscription(
 @routers.patch(
     "/{room_id}/unsubscribe/",
     name="room-unsubscribe",
+    dependencies=[
+        Depends(csrf_required),
+    ],
 )
 async def room_unsubscription(
     room: Annotated[ChatRoom, Depends(RoomDepends())],
@@ -85,6 +92,9 @@ async def room_unsubscription(
     "/",
     name="room-create",
     status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(csrf_required),
+    ],
 )
 async def create_room(
     room_data: ChatRoomCreate, auth_user: User = Depends(current_user)
@@ -102,6 +112,9 @@ async def create_room(
     "/{room_id}/",
     name="room-edit",
     status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(csrf_required),
+    ],
 )
 async def edit_room(
     room: Annotated[ChatRoom, Depends(ChatRoomEditAccess())],
@@ -116,6 +129,11 @@ async def edit_room(
     "/{room_id}/",
     name="room-delete",
     status_code=status.HTTP_204_NO_CONTENT,
+    #  dependencies=[
+    #     Depends(csrf_required),
+    #  ]
 )
 async def delete_room(room: Annotated[ChatRoom, Depends(ChatRoomDeleteAccess())]):
+    # TODO(Eliam): Add csrf protection once fastapi-csrf-protect supports header_or_body checking
+    #  PR: https://github.com/aekasitt/fastapi-csrf-protect/pull/29
     return await room.delete()
