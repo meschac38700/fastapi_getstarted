@@ -2,18 +2,25 @@
     const roomConversationBaseURL = document.currentScript.dataset.roomConversation;
     const roomConversationContainer = document.getElementById("room-conversation")
 
-    function initRoomEvents(){
-        const roomElements = document.querySelectorAll(".rooms .room");
-        roomElements.forEach(roomElement => {
-            addRoomListeners(roomElement)
-        })
-    }
+    const roomElements = document.querySelectorAll(".rooms .room");
+    roomElements.forEach(roomElement => {
+        addRoomListeners(roomElement)
+    })
 
 
     async function fetchRoomMessages(){
         const url = roomConversationBaseURL.replace("-1", window.currentRoomId)
         const response = await fetch(url, {method: 'GET', credentials: "same-origin"})
         const roomMessages = await response.json()
+
+        if(response.status === 403){
+            roomConversationContainer.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                  ${roomMessages.detail}
+                </div>
+            `
+        }
+
         return roomMessages?.items
     }
 
@@ -34,6 +41,13 @@
         return self.classList.toggle('active');
     }
 
+    function getToken(form){
+        const metaCSRFToken = document.querySelector("meta[name=csrf_token]").getAttribute("content")
+        const inputCSRFToken = form.querySelector("input[name=csrf_token]")?.value
+        return inputCSRFToken || metaCSRFToken
+    }
+
+
      async function handleClick(e){
         e.preventDefault();
         e.stopPropagation();
@@ -51,6 +65,17 @@
             window.currentRoomId = this.dataset.id;
             const rooms = await fetchRoomMessages()
 
+            if (!rooms) return
+
+            if(!rooms.length){
+                roomConversationContainer.innerHTML = `
+                    <div class="alert alert-warning" role="alert">
+                        No content to show
+                    </div>
+                `
+                return
+            }
+
             renderRoomConversationHTML(rooms)
             switchWebSocketRoom()
             window.scrollToBottom(roomConversationContainer)
@@ -63,8 +88,7 @@
 
         const submitButton = formElement.querySelector("[type=submit]")
 
-        const metaCSRFToken = document.querySelector("meta[name=csrf_token]").getAttribute("content")
-        const inputCSRFToken = formElement.querySelector("input[name=csrf_token]")?.value
+
 
         // Show confirmation modal
         const url = formElement.getAttribute("action")
@@ -81,7 +105,7 @@
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
-                    "X-CSRF-Token": inputCSRFToken || metaCSRFToken,
+                    "X-CSRF-Token": getToken(formElement),
                 }
             })
 
@@ -96,6 +120,35 @@
         })
 
     }
+     async function handleRoomSubscription(roomHTMLElement){
+        const formElement = roomHTMLElement.querySelector("#room-subscription-form")
+        if( !formElement ) // the current user is already member of this room or admin or owner
+            return
+
+        const subscriptionURL = formElement.getAttribute("action")
+
+        const submitButton = formElement.querySelector("[type=submit]")
+        submitButton.addEventListener("click", async (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+
+            const response = await fetch(subscriptionURL, {
+                method: "PATCH",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getToken(formElement)
+                }
+            })
+
+            if(response.status !== 200) // show error message
+                console.log(response)
+
+            // show success message
+            window.location.reload()
+
+        })
+     }
 
     /**
     * Switch subscription to another room, let's the server manage cancel and new subscription.
@@ -111,7 +164,7 @@
     function addRoomListeners(roomHTMLElement){
         roomHTMLElement.addEventListener("click", handleClick)
         handleDelete(roomHTMLElement)
+        handleRoomSubscription(roomHTMLElement)
     }
     window.addRoomListeners = addRoomListeners
-    initRoomEvents()
 })()

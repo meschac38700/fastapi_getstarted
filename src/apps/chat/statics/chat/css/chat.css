@@ -83,6 +83,9 @@ body {
 .rooms .room .options .delete-icon{
   color: #bb0c2f;
 }
+.rooms .room .options .subscribe-icon{
+  color: #00b335;  // unsubscribe color: #ff753f
+}
 
 .rooms .room .visibility{
   position: absolute;

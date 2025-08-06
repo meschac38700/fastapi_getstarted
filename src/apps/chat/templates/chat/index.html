@@ -31,12 +31,17 @@
                             </div>
                             <div class="options">
                                 {% if request.user not in room.members and request.user != room.owner %}
-                                    <i class="fa-solid fa-user-plus"></i>
+                                    <form action="{{ request.url_for('room-subscribe', room_id=room.id) }}" id="room-subscription-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-transparent" id="room-subscription-btn" title="Join this room">
+                                            <i class="fa-solid fa-user-plus subscribe-icon"></i>
+                                        </button>
+                                    </form>
                                 {% endif %}
                                 {% if request.user == room.owner or request.user.is_admin %}
                                     <form action="{{ request.url_for('room-delete', room_id=room.id) }}" id="room-delete-form">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-transparent" id="room-delete-btn" title="Delete this room" data-room-id="{{room.id}}">
+                                        <button type="submit" class="btn btn-transparent" id="room-delete-btn" title="Delete this room">
                                             <i class="fa-solid fa-trash-can delete-icon"></i>
                                         </button>
                                     </form>
