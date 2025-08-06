@@ -56,8 +56,11 @@
             window.scrollToBottom(roomConversationContainer)
         }
     }
-    async function handleDelete(roomHTMLElement){
+     async function handleDelete(roomHTMLElement){
         const formElement = roomHTMLElement.querySelector("#room-delete-form")
+        if (!formElement) // the current user is not allowed to delete this room
+            return
+
         const submitButton = formElement.querySelector("[type=submit]")
 
         const metaCSRFToken = document.querySelector("meta[name=csrf_token]").getAttribute("content")
