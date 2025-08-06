@@ -2,10 +2,13 @@
     const roomConversationBaseURL = document.currentScript.dataset.roomConversation;
     const roomConversationContainer = document.getElementById("room-conversation")
 
-    const roomElements = document.querySelectorAll(".rooms .room");
-    roomElements.forEach(roomElement => {
-        addRoomListeners(roomElement)
-    })
+    function initRoomEvents(){
+        const roomElements = document.querySelectorAll(".rooms .room");
+        roomElements.forEach(roomElement => {
+            addRoomListeners(roomElement)
+        })
+    }
+
 
     async function fetchRoomMessages(){
         const url = roomConversationBaseURL.replace("-1", window.currentRoomId)
@@ -53,6 +56,43 @@
             window.scrollToBottom(roomConversationContainer)
         }
     }
+    async function handleDelete(roomHTMLElement){
+        const formElement = roomHTMLElement.querySelector("#room-delete-form")
+        const submitButton = formElement.querySelector("[type=submit]")
+
+        const metaCSRFToken = document.querySelector("meta[name=csrf_token]").getAttribute("content")
+        const inputCSRFToken = formElement.querySelector("input[name=csrf_token]")?.value
+
+        // Show confirmation modal
+        const url = formElement.getAttribute("action")
+        submitButton.addEventListener("click", async (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+
+            if (!confirm("Are you sure?"))
+                window.location.reload()
+
+            const response = await fetch(url, {
+                method: "DELETE",
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": inputCSRFToken || metaCSRFToken,
+                }
+            })
+
+            if(response.status !== 204){
+                // Show alert message
+                console.log(response)
+            }
+
+
+            // Reload the page to renew the csrf token
+            window.location.reload()
+        })
+
+    }
 
     /**
     * Switch subscription to another room, let's the server manage cancel and new subscription.
@@ -67,6 +107,8 @@
 
     function addRoomListeners(roomHTMLElement){
         roomHTMLElement.addEventListener("click", handleClick)
+        handleDelete(roomHTMLElement)
     }
     window.addRoomListeners = addRoomListeners
+    initRoomEvents()
 })()

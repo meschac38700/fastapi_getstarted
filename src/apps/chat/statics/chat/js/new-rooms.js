@@ -1,6 +1,7 @@
 (() => {
     const currentScript = document.currentScript
-    const apiURL = currentScript.dataset.apiUrl
+    const apiCreate = currentScript.dataset.apiCreate
+    const apiDelete = currentScript.dataset.apiDelete
 
 
     const roomForm = document.getElementById("new-room-form")
@@ -34,7 +35,7 @@
         formData.set("visibility", visibilityValue)
 
         const body = JSON.stringify(Object.fromEntries(formData.entries()))
-        const response = await fetch(apiURL, {
+        const response = await fetch(apiCreate, {
             method: "POST",
             credentials: "same-origin",
             body,
@@ -49,6 +50,7 @@
         // reset form and hide it
         this.reset()
         this.classList.remove("active")
+        window.location.reload()
     })
 
     /**
@@ -63,6 +65,7 @@
     }
 
     function createRoomHTML(room){
+        const deleteURL = apiDelete.replace('-1', room.id)
         const roomHTML = document.createElement("DIV")
         roomHTML.setAttribute("class", "room")
         roomHTML.dataset.name = room.name
@@ -76,6 +79,13 @@
                 <p class="message"></p>
             </div>
             <div class="timer">${ formatDatetime(room.created_at) }</div>
+            <div class="options">
+                <form action="${deleteURL}" id="room-delete-form">
+                    <button type="submit" class="btn btn-transparent" id="room-delete-btn" title="Delete this room" data-room-id="${room.id}">
+                        <i class="fa-solid fa-trash-can delete-icon"></i>
+                    </button>
+                </form>
+            </div>
             ${
                 room.visibility === "public" ?
                 '<i class="bi bi-unlock-fill visibility" title="This room is public"></i>':
