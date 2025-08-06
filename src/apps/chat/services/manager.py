@@ -37,56 +37,61 @@ class ChatWebSocketManager(metaclass=Singleton):
     def __init__(self, p_logger: logging.Logger | None = None):
         self.logger = p_logger or _logger
         self.broadcaster = Broadcast(settings.celery_broker)
-        self.connection_state: ConnectionState = {
-            "current_room": None,
-            "sender_scope": None,
-            "user": None,
-        }
 
     async def init_connection(self, websocket: WebSocket, author: User):
         await websocket.accept()
-        self.connection_state["user"] = author
-        self.connection_state["room_event"] = anyio.Event()
+        connection_state: ConnectionState = {
+            "current_room": None,
+            "sender_scope": None,
+            "user": author,
+            "room_event": anyio.Event(),
+        }
 
         async with anyio.create_task_group() as tg:
-            tg.start_soon(self._receiver_handler, websocket, tg)
-            tg.start_soon(self._sender_handler, websocket, tg)
+            tg.start_soon(self._receiver_handler, websocket, connection_state, tg)
+            tg.start_soon(self._sender_handler, websocket, connection_state, tg)
 
-    async def _receiver_handler(self, websocket: WebSocket, task_group: TaskGroup):
+    async def _receiver_handler(
+        self, websocket: WebSocket, state: ConnectionState, task_group: TaskGroup
+    ):
         async def _receiver():
             async for raw_message in websocket.iter_text():
-                message_payload = self._process_raw_message(raw_message)
+                message_payload = self._process_raw_message(raw_message, state)
                 if message_payload["action"] == "send":
-                    await self._publish_message(message_payload["message"])
+                    await self._publish_message(message_payload["message"], state)
                 elif message_payload["action"] == "change_room":
-                    await self._switch_room(int(message_payload["room_id"]))
+                    await self._switch_room(int(message_payload["room_id"]), state)
 
         await self._exception_handler(_receiver, task_group=task_group)
 
-    async def _sender_handler(self, websocket: WebSocket, task_group: TaskGroup):
+    async def _sender_handler(
+        self, websocket: WebSocket, state: ConnectionState, task_group: TaskGroup
+    ):
         async def _sender():
             while True:
                 # wait for user to switch a room
-                await self.connection_state["room_event"].wait()
-                room = self.connection_state["current_room"]
+                await state["room_event"].wait()
+                room = state["current_room"]
                 # set new room event for next room switch
-                self.connection_state["room_event"] = anyio.Event()
+                state["room_event"] = anyio.Event()
 
                 self.logger.info("Subscribing to room %s", room.name)
                 async with self.broadcaster.subscribe(channel=room.name) as sub:
                     with anyio.CancelScope() as cancel_scope:
-                        self.connection_state["sender_scope"] = cancel_scope
+                        state["sender_scope"] = cancel_scope
                         async for event in sub:
                             await websocket.send_json(event.message)
 
         await self._exception_handler(_sender, task_group=task_group)
 
-    async def _publish_message(self, msg: str):
-        room = self.connection_state["current_room"]
-        msg_data = await self._save_message(msg)
+    async def _publish_message(self, msg: str, state: ConnectionState):
+        room = state["current_room"]
+        msg_data = await self._save_message(msg, state)
         await self.broadcaster.publish(channel=room.name, message=json.dumps(msg_data))
 
-    def _process_raw_message(self, raw_message: str) -> MessagePayload:
+    def _process_raw_message(
+        self, raw_message: str, state: ConnectionState
+    ) -> MessagePayload:
         try:
             message_dict = json.loads(raw_message)
             return MessagePayload(**message_dict)
@@ -95,20 +100,20 @@ class ChatWebSocketManager(metaclass=Singleton):
         return MessagePayload(
             message=raw_message,
             action="send",
-            room_id=self.connection_state["current_room"].id,
+            room_id=state["current_room"].id,
         )
 
-    async def _switch_room(self, room_id: int):
+    async def _switch_room(self, room_id: int, state: ConnectionState):
         self.logger.info("Switching room %s", room_id)
-        self.connection_state["current_room"] = await ChatRoom.get(id=room_id)
-        if self.connection_state["sender_scope"] is not None:
-            self.connection_state["sender_scope"].cancel()
+        state["current_room"] = await ChatRoom.get(id=room_id)
+        if state["sender_scope"] is not None:
+            state["sender_scope"].cancel()
 
-        room = self.connection_state["current_room"]
-        username = self.connection_state["user"].username
+        room = state["current_room"]
+        username = state["user"].username
         self.logger.info("User %s switched to room %s", username, room.name)
         # release event for send handler to process
-        self.connection_state["room_event"].set()
+        state["room_event"].set()
 
     async def _exception_handler(self, callback: Fn, *args, task_group: TaskGroup):
         try:
@@ -121,10 +126,10 @@ class ChatWebSocketManager(metaclass=Singleton):
         finally:
             task_group.cancel_scope.cancel()
 
-    async def _save_message(self, message: str):
+    async def _save_message(self, message: str, state: ConnectionState):
         """Persist the given message in the database."""
-        room_id = self.connection_state["current_room"].id
-        user_id = self.connection_state["user"].id
+        room_id = state["current_room"].id
+        user_id = state["user"].id
         _msg_obj = await ChatMessage(
             content=message, room_id=room_id, author_id=user_id
         ).save()
