@@ -115,7 +115,7 @@ async def user(db):  # pylint: disable=unused-argument
 @pytest.fixture
 def url_for(app, base_url):
     def _url_for(endpoint, **kwargs):
-        return base_url + app.url_path_for(endpoint, **kwargs)
+        return str(app.url_path_for(endpoint, **kwargs).make_absolute_url(base_url))
 
     return _url_for
 

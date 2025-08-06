@@ -30,6 +30,9 @@ class AsyncClientTest(AsyncClient):
         self.headers.pop("Authorization", None)
         self._token = None
 
+    def session_logout(self) -> None:
+        self.cookies.clear()
+
     @property
     def user(self):
         """Return the current authenticated user."""

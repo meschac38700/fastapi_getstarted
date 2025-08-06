@@ -23,7 +23,7 @@ websocket_manager = ChatWebSocketManager()
 async def chat(
     request: Request, db: SessionDep, auth_user: User = Depends(current_user)
 ):
-    rooms = await ChatRoom.get_member_rooms(db, auth_user.id)
+    rooms = await ChatRoom.get_member_rooms(db, auth_user)
     return render(request, "chat/index.html", {"rooms": rooms})
 
 
@@ -47,12 +47,13 @@ async def filter_rooms(
     auth_user: User = Depends(current_user),
 ):
     """Filter rooms by name."""
+
     if room_name is None:
-        return await ChatRoom.get_member_rooms(db, auth_user.id)
+        return await ChatRoom.get_member_rooms(db, auth_user)
 
     if auth_user.is_admin:
         return await ChatRoom.filter(name__istartswith=room_name)
 
     return await ChatRoom.get_member_rooms(
-        db, auth_user.id, filters={"name__istartswith": room_name}
+        db, auth_user, filters={"name__istartswith": room_name}
     )

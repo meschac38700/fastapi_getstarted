@@ -39,22 +39,27 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
 
     @classmethod
     async def get_member_rooms(
-        cls, session: AsyncSession, user_id: int, *, filters: dict["str", Any] = None
+        cls, session: AsyncSession, user: User, *, filters: dict["str", Any] = None
     ):
         """Retrieve all rooms where the current user is a member of or owner of."""
         _additional_filters = cls.resolve_filters(**(filters or {}))
-        statement = (
-            select(cls)
-            .outerjoin(ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id)
-            .where(
+        statement = select(cls).outerjoin(
+            ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id
+        )
+        if not user.is_admin:
+            statement = statement.where(
                 or_(
                     col(cls.visibility) == "public",
-                    col(cls.owner_id) == user_id,
-                    col(ChatRoomUserLink.user_id) == user_id,
-                    *_additional_filters,
+                    col(cls.owner_id) == user.id,
+                    col(ChatRoomUserLink.user_id) == user.id,
                 )
             )
-            .options(selectinload(col(cls.members)))
+
+        if filters:
+            statement = statement.where(*_additional_filters)
+
+        statement = (
+            statement.options(selectinload(col(cls.members)))
             .distinct()
             .order_by(col(cls.updated_at).desc())
         )
