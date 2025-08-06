@@ -48,6 +48,7 @@ class ChatRoom(ChatRoomBaseModel, BaseTable, table=True):
             .outerjoin(ChatRoomUserLink, col(cls.id) == ChatRoomUserLink.room_id)
             .where(
                 or_(
+                    col(cls.visibility) == "public",
                     col(cls.owner_id) == user_id,
                     col(ChatRoomUserLink.user_id) == user_id,
                     *_additional_filters,
