@@ -129,11 +129,9 @@ async def edit_room(
     "/{room_id}/",
     name="room-delete",
     status_code=status.HTTP_204_NO_CONTENT,
-    #  dependencies=[
-    #     Depends(csrf_required),
-    #  ]
+    dependencies=[
+        Depends(csrf_required),
+    ],
 )
 async def delete_room(room: Annotated[ChatRoom, Depends(ChatRoomDeleteAccess())]):
-    # TODO(Eliam): Add csrf protection once fastapi-csrf-protect supports header_or_body checking
-    #  PR: https://github.com/aekasitt/fastapi-csrf-protect/pull/29
     return await room.delete()

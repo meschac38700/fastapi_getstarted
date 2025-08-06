@@ -423,10 +423,11 @@ async def test_delete_chat_room(
     user: User,
     subscriber: User,
     app: FastAPI,
+    csrf_header,
 ) -> None:
     # Unauthorize
     response = await client.delete(
-        app.url_path_for("room-delete", room_id=room.id),
+        app.url_path_for("room-delete", room_id=room.id), headers=csrf_header
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -434,7 +435,7 @@ async def test_delete_chat_room(
 
     # Forbidden
     response = await client.delete(
-        app.url_path_for("room-delete", room_id=room.id),
+        app.url_path_for("room-delete", room_id=room.id), headers=csrf_header
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == {"detail": "Insufficient rights to carry out this action"}
@@ -443,14 +444,14 @@ async def test_delete_chat_room(
 
     # Not found
     response = await client.delete(
-        app.url_path_for("room-delete", room_id=-1),
+        app.url_path_for("room-delete", room_id=-1), headers=csrf_header
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
 
     # Success
     response = await client.delete(
-        app.url_path_for("room-delete", room_id=room.id),
+        app.url_path_for("room-delete", room_id=room.id), headers=csrf_header
     )
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert await ChatRoom.get(id=room.id) is None

@@ -33,7 +33,7 @@ class CSRFSettings(AppBaseSettings):
     """
     cookie_samesite: Literal["strict", "lax", "none"] = "strict"
     cookie_secure: Optional[bool] = False
-    header_name: Optional[str] = None
+    header_name: Optional[str] = "X-CSRF-Token"
     header_type: Optional[str] = None
     httponly: Optional[bool] = True
     max_age: Optional[int] = 3600
@@ -41,7 +41,7 @@ class CSRFSettings(AppBaseSettings):
         Set[Literal["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]]
     ] = None
     secret_key: Optional[str] = None
-    token_location: Optional[str] = "body"
+    token_location: Optional[str] = "header_or_body"
     token_key: Optional[str] = "csrf_token"
 
 

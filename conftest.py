@@ -230,3 +230,10 @@ async def csrf_token(serializer, client, app):
 
         yield token
         mock_csrf_protect.assert_called()
+
+
+@pytest.fixture
+def csrf_header(settings, csrf_token):
+    return {
+        settings.header_name: csrf_token,
+    }
