@@ -3,6 +3,8 @@ services:
     image: postgres:17-alpine
     container_name: database
     restart: always
+    networks:
+      - backend
     ports:
       - 5432:5432
     env_file:
@@ -14,8 +16,8 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
-  api:
-    container_name: api
+  app:
+    container_name: app
     restart: unless-stopped
     image: registry.digitalocean.com/meschac38000/fastapi-starter
     pull_policy: always
@@ -32,8 +34,19 @@ services:
       redis_server:
         condition: service_healthy
         restart: true
-    ports:
-      - "8001:8001"
+    environment:
+      - APP_PORT=80
+    networks:
+      - backend
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`lab.eliam-lotonga.fr`)"
+      - "traefik.http.routers.app.entrypoints=web"
+      # - "traefik.http.routers.app.tls=true"
+      # - "traefik.http.routers.app.tls.certresolver=cloudflare"
+      - "traefik.http.routers.app.service=app"
+      - "traefik.http.services.app.loadbalancer.server.port=80"
     env_file:
       - envs/prod/.env
     command: ["bash", "./scripts/entrypoint.sh"]
@@ -43,6 +56,8 @@ services:
     pull_policy: always
     container_name: redis_server
     restart: always
+    networks:
+      - backend
     env_file:
       - ./envs/dev/.env
     ports:
@@ -63,11 +78,13 @@ services:
     pull_policy: always
     container_name: celery_server
     restart: on-failure
+    networks:
+      - backend
     env_file:
       - ./envs/prod/.env
     command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=INFO"
     depends_on:
-      api:
+      app:
         condition: service_healthy
         restart: true
 
@@ -76,8 +93,10 @@ services:
     pull_policy: always
     container_name: celery_beat
     restart: on-failure
+    networks:
+      - backend
     depends_on:
-      api:
+      app:
         condition: service_healthy
         restart: true
     env_file:
@@ -94,12 +113,21 @@ services:
       - flower_data:/data
     env_file:
       - envs/prod/.env
+    networks:
+      - backend
     depends_on:
       redis_server:
         condition: service_healthy
         restart: true
     command: sh -c "celery --broker=$$CELERY_BROKER flower"
+
 volumes:
   data: {}
   redis_data: {}
   flower_data: {}
+  staticfiles: {}
+
+networks:
+  traefik:
+    external: true
+  backend: {}
