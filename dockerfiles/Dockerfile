@@ -52,6 +52,7 @@ ENV PATH="$VBIN:$PATH"
 
 WORKDIR ${APP_DIR}
 
+RUN mkdir statics && chown $USER:$USER -R statics
 USER ${USER}
 
 COPY --chown=${USER}:${USER} ./src .
