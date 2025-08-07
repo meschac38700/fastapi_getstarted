@@ -4,7 +4,7 @@ run-name: Build App image
 on:
   workflow_run:
     workflows:
-      - Tests
+      - CI
     types:
       - completed
     branches: ["master"]
