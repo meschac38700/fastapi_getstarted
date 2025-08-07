@@ -1,7 +1,8 @@
 import secrets
 
 from celery import states as celery_states
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from starlette.responses import RedirectResponse
 
 from apps.user.models import User
 from core.monitoring.logger import get_logger
@@ -22,6 +23,14 @@ async def health_check():
     await redis.ping()
 
     return {"status": "ok"}
+
+
+def permanent_redirect():
+    """Redirect user to the page after login succeed."""
+    return RedirectResponse(
+        settings.session_auth_redirect_success,
+        status_code=status.HTTP_308_PERMANENT_REDIRECT,
+    )
 
 
 def secret_key(length: int = 65):
@@ -52,7 +61,15 @@ def load_fixtures():
 
 def register_default_endpoints(app: FastAPI):
     default_tags = ["Default"]
+
     default_endpoints = [
+        {
+            "path": "/",
+            "endpoint": permanent_redirect,
+            "methods": ["GET"],
+            "name": "redirect",
+            "tags": default_tags,
+        },
         {
             "path": "/default/",
             "endpoint": secret_key,
