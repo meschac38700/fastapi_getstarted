@@ -1,0 +1,6 @@
+{% macro message_text(message, author_name="") %}
+    <div class="message">
+        <h6 class="author">{{author_name}}</h6>
+        <div class="content">{{message}}</div>
+    </div>
+{% endmacro %}

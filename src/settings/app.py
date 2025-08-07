@@ -56,7 +56,7 @@ class Settings(AppConstants, CSRFSettings, SecretSettings):
 
     @property
     def health_check_endpoint(self):
-        return f"{self.server_address}:{self.app_port}/healthcheck"
+        return f"{self.server_address}:{self.app_port}/default/healthcheck/"
 
 
 @lru_cache

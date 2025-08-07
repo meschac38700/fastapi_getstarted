@@ -51,6 +51,10 @@ class User(UserBaseModel, table=True):
             self._hash_password(force=True)
 
     @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
+    @property
     def _password_hasher(self) -> PasswordHasher:
         pattern = r"^(?P<pkg>.+)\.(?P<hasher_class>\w+)$"
         pkg, hasher_class_name = re.search(pattern, settings.password_hasher).groups()

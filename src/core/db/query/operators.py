@@ -1,8 +1,9 @@
 from functools import lru_cache, partial
-from typing import Any, Sequence
+from typing import Annotated, Any, Sequence
 
 from sqlalchemy.sql._typing import ColumnExpressionArgument
-from sqlmodel import col
+from sqlmodel import asc, col, desc
+from typing_extensions import Doc
 
 
 class QueryExpressionManager:
@@ -54,6 +55,25 @@ class QueryExpressionManager:
             resolver = cls._operator_resolvers(operator)
             _filters.extend(resolver(**{_key: value}))
         return _filters
+
+    @classmethod
+    def resolve_order_by(
+        cls,
+        order_by: Annotated[
+            str,
+            Doc(
+                "Expected format for descending order: -attribute, for ascending order: attribute."
+                "Example: User.all(order_by='-id') or User.all(order_by='id')",
+            ),
+        ],
+    ):
+        order = asc
+        attribute = order_by
+        if order_by.startswith("-"):
+            order = desc
+            attribute = order_by[1:]
+
+        return order(col(getattr(cls, attribute)))
 
     @classmethod
     def _equals(

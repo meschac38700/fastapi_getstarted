@@ -5,8 +5,6 @@ from apps.user.models import User
 from core.db.query.exceptions import ObjectNotFoundError
 from core.unittest.async_case import AsyncTestCase
 
-BASE_URL = "https://test"
-
 
 def user_list():
     return [

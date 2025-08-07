@@ -27,7 +27,7 @@ class TestGroupPermissions(AsyncTestCase):
             User.get(role=UserRole.active),
         )
 
-    async def test_group_has_no_right_permissions_cannot_edit(self):
+    async def test_group_has_no_right_permissions_cannot_edit(self, app):
         read_permission_name = Permission.format_permission_name(
             "read", Hero.table_name()
         )
@@ -38,14 +38,16 @@ class TestGroupPermissions(AsyncTestCase):
         await self.client.user_login(self.user)
 
         data = {"secret_name": "Test edit"}
-        response = await self.client.patch("/heroes/1/", json=data)
+        response = await self.client.patch(
+            app.url_path_for("hero-patch", pk=1), json=data
+        )
         assert HTTPStatus.FORBIDDEN == response.status_code
         assert (
             response.json()["detail"]
             == "You do not have sufficient rights to this resource."
         )
 
-    async def test_group_permission_to_edit_resource(self):
+    async def test_group_permission_to_edit_resource(self, app):
         update_permission_name = Permission.format_permission_name(
             "update", Hero.table_name()
         )
@@ -57,7 +59,9 @@ class TestGroupPermissions(AsyncTestCase):
 
         hero_id = 1
         data = {"secret_name": "Test edit"}
-        response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
+        response = await self.client.patch(
+            app.url_path_for("hero-patch", pk=hero_id), json=data
+        )
         assert HTTPStatus.OK == response.status_code
 
         actual_data = response.json()
@@ -67,7 +71,7 @@ class TestGroupPermissions(AsyncTestCase):
         assert actual_data["secret_name"] == data["secret_name"]
         assert actual_data["id"] == hero_id
 
-    async def test_add_permission_to_a_certain_group(self):
+    async def test_add_permission_to_a_certain_group(self, app):
         group = await Group(
             name="can_do_everything_with_user_table",
             target_table=User.table_name(),
@@ -79,19 +83,19 @@ class TestGroupPermissions(AsyncTestCase):
         perms = await Permission.filter(target_table=User.table_name())
         data = {"permissions": [perm.name for perm in perms]}
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/permissions/add/", json=data
+            app.url_path_for("group-add-permissions", pk=group.id), json=data
         )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.user)
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/permissions/add/", json=data
+            app.url_path_for("group-add-permissions", pk=group.id), json=data
         )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/permissions/add/", json=data
+            app.url_path_for("group-add-permissions", pk=group.id), json=data
         )
         assert HTTPStatus.OK == response.status_code
 
@@ -100,11 +104,11 @@ class TestGroupPermissions(AsyncTestCase):
         assert group.has_permissions(perms)
         assert response.json() == expected_response
 
-    async def test_remove_permission_to_a_certain_group(self):
+    async def test_remove_permission_to_a_certain_group(self, app):
         group = await Group(
             name="user_read_only",
             target_table=User.table_name(),
-            display_name="Read only user informations",
+            display_name="Read only user information",
         ).save()
         perms = await Permission.filter(target_table=User.table_name())
         await group.extend_permissions(perms)
@@ -117,19 +121,19 @@ class TestGroupPermissions(AsyncTestCase):
         }
 
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/permissions/remove/", json=data
+            app.url_path_for("group-remove-permissions", pk=group.id), json=data
         )
         assert HTTPStatus.UNAUTHORIZED == response.status_code
 
         await self.client.user_login(self.active)
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/permissions/remove/", json=data
+            app.url_path_for("group-remove-permissions", pk=group.id), json=data
         )
         assert HTTPStatus.FORBIDDEN == response.status_code
 
         await self.client.user_login(self.admin)
         response = await self.client.patch(
-            f"/authorizations/groups/{group.id}/permissions/remove/", json=data
+            app.url_path_for("group-remove-permissions", pk=group.id), json=data
         )
         assert HTTPStatus.OK == response.status_code
 

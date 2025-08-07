@@ -1,0 +1,20 @@
+<form class="new-room-form d-flex flex-column" id="new-room-form">
+    {% csrf_token %}
+    <h1 class="title mb-4">Create a new room</h1>
+
+    <div class="form-group">
+        <label for="room-name" class="form-label">Room name</label>
+        <input type="text" class="form-control room-name" name="name" id="room-name" placeholder="Type the room name here"></input>
+    </div>
+    <div class="form-check form-switch mb-4 mt-3">
+        <div class="form-group">
+            <label class="form-check-label" for="room-visibility">Public</label>
+            <input class="form-check-input" type="checkbox" name="visibility" role="switch" aria-checked="true" id="room-visibility" aria-describedby="room-visibility-help">
+        </div>
+        <small id="room-visibility-help" class="form-text text-muted d-block">If this box is checked, this room will be considered public and anyone can join it.</small>
+    </div>
+    <div class="d-flex justify-content-between align-items-center room-create-actions">
+        <button type="reset" class="btn btn-light cancel-room-creation" id="cancel-room-creation">cancel</button>
+        <button class="submit-room btn btn-primary d-block mr-auto" type="submit">Create</button>
+    </div>
+</form>

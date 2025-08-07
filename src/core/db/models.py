@@ -3,6 +3,7 @@ from typing import Any
 
 from sqlalchemy import Table
 from sqlmodel import SQLModel
+from starlette.authentication import BaseUser
 
 from core.db.query import ModelQuery
 
@@ -58,3 +59,17 @@ class SQLTable(SQLModel, ModelQuery):
     ):
         """Check all required fields are updated."""
         return self.check_all_fields_updated(old_data, required=True)
+
+
+class AuthUser(BaseUser):
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
+    def display_name(self) -> str:
+        return self.full_name
+
+    @property
+    def identity(self) -> str:
+        return self.username

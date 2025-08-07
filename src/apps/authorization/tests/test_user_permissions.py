@@ -17,19 +17,21 @@ class TestUserPermission(AsyncTestCase):
         self.user = await User.get(username="test")
         await Permission.generate_crud_objects(Hero.table_name())
 
-    async def test_user_has_no_rights_to_edit_resource(self):
+    async def test_user_has_no_rights_to_edit_resource(self, app):
         hero_id = 1
         await self.client.user_login(self.user)
 
         data = {"secret_name": "test edit"}
-        response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
+        response = await self.client.patch(
+            app.url_path_for("hero-patch", pk=hero_id), json=data
+        )
         assert HTTPStatus.FORBIDDEN == response.status_code
         assert (
             response.json()["detail"]
             == "You do not have sufficient rights to this resource."
         )
 
-    async def test_user_has_rights_to_edit_resource(self):
+    async def test_user_has_rights_to_edit_resource(self, app):
         hero_id = 1
         await self.client.user_login(self.user)
         update_permission_name = Permission.format_permission_name(
@@ -38,7 +40,9 @@ class TestUserPermission(AsyncTestCase):
         await self.add_permissions(self.user, [update_permission_name])
 
         data = {"secret_name": "test edit"}
-        response = await self.client.patch(f"/heroes/{hero_id}/", json=data)
+        response = await self.client.patch(
+            app.url_path_for("hero-patch", pk=hero_id), json=data
+        )
         assert HTTPStatus.OK == response.status_code
 
         actual_data = response.json()
