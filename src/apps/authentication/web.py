@@ -24,7 +24,7 @@ routers = APIRouter(tags=["Authentication"], prefix=settings.AUTH_PREFIX_URL)
     description="Return login HTML page.",
     dependencies=[Depends(AnonymousUserAccess())],
 )
-async def session_login_view(request: Request):
+async def session_login_view(request: Request) -> RedirectResponse:
     return render(request, "authentication/login.html")
 
 
@@ -37,14 +37,19 @@ async def session_login_view(request: Request):
     ],
 )
 async def session_login(
-    request: Request, form_data: Annotated[SessionAuthRequestForm, Depends()]
+    request: Request,
+    form_data: Annotated[SessionAuthRequestForm, Depends()],
+    referer: str | None = None,
 ):
     """Login using session auth."""
     user = await verify_user(form_data)
     auth_utils.session_save_user(request, user)
-    return RedirectResponse(
-        settings.session_auth_redirect_success, status.HTTP_302_FOUND
-    )
+
+    redirect_url = settings.session_auth_redirect_success
+    if referer is not None:
+        redirect_url = referer
+
+    return RedirectResponse(redirect_url, status.HTTP_302_FOUND)
 
 
 @routers.post("/logout/", name="session-logout")

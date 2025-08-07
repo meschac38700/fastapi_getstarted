@@ -39,8 +39,13 @@ class SessionAuthRequiredMiddleware(BaseHTTPMiddleware):
                 else None
             )
             if not session_user:
-                return RedirectResponse(url=settings.SESSION_AUTH_URL)
+                redirect_url = settings.SESSION_AUTH_URL
+                referer = request.url.path
+                if referer != redirect_url:
+                    redirect_url += "?referer=" + referer
 
+                response = RedirectResponse(url=redirect_url)
+                return response
         return await call_next(request)
 
 
