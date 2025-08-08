@@ -31,7 +31,7 @@
                             </div>
                             <div class="options">
                                 {% if request.user not in room.members and request.user != room.owner %}
-                                    <form action="{{ request.url_for('room-subscribe', room_id=room.id) }}" id="room-subscription-form">
+                                    <form action="{{ url_for('room-subscribe', room_id=room.id) }}" id="room-subscription-form">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-transparent" id="room-subscription-btn" title="Join this room">
                                             <i class="fa-solid fa-user-plus subscribe-icon"></i>
@@ -39,7 +39,7 @@
                                     </form>
                                 {% endif %}
                                 {% if request.user == room.owner or request.user.is_admin %}
-                                    <form action="{{ request.url_for('room-delete', room_id=room.id) }}" id="room-delete-form">
+                                    <form action="{{ url_for('room-delete', room_id=room.id) }}" id="room-delete-form">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-transparent" id="room-delete-btn" title="Delete this room">
                                             <i class="fa-solid fa-trash-can delete-icon"></i>
@@ -84,12 +84,12 @@
 
         </div>
     </div>
-    <script src="{{ url_for('static', path='/chat/js/init-websocket.js' )}}" data-ws-url="{{ request.url_for('websocket-connect') }}"></script>
+    <script src="{{ url_for('static', path='/chat/js/init-websocket.js' )}}" data-ws-url="{{ url_for('websocket-connect') }}"></script>
     <script src="{{ url_for('static', path='/chat/js/filter-rooms.js' )}}"></script>
-    <script src="{{ url_for('static', path='/chat/js/utils.js' )}}" data-api-url="{{ request.url_for('room-create') }}"></script>
-    <script src="{{ url_for('static', path='/chat/js/new-rooms.js' )}}" data-api-create="{{ request.url_for('room-create') }}" data-api-delete="{{ request.url_for('room-delete', room_id=-1) }}"></script>
+    <script src="{{ url_for('static', path='/chat/js/utils.js' )}}" data-api-url="{{ url_for('room-create') }}"></script>
+    <script src="{{ url_for('static', path='/chat/js/new-rooms.js' )}}" data-api-create="{{ url_for('room-create') }}" data-api-delete="{{ url_for('room-delete', room_id=-1) }}"></script>
     <script src="{{ url_for('static', path='/chat/js/new-messages.js') }}" data-current-user-id="{{request.user.id}}"></script>
-    <script src="{{ url_for('static', path='/chat/js/room-events.js') }}" data-room-conversation="{{request.url_for('room-messages', room_id=-1)}}"></script>
+    <script src="{{ url_for('static', path='/chat/js/room-events.js') }}" data-room-conversation="{{url_for('room-messages', room_id=-1)}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
