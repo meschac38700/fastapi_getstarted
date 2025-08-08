@@ -34,19 +34,17 @@ services:
       redis_server:
         condition: service_healthy
         restart: true
-    environment:
-      - APP_PORT=80
     networks:
-      - backend
       - traefik
+      - backend
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.app.rule=Host(`lab.eliam-lotonga.fr`)"
       - "traefik.http.routers.app.entrypoints=web"
-      # - "traefik.http.routers.app.tls=true"
-      # - "traefik.http.routers.app.tls.certresolver=cloudflare"
-      - "traefik.http.routers.app.service=app"
-      - "traefik.http.services.app.loadbalancer.server.port=80"
+      - "traefik.http.services.app.loadbalancer.server.port=8001"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.app.middlewares=retry-attempts" # optional
+      - "traefik.http.middlewares.retry-attempts.retry.attempts=3" # optional
     env_file:
       - envs/prod/.env
     command: ["bash", "./scripts/entrypoint.sh"]
