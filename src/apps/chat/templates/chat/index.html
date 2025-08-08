@@ -81,9 +81,14 @@
                     </form>
                 </div>
             </section>
-
+            <h1>DEBUG</h1>
+            <a href="{{ url_for('room-create') }}">create room link: {{ url_for('room-create') }}</a>
+            <a href="{{ url_for('websocket-connect') }}">Socket url: {{ url_for('websocket-connect') }}</a>
         </div>
     </div>
+
+
+
     <script src="{{ url_for('static', path='/chat/js/init-websocket.js' )}}" data-ws-url="{{ url_for('websocket-connect') }}"></script>
     <script src="{{ url_for('static', path='/chat/js/filter-rooms.js' )}}"></script>
     <script src="{{ url_for('static', path='/chat/js/utils.js' )}}" data-api-url="{{ url_for('room-create') }}"></script>
