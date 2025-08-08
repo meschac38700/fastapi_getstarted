@@ -10,6 +10,7 @@
     <!-- Option 1: Include in HTML -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', path='/chat/css/loader.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/chat/css/chat.css') }}">
 </head>
 <body>
@@ -81,20 +82,15 @@
                     </form>
                 </div>
             </section>
-            <h1>DEBUG</h1>
-            <a href="{{ url_for('room-create') }}">create room link: {{ url_for('room-create') }}</a>
-            <a href="{{ url_for('websocket-connect') }}">Socket url: {{ url_for('websocket-connect') }}</a>
         </div>
     </div>
 
-
-
     <script src="{{ url_for('static', path='/chat/js/init-websocket.js' )}}" data-ws-url="{{ url_for('websocket-connect') }}"></script>
     <script src="{{ url_for('static', path='/chat/js/filter-rooms.js' )}}"></script>
-    <script src="{{ url_for('static', path='/chat/js/utils.js' )}}" data-api-url="{{ url_for('room-create') }}"></script>
-    <script src="{{ url_for('static', path='/chat/js/new-rooms.js' )}}" data-api-create="{{ url_for('room-create') }}" data-api-delete="{{ url_for('room-delete', room_id=-1) }}"></script>
+    <script src="{{ url_for('static', path='/chat/js/utils.js' )}}" data-api-url="{{ url_for('room-create').path }}"></script>
+    <script src="{{ url_for('static', path='/chat/js/new-rooms.js' )}}" data-api-create="{{ url_for('room-create').path }}" data-api-delete="{{ url_for('room-delete', room_id=-1) }}"></script>
     <script src="{{ url_for('static', path='/chat/js/new-messages.js') }}" data-current-user-id="{{request.user.id}}"></script>
-    <script src="{{ url_for('static', path='/chat/js/room-events.js') }}" data-room-conversation="{{url_for('room-messages', room_id=-1)}}"></script>
+    <script src="{{ url_for('static', path='/chat/js/room-events.js') }}" data-room-conversation="{{url_for('room-messages', room_id=-1).path}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>

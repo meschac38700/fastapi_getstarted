@@ -7,7 +7,6 @@
         addRoomListeners(roomElement)
     })
 
-
     async function fetchRoomMessages(){
         const url = roomConversationBaseURL.replace("-1", window.currentRoomId)
         const response = await fetch(url, {method: 'GET', credentials: "same-origin"})
@@ -46,9 +45,10 @@
         const inputCSRFToken = form.querySelector("input[name=csrf_token]")?.value
         return inputCSRFToken || metaCSRFToken
     }
-
-
-     async function handleClick(e){
+    window.showLoader = function(parentElement){
+        parentElement.innerHTML= `<div class="loader"></div>`
+    }
+    async function handleClick(e){
         e.preventDefault();
         e.stopPropagation();
 
@@ -59,6 +59,8 @@
 
         const show = toggleHTMLClass(roomElements, this)
         if(show){
+            window.lastMessageAuthor = null
+            window.showLoader(roomConversationContainer)
             // update room name
             document.querySelector(".header-chat .name").innerText = this.dataset.name
 
@@ -73,22 +75,19 @@
                         No content to show
                     </div>
                 `
-                return
-            }
+            }else
+                renderRoomConversationHTML(rooms)
 
-            renderRoomConversationHTML(rooms)
             switchWebSocketRoom()
             window.scrollToBottom(roomConversationContainer)
         }
     }
-     async function handleDelete(roomHTMLElement){
+    async function handleDelete(roomHTMLElement){
         const formElement = roomHTMLElement.querySelector("#room-delete-form")
         if (!formElement) // the current user is not allowed to delete this room
             return
 
         const submitButton = formElement.querySelector("[type=submit]")
-
-
 
         // Show confirmation modal
         const url = formElement.getAttribute("action")
@@ -113,14 +112,12 @@
                 // Show alert message
                 console.log(response)
             }
-
-
             // Reload the page to renew the csrf token
             window.location.reload()
         })
 
     }
-     async function handleRoomSubscription(roomHTMLElement){
+    async function handleRoomSubscription(roomHTMLElement){
         const formElement = roomHTMLElement.querySelector("#room-subscription-form")
         if( !formElement ) // the current user is already member of this room or admin or owner
             return
@@ -148,7 +145,7 @@
             window.location.reload()
 
         })
-     }
+    }
 
     /**
     * Switch subscription to another room, let's the server manage cancel and new subscription.

@@ -304,6 +304,11 @@ body {
 .chat .messages-chat::-webkit-scrollbar {
     display: none;
 }
+.chat .messages-chat:has(.loader) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .chat .messages-chat .message {
   display:flex;

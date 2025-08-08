@@ -1,5 +1,6 @@
 (() => {
     const currentUserId = +document.currentScript.dataset.currentUserId
+    window.lastMessageAuthor = null
 
     function createMessage(message){
         let msg = ""
