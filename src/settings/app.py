@@ -39,6 +39,9 @@ class Settings(AppConstants, CSRFSettings, SecretSettings):
     """
     celery_worker_heartbeat: int = 120  # Send a heartbeat every 120 seconds by default
 
+    # for http headers: X-Forwarded-Proto etc.
+    trusted_hosts: list[str] = ["*"]
+
     # CORS authorization
     cors_allowed_origins: list[str] = []
     cors_allowed_headers: list[str] = ["*"]
