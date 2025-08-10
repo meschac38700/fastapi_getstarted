@@ -35,7 +35,7 @@
         e.stopPropagation()
 
         const messageInput = this.querySelector("#message")
-        const newMessage = messageInput.value.trim()
+        const newMessage = window.stripHtml(messageInput.value.trim())
         if(newMessage){
             const payload = {
                 message: newMessage,

@@ -22,7 +22,7 @@
         e.preventDefault();
         e.stopPropagation();
 
-        const roomName = this.querySelector("#room-name").value.trim()
+        const roomName = window.stripHtml(this.querySelector("#room-name").value.trim())
         if (!roomName)
             return
 
