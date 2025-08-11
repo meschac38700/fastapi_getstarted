@@ -7,5 +7,6 @@ _logger = get_logger(__name__, level=logging.DEBUG)
 
 
 @celery_app.task()
-def debug_task():
+def liveness_task() -> int:
     _logger.debug("This is a periodic task running every 5 minutes.")
+    return True
