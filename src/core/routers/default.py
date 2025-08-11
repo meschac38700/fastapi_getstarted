@@ -1,12 +1,12 @@
 import secrets
 
 from celery import states as celery_states
-from fastapi import FastAPI, status
+from fastapi import FastAPI, HTTPException, status
 from starlette.responses import RedirectResponse
 
 from apps.user.models import User
 from core.monitoring.logger import get_logger
-from core.tasks import load_fixtures_task
+from core.tasks import liveness_task, load_fixtures_task
 from core.tasks.exceptions import SQLAlchemyIntegrityError
 from redis import asyncio as aioredis
 from settings import settings
@@ -14,15 +14,34 @@ from settings import settings
 _logger = get_logger(__name__)
 
 
-async def health_check():
-    # check that the database is up
-    await User.count()
+async def health_check(liveness: bool = False, readiness: bool = False):
+    """Check the health of the application.
 
-    # check that redis is up
-    redis = aioredis.from_url(settings.celery_broker)
-    await redis.ping()
+    @param liveness: Whether the application is functional.
+    @param readines: Whether the application and its dependencies are functional.
+    """
 
-    return {"status": "ok"}
+    test_result = {"status": "KO"}
+
+    if liveness:
+        test_result["status"] = "OK"
+        return test_result
+
+    if readiness:
+        # check that the database is up
+        await User.count()
+        # check that redis is up
+        redis = aioredis.from_url(settings.celery_broker)
+        await redis.ping()
+        # check that celery is responding
+        assert liveness_task.delay().get()
+
+        test_result["status"] = "OK"
+        return test_result
+
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=test_result
+    )
 
 
 def permanent_redirect():

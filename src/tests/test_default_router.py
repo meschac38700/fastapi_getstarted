@@ -2,6 +2,7 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 from celery import states as celery_states
+from fastapi import status
 
 from core.unittest.async_case import AsyncTestCase
 
@@ -55,9 +56,27 @@ class TestDefaultRouter(AsyncTestCase):
         )
         assert len(response.json()["secret"]) > length
 
-    async def test_heath_check(self, app):
+    async def test_heath_check_fail(self, app):
         response = await self.client.get(app.url_path_for("health-check"))
-        expected_response = {"status": "ok"}
+        expected_response = {"status": "KO"}
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert expected_response == response.json()["detail"]
+
+    async def test_heath_check_liveness(self, app):
+        response = await self.client.get(
+            app.url_path_for("health-check"), params={"liveness": True}
+        )
+        expected_response = {"status": "OK"}
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_response == response.json()
+
+    async def test_heath_check_readiness(self, app):
+        response = await self.client.get(
+            app.url_path_for("health-check"), params={"readiness": True}
+        )
+        expected_response = {"status": "OK"}
+
+        assert response.status_code == status.HTTP_200_OK
         assert expected_response == response.json()
