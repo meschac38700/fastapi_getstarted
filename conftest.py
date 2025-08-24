@@ -63,7 +63,7 @@ async def client(app, base_url):
 def db_name(request, worker_id):
     method_name = request.node.name
     _uuid = uuid.uuid4().hex[:6]
-    db_name = f"{_uuid}_{method_name[:50]}_{worker_id}"
+    db_name = f"{_uuid}_{method_name[:40]}_{worker_id}"
     return db_name
 
 
