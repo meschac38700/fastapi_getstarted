@@ -1,4 +1,3 @@
-import inspect
 from functools import lru_cache
 from typing import Awaitable, Callable, ParamSpec
 
@@ -18,9 +17,7 @@ Fn = Callable[P, Awaitable[HTMLResponse]]
 def get_csrf_protect():
     def _only_csrf_fields():
         _settings = CSRFSettings()
-        config_fields = set(
-            dict(inspect.getmembers(LoadConfig))["__dataclass_fields__"].keys()
-        )
+        config_fields = LoadConfig.model_fields.keys()
         return list(_settings.model_dump(include=config_fields).items())
 
     CsrfProtectFixed.load_config(_only_csrf_fields)
