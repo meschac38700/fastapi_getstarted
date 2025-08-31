@@ -3,10 +3,10 @@ from typing import Awaitable, Callable, ParamSpec
 
 from fastapi import FastAPI, Request, Response
 from fastapi_csrf_protect.exceptions import CsrfProtectError
+from fastapi_csrf_protect.flexible import CsrfProtect
 from fastapi_csrf_protect.load_config import LoadConfig
 from starlette.responses import HTMLResponse
 
-from core.security.csrf.csrf_protect import CsrfProtectFixed
 from settings.csrf import CSRFSettings
 
 P = ParamSpec("P")
@@ -20,8 +20,8 @@ def get_csrf_protect():
         config_fields = LoadConfig.model_fields.keys()
         return list(_settings.model_dump(include=config_fields).items())
 
-    CsrfProtectFixed.load_config(_only_csrf_fields)
-    return CsrfProtectFixed()
+    CsrfProtect.load_config(_only_csrf_fields)
+    return CsrfProtect()
 
 
 async def csrf_required(request: Request, response: Response):

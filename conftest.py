@@ -217,12 +217,11 @@ def setup_test_routes(app, request):
 async def csrf_token(serializer, client, app):
     """Mock csrf token for testing purposes."""
     from fastapi import status
-
-    from core.security.csrf.csrf_protect import CsrfProtectFixed
+    from fastapi_csrf_protect.flexible import CsrfProtect
 
     token = "unsigned_token"
 
-    class CSRFProtect(CsrfProtectFixed):
+    class CSRFProtect(CsrfProtect):
         def generate_csrf_tokens(self, _: str | None = None):
             signed_token = serializer.dumps(token)
             return (token, signed_token)
