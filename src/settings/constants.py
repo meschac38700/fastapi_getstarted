@@ -52,3 +52,6 @@ class AppConstants:
     STATIC_ROOT = "statics"
 
     TEST_BASE_URL = "https://test.code"
+
+    # prometheus client
+    METRICS_PATH = "/metrics"
