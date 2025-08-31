@@ -30,7 +30,7 @@ async def lifespan(_: FastAPI):
     await teardown(_engine)
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, debug=settings.DEBUG)
 add_pagination(app)
 app.celery = celery
 static_packages = file_apps.static_packages()
