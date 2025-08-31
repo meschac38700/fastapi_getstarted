@@ -12,7 +12,7 @@ async def test_redirect_user_using_referer(client, app, app_url, user, csrf_toke
     login_info = {
         "username": user.username,
         "password": (lambda: "password")(),
-        "csrf_token": csrf_token,
+        settings.token_key: csrf_token,
     }
     response = await client.post(str(response.url), data=login_info)
 

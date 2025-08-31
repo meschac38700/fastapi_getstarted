@@ -24,7 +24,7 @@ async def test_get_chat_template(client, app, user, csrf_token, settings):
     login_data = {
         "username": user.username,
         "password": (lambda: "password")(),
-        "csrf_token": csrf_token,
+        settings.token_key: csrf_token,
     }
     response = await client.post(app.url_path_for("session-login"), data=login_data)
     assert response.status_code == status.HTTP_302_FOUND
@@ -43,7 +43,7 @@ async def test_filter_rooms_with_owner(
     login_data = {
         "username": user.username,
         "password": (lambda: "password")(),
-        "csrf_token": csrf_token,
+        settings.token_key: csrf_token,
     }
     response = await client.post(app.url_path_for("session-login"), data=login_data)
     assert response.status_code == status.HTTP_302_FOUND
@@ -79,7 +79,7 @@ async def test_filter_rooms_with_admin(client, app, csrf_token, settings, admin,
     login_data = {
         "username": admin.username,
         "password": (lambda: "admin")(),
-        "csrf_token": csrf_token,
+        settings.token_key: csrf_token,
     }
     response = await client.post(app.url_path_for("session-login"), data=login_data)
     assert response.status_code == status.HTTP_302_FOUND
@@ -105,7 +105,7 @@ async def test_filter_rooms_with_lambda_user(client, app, csrf_token, settings, 
     login_data = {
         "username": user_lambda.username,
         "password": (lambda: "lambda")(),
-        "csrf_token": csrf_token,
+        settings.token_key: csrf_token,
     }
     response = await client.post(app.url_path_for("session-login"), data=login_data)
     assert response.status_code == status.HTTP_302_FOUND

@@ -264,14 +264,19 @@ async def test_delete_message_from_chat_room(
 
 
 async def test_user_subscribes_to_a_room(
-    room: ChatRoom, subscriber: User, client: AsyncClientTest, app: FastAPI, csrf_token
+    room: ChatRoom,
+    subscriber: User,
+    client: AsyncClientTest,
+    app: FastAPI,
+    csrf_token,
+    settings,
 ) -> None:
     assert len(room.members) == 0
 
     # Unauthorize
     response = await client.patch(
         app.url_path_for("room-subscribe", room_id=room.id),
-        data={"csrf_token": csrf_token},
+        data={settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -279,7 +284,8 @@ async def test_user_subscribes_to_a_room(
 
     # Not found
     response = await client.patch(
-        app.url_path_for("room-subscribe", room_id=-1), data={"csrf_token": csrf_token}
+        app.url_path_for("room-subscribe", room_id=-1),
+        data={settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
@@ -287,7 +293,7 @@ async def test_user_subscribes_to_a_room(
     # Success
     response = await client.patch(
         app.url_path_for("room-subscribe", room_id=room.id),
-        data={"csrf_token": csrf_token},
+        data={settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_200_OK
 
@@ -298,14 +304,19 @@ async def test_user_subscribes_to_a_room(
 
 
 async def test_user_unsubscribes_to_a_room(
-    room: ChatRoom, subscriber, client: AsyncClientTest, app: FastAPI, csrf_token
+    room: ChatRoom,
+    subscriber,
+    client: AsyncClientTest,
+    app: FastAPI,
+    csrf_token,
+    settings,
 ) -> None:
     await room.subscribe(subscriber)
     assert len(room.members) == 1
 
     response = await client.patch(
         app.url_path_for("room-unsubscribe", room_id=room.id),
-        data={"csrf_token": csrf_token},
+        data={settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -314,7 +325,7 @@ async def test_user_unsubscribes_to_a_room(
     # Not found
     response = await client.patch(
         app.url_path_for("room-unsubscribe", room_id=-1),
-        data={"csrf_token": csrf_token},
+        data={settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": f"Object {ChatRoom.__name__} not found."}
@@ -322,7 +333,7 @@ async def test_user_unsubscribes_to_a_room(
     # Success
     response = await client.patch(
         app.url_path_for("room-unsubscribe", room_id=room.id),
-        data={"csrf_token": csrf_token},
+        data={settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_200_OK
 
@@ -333,9 +344,9 @@ async def test_user_unsubscribes_to_a_room(
 
 
 async def test_create_chat_room(
-    client: AsyncClientTest, user: User, app: FastAPI, csrf_token
+    client: AsyncClientTest, user: User, app: FastAPI, csrf_token, settings
 ) -> None:
-    data = {"name": "my lovely friends", "csrf_token": csrf_token}
+    data = {"name": "my lovely friends", settings.token_key: csrf_token}
     response = await client.post(app.url_path_for("room-create"), json=data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -347,7 +358,7 @@ async def test_create_chat_room(
 
 
 async def test_create_chat_room_error_already_exists(
-    client: AsyncClientTest, user: User, admin: User, app: FastAPI, csrf_token
+    client: AsyncClientTest, user: User, admin: User, app: FastAPI, csrf_token, settings
 ) -> None:
     chat_room = await ChatRoom(name="test", owner_id=user.id).save()
     assert chat_room.id is not None
@@ -355,7 +366,7 @@ async def test_create_chat_room_error_already_exists(
     await client.user_login(user)
     response = await client.post(
         app.url_path_for("room-create"),
-        json={"name": chat_room.name, "csrf_token": csrf_token},
+        json={"name": chat_room.name, settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_409_CONFLICT
     assert response.json() == {"detail": "Chat room already exists."}
@@ -364,7 +375,7 @@ async def test_create_chat_room_error_already_exists(
     await client.force_login(admin)
     response = await client.post(
         app.url_path_for("room-create"),
-        json={"name": chat_room.name, "csrf_token": csrf_token},
+        json={"name": chat_room.name, settings.token_key: csrf_token},
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert await ChatRoom.get(name=chat_room.name, owner_id=admin.id) is not None
@@ -377,8 +388,9 @@ async def test_edit_chat_room(
     room: ChatRoom,
     app: FastAPI,
     csrf_token,
+    settings,
 ) -> None:
-    data = {"name": room.name + " Edited !", "csrf_token": csrf_token}
+    data = {"name": room.name + " Edited !", settings.token_key: csrf_token}
     response = await client.patch(
         app.url_path_for("room-edit", room_id=room.id), data=data
     )
@@ -403,10 +415,15 @@ async def test_edit_chat_room(
 
 
 async def test_edit_chat_room_with_admin(
-    client: AsyncClientTest, admin: User, room: ChatRoom, app: FastAPI, csrf_token
+    client: AsyncClientTest,
+    admin: User,
+    room: ChatRoom,
+    app: FastAPI,
+    csrf_token,
+    settings,
 ):
     # Test with admin user
-    data = {"name": "admin room", "csrf_token": csrf_token}
+    data = {"name": "admin room", settings.token_key: csrf_token}
     await client.force_login(admin)
     response = await client.patch(
         app.url_path_for("room-edit", room_id=room.id), json=data
