@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi_pagination import add_pagination
+from prometheus_client import make_asgi_app
 from starlette.staticfiles import StaticFiles
 
 from apps.user.dependencies.exceptions import access_denied_exception_handler
@@ -31,6 +32,10 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+metrics_app = make_asgi_app()
+app.mount(settings.METRICS_PATH, metrics_app, name="metrics")
+
 add_pagination(app)
 app.celery = celery
 static_packages = file_apps.static_packages()
