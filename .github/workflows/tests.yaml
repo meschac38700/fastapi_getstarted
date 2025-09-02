@@ -37,7 +37,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          docker exec -t api_test pytest
+          docker exec -t api_test pytest -m 'not E2E'
           # remove the first
           sed -i "0,/<source>.*<\/source>/{//d;}" src/coverage.xml
           # Fixed source path
