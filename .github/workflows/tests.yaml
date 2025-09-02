@@ -1,5 +1,4 @@
 name: CI
-run-name: CI
 
 on:
   push:
@@ -9,7 +8,7 @@ on:
     branches: ["*"]
 
 jobs:
-  tests:
+  unittest:
     runs-on: ubuntu-22.04
     strategy:
       max-parallel: 4
@@ -53,7 +52,7 @@ jobs:
           compression-level: 0
 
   sonar:
-    needs: tests
+    needs: unittest
     runs-on: ubuntu-22.04
     name: SonarQube Analysis
     steps:
