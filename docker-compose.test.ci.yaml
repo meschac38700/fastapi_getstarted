@@ -30,6 +30,8 @@ services:
       # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+      POSTGRES_HOST: database_test
+      POSTGRES_PORT: 5432
     volumes:
       - ./src:/home/appuser/app/www
       - ./conftest.py:/home/appuser/app/www/conftest.py

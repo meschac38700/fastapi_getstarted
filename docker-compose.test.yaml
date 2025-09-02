@@ -51,7 +51,6 @@ services:
       - CELERY_LOG_LEVEL=DEBUG
     command: ["bash", "-c",  "./scripts/entrypoint-celery.sh"]
     network_mode: host
-
   celery_beat_test:
     container_name: celery_beat_test
     restart: on-failure
