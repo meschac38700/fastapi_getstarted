@@ -1,0 +1,38 @@
+name: E2E
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches: ["*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.13"]
+        docker-version: ["27.2"]
+        docker-channel: ["stable"]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: docker/setup-docker-action@v4
+      with:
+        docker_version: ${{ matrix.docker-version }}
+        docker_channel: ${{ matrix.docker-channel }}
+
+    - name: Prepare test environment
+      run: |
+        export UV_LINK_MODE=copy
+        export PYTHON_VERSION=${{ matrix.python-version }}
+        docker compose -f docker-compose.test-n2n.ci.yaml up -d
+
+    - name: Run E2E Tests
+      run: |
+        docker exec -t pytest-playwright pytest -m E2E # only run tests with marker E2E
