@@ -1,0 +1,67 @@
+services:
+  database_test:
+    image: postgres:14.8-alpine
+    container_name: database_test
+    restart: always
+    ports:
+      - "5434:5432"
+    env_file:
+      - envs.example/test/.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-ci
+
+  redis_test:
+    image: meschac38000/redis-fastapi
+    container_name: redis_test
+    restart: always
+    env_file:
+      - ./envs.example/test/.env
+    environment:
+      # overloaded because tests are executed inside the container (FastApi)
+      CELERY_BROKER: redis://:requirepass@redis_test:6379/0
+      CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+    ports:
+      - "63791:6379"
+    privileged: true
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli", "--no-auth-warning", "--pass $$REDIS_PASSWORD", "--raw ping | grep PONG" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    command: sh -c "./entrypoint.sh"
+    networks:
+      - test-ci
+
+  pytest-playwright:
+    image: meschac38000/pytest-playwright:1.55.0
+    restart: unless-stopped
+    env_file:
+      - envs.example/test/.env
+    environment:
+      # overloaded because tests are executed inside the application container (FastApi)
+      CELERY_BROKER: redis://:requirepass@redis_test:6379/0
+      CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+      POSTGRES_HOST: database_test
+      POSTGRES_PORT: 5432
+    healthcheck:
+      test: ["CMD-SHELL", "python", "manage.py", "healthcheck", "--liveness"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    depends_on:
+      database_test:
+        restart: true
+        condition: service_healthy
+      redis_test:
+        restart: true
+        condition: service_healthy
+    networks:
+      - test-ci
+
+networks:
+  test-ci: {}
