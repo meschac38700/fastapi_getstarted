@@ -39,6 +39,7 @@ services:
 
   pytest-playwright:
     image: meschac38000/pytest-playwright:1.55.0
+    container_name: pytest-playwright
     restart: unless-stopped
     env_file:
       - envs.example/test/.env
