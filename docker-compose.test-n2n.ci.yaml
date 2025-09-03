@@ -61,6 +61,10 @@ services:
       redis_test:
         restart: true
         condition: service_healthy
+    volumes:
+      - ./src:/app/
+      - ./tox.ini:/app/tox.ini
+      - ./conftest.py:/app/conftest.py
     networks:
       - test-ci
 
