@@ -49,6 +49,12 @@ def app_url(settings):
 
 
 @pytest.fixture
+def e2e_base_url(settings):
+    port = f":{settings.APP_PORT}" if settings.APP_PORT != 80 else ""
+    return f"http://localhost{port}"
+
+
+@pytest.fixture
 async def client(app, app_url):
     from httpx import ASGITransport
 
