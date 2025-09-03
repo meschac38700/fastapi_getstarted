@@ -44,17 +44,17 @@ def app():
 
 
 @pytest.fixture
-def base_url(settings):
+def app_url(settings):
     return settings.TEST_BASE_URL
 
 
 @pytest.fixture
-async def client(app, base_url):
+async def client(app, app_url):
     from httpx import ASGITransport
 
     from core.unittest.client import AsyncClientTest
 
-    client = AsyncClientTest(transport=ASGITransport(app=app), base_url=base_url)
+    client = AsyncClientTest(transport=ASGITransport(app=app), base_url=app_url)
     yield client
     await client.aclose()
 
@@ -113,9 +113,9 @@ async def user(db):  # pylint: disable=unused-argument
 
 
 @pytest.fixture
-def url_for(app, base_url):
+def url_for(app, app_url):
     def _url_for(endpoint, **kwargs):
-        return str(app.url_path_for(endpoint, **kwargs).make_absolute_url(base_url))
+        return str(app.url_path_for(endpoint, **kwargs).make_absolute_url(app_url))
 
     return _url_for
 
