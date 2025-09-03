@@ -30,8 +30,9 @@ FROM base AS test_env
 
 ENV VBIN=$VIRTUAL_ENV/bin
 ENV PLAYWRIGHT_VERSION=1.55.0
+ENV APP_PORT=80
 
-EXPOSE 80
+EXPOSE $APP_PORT
 
 COPY --from=virtualenv $VIRTUAL_ENV $VIRTUAL_ENV
 ENV PATH="$VBIN:$PATH"
@@ -43,4 +44,6 @@ WORKDIR /app
 
 COPY ./src .
 
-CMD ["fastapi", "dev", "main.py", "--port=80", "--host=0.0.0.0" ]
+RUN chmod +x ./scripts/entrypoint.sh
+
+ENTRYPOINT ["bash",  "/app/scripts/entrypoint.sh"]
