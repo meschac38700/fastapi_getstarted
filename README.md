@@ -91,9 +91,14 @@ $ python src/manage.py server
 $ docker compose -f docker-compose.dev.yaml up -d
 ```
 
-#### Run application tests
+#### Run application unit tests
 ```console
 $ python src/manage.py tests
+```
+
+#### Run application E2E tests
+```console
+$ python src/manage.py tests --pytest-args -m=E2E
 ```
 
 <a id="run_migrations"></a>
