@@ -1,5 +1,4 @@
 name: CI
-run-name: CI
 
 on:
   push:
@@ -9,7 +8,7 @@ on:
     branches: ["*"]
 
 jobs:
-  tests:
+  unittest:
     runs-on: ubuntu-22.04
     strategy:
       max-parallel: 4
@@ -37,7 +36,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          docker exec -t api_test pytest
+          docker exec -t api_test pytest -m 'not E2E'
           # remove the first
           sed -i "0,/<source>.*<\/source>/{//d;}" src/coverage.xml
           # Fixed source path
@@ -53,7 +52,7 @@ jobs:
           compression-level: 0
 
   sonar:
-    needs: tests
+    needs: unittest
     runs-on: ubuntu-22.04
     name: SonarQube Analysis
     steps:

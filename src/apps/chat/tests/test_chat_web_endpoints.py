@@ -37,7 +37,7 @@ async def test_get_chat_template(client, app, user, csrf_token, settings):
 
 
 async def test_filter_rooms_with_owner(
-    client, app, user, base_url, csrf_token, settings, rooms
+    client, app, user, app_url, csrf_token, settings, rooms
 ):
     # session login
     login_data = {
@@ -53,7 +53,7 @@ async def test_filter_rooms_with_owner(
     query = {"room_name": "java"}
     url = (
         app.url_path_for("room-filter")
-        .make_absolute_url(base_url)
+        .make_absolute_url(app_url)
         .include_query_params(**query)
     )
     response = await client.get(str(url))

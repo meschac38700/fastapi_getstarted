@@ -32,10 +32,10 @@ linter:
   script:
     - pre-commit run --all-files --color always
 
-tests:
+unittest:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_PIPELINE_SOURCE == "merge_request_event"
-  stage: test
+  stage: unittest
   before_script:
     - export $(grep -v '^#' ./envs.example/.test.env | xargs)
     - export $(grep -v '^#' ./envs.example/.database.test.env | xargs)
