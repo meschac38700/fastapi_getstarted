@@ -1,21 +1,19 @@
 services:
   database_test:
-    image: postgres:14.8-alpine
+    image: postgres:17-alpine
     container_name: database_test
     restart: always
     ports:
       - "5434:5432"
     env_file:
-      - envs.example/test/.env
+      - ./envs/test/.env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 3s
       timeout: 3s
       retries: 5
   redis_test:
-    build:
-      context: .
-      dockerfile: dockerfiles/redis.Dockerfile
+    image: meschac38000/redis-fastapi
     container_name: redis_test
     restart: always
     env_file:
@@ -50,23 +48,4 @@ services:
     environment:
       - CELERY_LOG_LEVEL=DEBUG
     command: ["bash", "-c",  "./scripts/entrypoint-celery.sh"]
-    network_mode: host
-  celery_beat_test:
-    container_name: celery_beat_test
-    restart: on-failure
-    env_file:
-      - ./envs/test/.env
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile.tests
-    depends_on:
-      redis_test:
-        condition: service_healthy
-        restart: true
-      database_test:
-        condition: service_healthy
-        restart: true
-    environment:
-      - CELERY_LOG_LEVEL=DEBUG
-    command: ["bash", "-c",  "./scripts/entrypoint-beat.sh"]
     network_mode: host
