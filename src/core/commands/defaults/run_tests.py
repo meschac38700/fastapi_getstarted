@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 
 from core.monitoring.logger import get_logger
@@ -31,6 +33,9 @@ def run_tests(
     apps: AppsType,
     pytest_args: PytestArgsType,
     test_paths: TestPathsType = None,
+    e2e: Annotated[
+        bool, typer.Option("-e", "--end-to-end", help="Execute end to end tests.")
+    ] = False,
 ):
     """Execute application tests.
 
@@ -40,9 +45,11 @@ def run_tests(
         > python manage.py tests /apps/user apps/authentication  # Run all tests of the specified applications
         > python manage.py tests --pytest-args="--ignore=apps/"--pytest-args --strict # Specify pytest args
     """
-    dk_compose = DockerComposeRunner(
-        settings.BASE_DIR.parent / "docker-compose.test.yaml", env="test"
-    )
+    compose_file = settings.BASE_DIR.parent / "docker-compose.test.yaml"
+    if e2e:
+        compose_file = settings.BASE_DIR.parent / "docker-compose.test.e2e.yaml"
+
+    dk_compose = DockerComposeRunner(compose_file, env="test")
 
     test_command = AppTestRunner()
 
@@ -51,6 +58,7 @@ def run_tests(
             target_apps=apps,
             test_paths=test_paths or [],
             pytest_args=pytest_args,
+            e2e=e2e,
         )
 
     dk_compose.run_process(_run_test, stop_after=True, force_recreate=True)
