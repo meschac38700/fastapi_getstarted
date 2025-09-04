@@ -64,5 +64,6 @@ async def test_user_login_workflow(
     assert await submit_button.count() == 1
 
     await submit_button.click()
+    # expecting redirect to success authentication url
     expected_redirect_url = e2e_base_url + settings.session_auth_redirect_success
     assert page.url == expected_redirect_url

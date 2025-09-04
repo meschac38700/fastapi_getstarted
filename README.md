@@ -98,7 +98,7 @@ $ python src/manage.py tests
 
 #### Run application E2E tests
 ```console
-$ python src/manage.py tests --pytest-args -m=E2E
+$ python src/manage.py tests -e
 ```
 
 <a id="run_migrations"></a>
