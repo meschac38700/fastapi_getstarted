@@ -1,10 +1,17 @@
 services:
   database_test:
-    extends:
-      service: database_test
-      file: docker-compose.test.yaml
+    image: postgres:17-alpine
+    container_name: database_test
+    restart: always
+    ports:
+      - "5434:5432"
     env_file:
       - ./envs.example/test/.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
   api_test:
     container_name: api_test
     restart: unless-stopped
@@ -42,23 +49,41 @@ services:
     command: ["bash", "./scripts/entrypoint.sh"]
 
   redis_test:
-    extends:
-      service: redis_test
-      file: docker-compose.test.yaml
+    image: meschac38000/redis-fastapi
+    container_name: redis_test
+    restart: always
     env_file:
       - ./envs.example/test/.env
     environment:
       # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+    ports:
+      - "63791:6379"
+    privileged: true
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli", "--no-auth-warning", "--pass $$REDIS_PASSWORD", "--raw ping | grep PONG" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    command: sh -c "./entrypoint.sh"
 
   celery_test:
-    extends:
-      service: celery_test
-      file: docker-compose.test.yaml
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.tests
+    container_name: celery_test
+    restart: on-failure
     env_file:
       - ./envs.example/test/.env
+    depends_on:
+      api_test:
+        condition: service_healthy
+        restart: true
+    volumes:
+      - ./src:/home/appuser/app/www
     environment:
       # overloaded because tests are executed inside the application container (FastApi)
       CELERY_BROKER: redis://:requirepass@redis_test:6379/0
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
+    command: bash -c "celery -A main.celery worker -n default@%h -Q default --loglevel=INFO"
