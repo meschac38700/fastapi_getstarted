@@ -49,6 +49,8 @@ services:
       CELERY_BACKEND: redis://:requirepass@redis_test:6379/0
       POSTGRES_HOST: database_test
       POSTGRES_PORT: 5432
+    ports:
+      - "8002:8002"
     healthcheck:
       test: ["CMD-SHELL", "python", "manage.py", "healthcheck", "--liveness"]
       interval: 3s
