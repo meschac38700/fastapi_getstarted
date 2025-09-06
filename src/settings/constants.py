@@ -4,7 +4,7 @@ from typing import Literal
 
 class AppConstants:
     APP_ENVIRONMENT: Literal["prod", "test", "dev"] = os.getenv("APP_ENVIRONMENT")
-    APP_PORT: int
+    APP_PORT: int = 80
 
     INITIAL_FIXTURES = [
         "initial-users",
