@@ -45,8 +45,8 @@ class AppTestRunner:
     def __call__(
         self,
         *,
-        target_apps: list[str],
-        pytest_args: list[str],
+        target_apps: list[str] = None,
+        pytest_args: list[str] = None,
         test_paths: list[str] | None = None,
         e2e: bool = False,
     ):
@@ -58,9 +58,9 @@ class AppTestRunner:
         if all((test_paths, target_apps)):
             raise ValueError("Cannot specify both 'target_app' and 'test_paths'.")
 
-        pytest_args = list(set(pytest_args + e2e_marker_options))
+        pytest_args = list(set((pytest_args or []) + e2e_marker_options))
 
-        _test_paths = test_paths
+        _test_paths = test_paths or []
         if target_apps:
             _test_paths = [
                 f"{settings.BASE_DIR / "apps" / app_name}" for app_name in target_apps
