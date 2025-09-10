@@ -49,6 +49,30 @@ services:
       - envs/prod/.env
     command: ["bash", "./scripts/entrypoint.sh"]
 
+  nginx:
+    image: meschac38000/nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "80:80"
+      - "81:80"
+      - "443:443"
+      - "444:443"
+    volumes:
+      - staticfiles:/app/www/static
+      - mediafiles:/app/www/media
+      - ./nginx/ssl:/etc/nginx/ssl
+    environment:
+      - STATICFILES_DIR=/app/www/static
+      - MEDIAFILES_DIR=/app/www/media
+      - NGINX_HOST_HTTPS_PORT=443
+      - NGINX_HOST=app
+      - API_HOST=app
+
   redis_server:
     image: meschac38000/redis-fastapi
     pull_policy: always
