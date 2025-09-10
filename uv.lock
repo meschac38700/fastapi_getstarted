@@ -589,6 +589,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "playwright" },
     { name = "pytest" },
     { name = "pytest-playwright-asyncio" },
 ]
@@ -633,6 +634,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "playwright", specifier = ">=1.55.0" },
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-playwright-asyncio", specifier = ">=0.7.0" },
 ]
