@@ -38,7 +38,7 @@ services:
       - test-ci
 
   pytest-playwright:
-    image: meschac38000/pytest-playwright:1.55.0
+    image: meschac38000/pytest-playwright:latest
     container_name: pytest-playwright
     restart: unless-stopped
     env_file:
