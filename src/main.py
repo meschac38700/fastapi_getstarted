@@ -31,7 +31,7 @@ async def lifespan(_: FastAPI):
     await teardown(_engine)
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, debug=settings.DEBUG)
 
 Instrumentator().instrument(app).expose(
     app, should_gzip=True, endpoint=settings.METRICS_PATH

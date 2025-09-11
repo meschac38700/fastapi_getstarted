@@ -1,7 +1,9 @@
 from http import HTTPStatus
 
 
-async def test_redirect_user_using_referer(client, app, app_url, user, csrf_token):
+async def test_redirect_user_using_referer(
+    client, app, app_url, settings, user, csrf_token
+):
     chat_url = app.url_path_for("chat-template")
     response = await client.get(chat_url, follow_redirects=True)
     referer = response.url.params.get("referer")
@@ -12,7 +14,7 @@ async def test_redirect_user_using_referer(client, app, app_url, user, csrf_toke
     login_info = {
         "username": user.username,
         "password": (lambda: "password")(),
-        "csrf_token": csrf_token,
+        settings.token_key: csrf_token,
     }
     response = await client.post(str(response.url), data=login_info)
 

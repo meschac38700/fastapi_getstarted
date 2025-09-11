@@ -17,14 +17,16 @@ do
     echo "Waiting for database container to start..." && sleep 1;
 done
 
-main_file=main.py
+app_name=app
+entrypoint="main:$app_name"
 if [ -d "$SRC_FOLDER" ]; then
-  main_file="$SRC_FOLDER/$main_file"
+  export PYTHONPATH=$SRC_FOLDER
+  entrypoint="$SRC_FOLDER.$entrypoint"
 fi;
 
 # Running fastapi dev server
 if [[ $RELOAD = "True" ]]; then
-  fastapi dev $main_file --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --reload
+  fastapi dev --entrypoint $entrypoint --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --reload
 else
-  fastapi dev $main_file --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --no-reload
+  fastapi dev --entrypoint $entrypoint --port "${PORT:-8000}" --host "${HOST:-127.0.0.1}"  --no-reload
 fi;
