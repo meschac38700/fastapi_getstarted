@@ -30,7 +30,7 @@ def render(
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens(settings.secret_key)
 
     _context = context or {}
-    _context.update({"csrf_token": csrf_token})
+    _context.update({settings.token_key: csrf_token})
 
     response = HTMLResponse(
         render_string(request, template_name, _context), status_code
