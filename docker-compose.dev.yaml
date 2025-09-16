@@ -14,6 +14,24 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
+
+  # https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html#examples
+  pg_admin:
+    image: dpage/pgadmin4:latest
+    container_name: pg_admin
+    restart: always
+    env_file:
+      - envs/dev/.env
+    ports:
+      - "5444:80"
+    depends_on:
+      database_dev:
+        condition: service_healthy
+        restart: true
+    volumes:
+      - pg_admin:/var/lib/pgadmin
+      - ./pgadmin/servers.dev.json:/pgadmin4/servers.json
+
   redis_dev:
     image: meschac38000/redis-fastapi
     container_name: redis_dev
@@ -93,6 +111,7 @@ services:
     command: sh -c "celery --broker=$$CELERY_BROKER flower"
 
 volumes:
+  pg_admin: {}
   dev_data: {}
   dev_redis: {}
   flower_data_dev: {}

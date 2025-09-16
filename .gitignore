@@ -194,3 +194,7 @@ cython_debug/
 # Redis
 redis/redis.conf
 celerybeat-schedule*
+
+# PG admin
+pgadmin/*
+!pgadmin/server.json.example
