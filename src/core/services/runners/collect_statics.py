@@ -36,8 +36,8 @@ class CollectStaticFiles:
         static_folder_paths = {
             path_utils.resolve_module_path(static_path) for static_path in static_paths
         }
-        for static_folder__path in static_folder_paths:
-            for static_subfolder in static_folder__path.iterdir():
+        for static_folder_path in static_folder_paths:
+            for static_subfolder in static_folder_path.iterdir():
                 shutil.copytree(
                     static_subfolder,
                     settings.static_path / static_subfolder.name,
