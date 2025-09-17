@@ -45,3 +45,26 @@ def linux_path_to_module_path(linux_path: _Path) -> str:
     relative_path = re.sub(ext_pattern, "", relative_path)
 
     return relative_path.replace("/", ".").strip(".")
+
+
+def resolve_module_path(module_path: _Path) -> Path | None:
+    """Normalize a module path to an absolut file path.
+
+    ex:
+        >>> resolve_module_path("apps.user.fixtures")
+        >>> /home/my_project/src/apps/user/project/fixtures
+    """
+    _module_path = module_path.replace(".", "/")
+    absolute_path = settings.BASE_DIR / _module_path
+
+    # last item of the path is a folder
+    if absolute_path.exists():
+        return absolute_path
+
+    # last item of the path is a file
+    filename = absolute_path.name
+    absolute_path = absolute_path.parent / f"{filename}.py"
+    if absolute_path.exists():
+        return absolute_path
+
+    return None
