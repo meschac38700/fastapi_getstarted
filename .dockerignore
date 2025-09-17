@@ -19,7 +19,7 @@ db.sqlite3-journal
 media
 static
 !**/static
-src/static
+!src/statics
 src/tox.ini
 
 node_modules
