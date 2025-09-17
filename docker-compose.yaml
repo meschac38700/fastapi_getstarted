@@ -19,10 +19,7 @@ services:
   app:
     container_name: app
     restart: unless-stopped
-    # image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.5
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile
+    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.6
     pull_policy: always
     healthcheck:
       test: python manage.py healthcheck
@@ -70,9 +67,9 @@ services:
       - backend
       - traefik
     volumes:
-      - staticfiles:/app/www/statics
+      - staticfiles:/static
     environment:
-      - STATICFILES_DIR=/app/www/statics
+      - STATICFILES_DIR=/static/
       - BACKEND_HOST=app
       - SERVER_NAME=api.eliam-lotonga.fr
 
@@ -99,10 +96,7 @@ services:
     command: sh -c "./entrypoint.sh"
 
   celery_server:
-    # image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.5
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile
+    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.6
     pull_policy: always
     container_name: celery_server
     restart: on-failure
@@ -117,11 +111,7 @@ services:
         restart: true
 
   celery_beat:
-    # image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.5
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile
-
+    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.6
     pull_policy: always
     container_name: celery_beat
     restart: on-failure
