@@ -194,6 +194,7 @@ def test_linux_path_to_module_path(original_path: Path, expected_path: str):
         ),
         (settings.BASE_DIR / "core" / "commands" / "cli.py", None, "cli.py", Path(".")),
         (settings.BASE_DIR / "cli.py", settings.BASE_DIR / "cli.py", None, Path(".")),
+        (Path("/foo/bar"), None, None, Path("/foo/bar")),
     ),
 )
 def test_relative_from(
@@ -204,4 +205,32 @@ def test_relative_from(
             original_path, from_path=from_path, folder_name=folder_name
         )
         == expected_path
+    )
+
+
+@pytest.mark.parametrize(
+    "module_path,expected_path",
+    (
+        (
+            "apps.user.models.user",
+            settings.BASE_DIR / "apps" / "user" / "models" / "user.py",
+        ),
+        ("apps.user.fixtures", settings.BASE_DIR / "apps" / "user" / "fixtures"),
+        ("foo.bar", None),
+    ),
+)
+def test_resolve_module_path(module_path: str, expected_path: Path):
+    assert file_path_services.resolve_module_path(module_path) == expected_path
+
+
+@pytest.mark.parametrize(
+    "app_name,required_module,expected_module",
+    (
+        ("user", "models", "apps.user"),
+        ("user", "foo", None),
+    ),
+)
+def test_resolve_app_name(app_name: str, required_module: str, expected_module: str):
+    assert (
+        file_app_services.resolve_app_name(app_name, required_module) == expected_module
     )

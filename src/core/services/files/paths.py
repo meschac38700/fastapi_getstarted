@@ -47,7 +47,7 @@ def linux_path_to_module_path(linux_path: _Path) -> str:
     return relative_path.replace("/", ".").strip(".")
 
 
-def resolve_module_path(module_path: _Path) -> Path | None:
+def resolve_module_path(module_path: str) -> Path | None:
     """Normalize a module path to an absolut file path.
 
     ex:
