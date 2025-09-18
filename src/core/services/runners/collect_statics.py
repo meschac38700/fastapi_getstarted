@@ -1,5 +1,8 @@
 import logging
+import os
+import re
 import shutil
+from pathlib import Path
 
 from core.monitoring.logger import get_logger
 from core.services.files import apps as app_utils
@@ -36,6 +39,7 @@ class CollectStaticFiles:
         static_folder_paths = {
             path_utils.resolve_module_path(static_path) for static_path in static_paths
         }
+        total_file_collected = 0
         for static_folder_path in static_folder_paths:
             for static_subfolder in static_folder_path.iterdir():
                 shutil.copytree(
@@ -43,9 +47,12 @@ class CollectStaticFiles:
                     settings.static_path / static_subfolder.name,
                     dirs_exist_ok=True,
                 )
+                file_count = self._count_files(static_subfolder)
                 self.logger.info(
-                    f"Staticfiles collected from: {static_subfolder.relative_to(settings.BASE_DIR)}"
+                    f"{file_count} Staticfiles collected from: {static_subfolder.relative_to(settings.BASE_DIR)}"
                 )
+                total_file_collected += file_count
+        return total_file_collected
 
     def _clear_static_files(self):
         self.logger.info("Clearing previous collected static files...")
@@ -77,3 +84,15 @@ class CollectStaticFiles:
                 continue
             static_folders.append(static_module_path + "." + settings.STATIC_ROOT)
         return static_folders
+
+    def _count_files(self, folder: Path):
+        """count files in folder recursively."""
+        filename_pattern = r"^[a-z0-9]"
+        count = sum(
+            [
+                1
+                for filename in list(os.walk(folder))[-1][-1]
+                if re.match(filename_pattern, filename) is not None
+            ]
+        )
+        return count
