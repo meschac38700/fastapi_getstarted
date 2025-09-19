@@ -1,0 +1,76 @@
+import logging
+import shutil
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
+from core.commands.cli import app as main_app
+from settings import settings as app_settings
+from settings.app import Settings
+
+
+class MockSettings(Settings):
+    APPS_ROOT: Path = Path(__file__).parent / "data" / "collectstatics"
+
+    @property
+    def static_path(self):
+        return self.apps_folder / app_settings.STATIC_ROOT
+
+    @property
+    def apps_folder(self):
+        return self.APPS_ROOT
+
+
+@pytest.fixture
+def app_tree():
+    """Create an application tree scenario for testing purposes.
+
+    data
+      collectstatics (apps folder)
+        bar (app)
+          statics
+            test.css
+        foo (app)
+    """
+    from core.services.runners import collect_statics
+
+    with patch.object(collect_statics, "settings", MockSettings()) as mock_settings:
+        from core.services.files import apps
+
+        with patch.object(apps, "settings", MockSettings()) as _:
+            app_root = mock_settings.static_path.parent
+
+            # global statics folder
+            mock_settings.static_path.mkdir(parents=True, exist_ok=True)
+
+            # BAR application
+            bar = app_root / "bar" / mock_settings.STATIC_ROOT
+            bar.mkdir(parents=True, exist_ok=True)
+            (bar / "test.css").touch(exist_ok=True)  # create a static file
+
+            # second app FOO
+            foo = app_root / "foo"
+            foo.mkdir(parents=True, exist_ok=True)
+
+            yield app_root
+            shutil.rmtree(mock_settings.apps_folder)
+
+
+@pytest.mark.usefixtures("app_tree")
+def test_collect_staticfiles_from_specific_app(cli_runner, caplog):
+    caplog.set_level(logging.INFO)
+
+    result = cli_runner.invoke(main_app, ["collectstatic", "-a", "foo", "-a", "bar"])
+
+    assert result.exit_code == 0
+    assert "Collecting static files..." in caplog.text
+    assert "Skipping app 'foo' as no static module found." in caplog.text
+    assert (
+        "Prepare to collect staticfiles from: ['tests.core.commands.data.collectstatics.bar.statics']"
+        in caplog.text
+    )
+    assert (
+        "1 Staticfiles collected from: tests/core/commands/data/collectstatics/bar/statics/test.css"
+        in caplog.text
+    )
