@@ -29,7 +29,7 @@ class CollectStaticFiles:
             ]
 
         if not static_paths:
-            self.logger.info("No static files found to collect: {app_names=}")
+            self.logger.info("No static files were found to be collected.")
             return None
 
         return self.collect_static_files(static_paths)
