@@ -74,3 +74,25 @@ def test_collect_staticfiles_from_specific_app(cli_runner, caplog):
         "1 Staticfiles collected from: tests/core/commands/data/collectstatics/bar/statics/test.css"
         in caplog.text
     )
+
+
+def test_clear_and_collect_staticfiles(app_tree, cli_runner, caplog, settings):
+    caplog.set_level(logging.INFO)
+
+    # Fill the destination folder before collection
+    files_to_clear = ["subfile.css", "file1.css", "file2.js"]
+    subfolder = app_tree / settings.STATIC_ROOT / "subfolder"
+    subfolder.mkdir(parents=True, exist_ok=True)
+    (subfolder / "subfile.css").touch(exist_ok=True)
+    for file_to_clear in files_to_clear[1:]:
+        (subfolder / file_to_clear).touch(exist_ok=True)
+
+    result = cli_runner.invoke(main_app, ["collectstatic", "-a", "bar", "-c"])
+
+    assert result.exit_code == 0
+    assert "Collecting static files..." in caplog.text
+    assert f"{len(files_to_clear)} staticfiles cleared." in caplog.text
+    assert (
+        "1 Staticfiles collected from: tests/core/commands/data/collectstatics/bar/statics/test.css"
+        in caplog.text
+    )
