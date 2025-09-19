@@ -41,3 +41,6 @@ def mock_popen(subprocess_path: str, *, error: bool = False):
         return wrapper
 
     return decorator
+
+
+__all__ = ["mock_popen"]

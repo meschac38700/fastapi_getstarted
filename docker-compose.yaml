@@ -19,7 +19,7 @@ services:
   app:
     container_name: app
     restart: unless-stopped
-    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.5
+    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.6
     pull_policy: always
     healthcheck:
       test: python manage.py healthcheck
@@ -35,8 +35,26 @@ services:
         condition: service_healthy
         restart: true
     networks:
-      - traefik
       - backend
+    volumes:
+      - staticfiles:/home/appuser/app/www/statics  # should match settings.STATIC_ROOT (settings/constants.py)
+    env_file:
+      - envs/prod/.env
+    command: ["bash", "./scripts/entrypoint.sh"]
+
+  nginx:
+    image: meschac38000/fastapi.nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "80:80"
+      - "81:80"
+      - "443:443"
+      - "444:443"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.app.rule=Host(`lab.eliam-lotonga.fr`)"
@@ -45,9 +63,15 @@ services:
       - "traefik.docker.network=traefik"
       - "traefik.http.routers.app.middlewares=retry-attempts" # optional
       - "traefik.http.middlewares.retry-attempts.retry.attempts=3" # optional
-    env_file:
-      - envs/prod/.env
-    command: ["bash", "./scripts/entrypoint.sh"]
+    networks:
+      - backend
+      - traefik
+    volumes:
+      - staticfiles:/static
+    environment:
+      - STATICFILES_DIR=/static/
+      - BACKEND_HOST=app
+      - SERVER_NAME=api.eliam-lotonga.fr
 
   redis_server:
     image: meschac38000/redis-fastapi
@@ -72,7 +96,7 @@ services:
     command: sh -c "./entrypoint.sh"
 
   celery_server:
-    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.5
+    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.6
     pull_policy: always
     container_name: celery_server
     restart: on-failure
@@ -87,7 +111,7 @@ services:
         restart: true
 
   celery_beat:
-    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.5
+    image: registry.digitalocean.com/meschac38000/fastapi-starter:0.0.6
     pull_policy: always
     container_name: celery_beat
     restart: on-failure

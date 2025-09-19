@@ -117,6 +117,11 @@ $ alembic upgrade head
 ```console
 $ python src/manage.py fixtures
 ```
+
+> [!TIP]
+>
+> Run `python src/manage.py --help` to see all existing commands
+
 ---
 ## Understand the structure of the application
 

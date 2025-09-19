@@ -5,7 +5,7 @@ from typing import Any, Sequence, TypedDict
 from core.services import files as app_utils
 from settings import settings
 
-app_dir = settings.BASE_DIR / "apps"
+app_dir = settings.apps_folder
 
 
 class ModelDataType(TypedDict):

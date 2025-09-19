@@ -10,7 +10,7 @@ from core.db.fixtures.model_loaders.factory import ModelLoaderFactory
 from core.monitoring.logger import get_logger
 from settings import settings
 
-_APP_DIR = settings.BASE_DIR / "apps"
+_APP_DIR = settings.apps_folder
 _logger = get_logger(__name__)
 
 

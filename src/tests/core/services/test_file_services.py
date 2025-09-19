@@ -30,23 +30,19 @@ from tests.core.services.data.models import MyTestModel
     "filepath,expected",
     (
         (
-            Path(
-                settings.BASE_DIR / "apps" / "user" / "fixtures" / "initial_users.yaml"
-            ),
+            settings.apps_folder / "user" / "fixtures" / "initial_users.yaml",
             "user",
         ),
         (
-            Path(
-                settings.BASE_DIR
-                / "apps"
-                / "authorization"
-                / "fixtures"
-                / "initial_permissions.yaml"
-            ),
+            settings.BASE_DIR
+            / "apps"
+            / "authorization"
+            / "fixtures"
+            / "initial_permissions.yaml",
             "authorization",
         ),
-        (Path(settings.BASE_DIR / "apps"), None),
-        (Path(settings.BASE_DIR), None),
+        (settings.apps_folder, None),
+        (settings.BASE_DIR, None),
     ),
 )
 def test_extract_app_name_from_path(filepath, expected):
@@ -100,9 +96,9 @@ def test_retrieve_module_models(
 def test_get_application_paths():
     paths = list(get_application_paths())
     expected_paths = [
-        settings.BASE_DIR / "apps" / "authentication",
-        settings.BASE_DIR / "apps" / "authorization",
-        settings.BASE_DIR / "apps" / "user",
+        settings.apps_folder / "authentication",
+        settings.apps_folder / "authorization",
+        settings.apps_folder / "user",
     ]
     assert len(paths) >= len(expected_paths)
     assert all(expected_path in paths for expected_path in expected_paths)
@@ -111,10 +107,10 @@ def test_get_application_paths():
 @pytest.mark.parametrize(
     "package_path,required_module,expected",
     (
-        (settings.BASE_DIR / "apps" / "user", "models", True),
-        (settings.BASE_DIR / "apps" / "authentication", "routers", True),
-        (settings.BASE_DIR / "apps" / "authorization", "models", True),
-        (settings.BASE_DIR / "apps" / "authorization", "azeaze", False),
+        (settings.apps_folder / "user", "models", True),
+        (settings.apps_folder / "authentication", "routers", True),
+        (settings.apps_folder / "authorization", "models", True),
+        (settings.apps_folder / "authorization", "azeaze", False),
     ),
 )
 def test_is_valid_package(package_path: Path, required_module: str, expected: bool):
@@ -150,7 +146,7 @@ def test_is_valid_router(router_instance: APIRouter | Any, expected: bool):
 @pytest.mark.parametrize(
     "original_path,expected_path",
     (
-        (settings.BASE_DIR / "apps" / "authentication", "apps.authentication"),
+        (settings.apps_folder / "authentication", "apps.authentication"),
         (settings.BASE_DIR / "core" / "commands" / "cli.py", "core.commands.cli"),
         (settings.BASE_DIR / "core" / "commands" / "__init__.py", "core.commands"),
     ),
@@ -163,7 +159,7 @@ def test_linux_path_to_module_path(original_path: Path, expected_path: str):
     "original_path,from_path,folder_name,expected_path",
     (
         (
-            settings.BASE_DIR / "apps" / "authentication",
+            settings.apps_folder / "authentication",
             None,
             None,
             Path("apps/authentication"),
@@ -194,6 +190,7 @@ def test_linux_path_to_module_path(original_path: Path, expected_path: str):
         ),
         (settings.BASE_DIR / "core" / "commands" / "cli.py", None, "cli.py", Path(".")),
         (settings.BASE_DIR / "cli.py", settings.BASE_DIR / "cli.py", None, Path(".")),
+        (Path("/foo/bar"), None, None, Path("/foo/bar")),
     ),
 )
 def test_relative_from(
@@ -204,4 +201,32 @@ def test_relative_from(
             original_path, from_path=from_path, folder_name=folder_name
         )
         == expected_path
+    )
+
+
+@pytest.mark.parametrize(
+    "module_path,expected_path",
+    (
+        (
+            "apps.user.models.user",
+            settings.apps_folder / "user" / "models" / "user.py",
+        ),
+        ("apps.user.fixtures", settings.apps_folder / "user" / "fixtures"),
+        ("foo.bar", None),
+    ),
+)
+def test_resolve_module_path(module_path: str, expected_path: Path):
+    assert file_path_services.resolve_module_path(module_path) == expected_path
+
+
+@pytest.mark.parametrize(
+    "app_name,required_module,expected_module",
+    (
+        ("user", "models", "apps.user"),
+        ("user", "foo", None),
+    ),
+)
+def test_resolve_app_name(app_name: str, required_module: str, expected_module: str):
+    assert (
+        file_app_services.resolve_app_name(app_name, required_module) == expected_module
     )

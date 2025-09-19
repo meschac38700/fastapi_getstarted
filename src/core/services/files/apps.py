@@ -10,7 +10,7 @@ from sqlmodel.main import SQLModelMetaclass
 
 from settings import settings
 
-from .paths import linux_path_to_module_path
+from . import paths as path_utils
 
 P = ParamSpec("P")
 Fn = Callable[[P], Any]
@@ -57,7 +57,7 @@ def get_application_paths(
     required_module: str = "routers",
 ) -> Generator[Path, Any, None]:
     """Retrieve all create applications from apps package."""
-    app_packages = glob.glob(str(settings.BASE_DIR / "apps" / "*"))
+    app_packages = glob.glob(str(settings.apps_folder / "*"))
 
     for app_package_str in app_packages:
         app_package = Path(app_package_str)
@@ -92,7 +92,7 @@ def retrieve_module_items[T](
 
 def get_models_by_app_path(app_path: Path):
     """Retrieve all models defined in apps/{app_name}/models module or package."""
-    models_module_path = linux_path_to_module_path(app_path / "models")
+    models_module_path = path_utils.linux_path_to_module_path(app_path / "models")
     models_module = import_module(models_module_path)
 
     return retrieve_module_items(models_module, is_valid_model)
@@ -111,7 +111,7 @@ def retrieve_all_app_models():
 
 def extract_app_name_from_path(file_path: Path):
     """Extract app name from the given fixture path."""
-    app_dir = settings.BASE_DIR / "apps/"
+    app_dir = settings.apps_folder
     try:
         relative_path = file_path.relative_to(app_dir)
         app_name = str(relative_path).split("/")[0]
@@ -127,7 +127,7 @@ def static_packages() -> list[tuple[str, str]]:
     app_paths = get_application_paths(required_module=settings.STATIC_ROOT)
 
     return [
-        (linux_path_to_module_path(app_path), settings.STATIC_ROOT)
+        (path_utils.linux_path_to_module_path(app_path), settings.STATIC_ROOT)
         for app_path in app_paths
     ]
 
@@ -141,7 +141,9 @@ def retrieve_template_tags():
      like Django Library(django.template.Library)
     """
     core_tags_path = settings.BASE_DIR / "core/templating/templatetags"
-    core_tags_module = import_module(linux_path_to_module_path(core_tags_path))
+    core_tags_module = import_module(
+        path_utils.linux_path_to_module_path(core_tags_path)
+    )
     all_tags = [
         getattr(core_tags_module, tag_name) for tag_name in core_tags_module.__all__
     ]
@@ -149,9 +151,18 @@ def retrieve_template_tags():
     for app_path in get_application_paths(required_module="templatetags"):
         # For now, we assume that the tags have been exported in the init file,
         # but later with the library system, we will move to a "registration" approach.
-        module_path = linux_path_to_module_path(app_path / "templatetags")
+        module_path = path_utils.linux_path_to_module_path(app_path / "templatetags")
         tag_module = import_module(module_path)
         all_tags.extend(
             [getattr(tag_module, tag_name) for tag_name in tag_module.__all__]
         )
     return all_tags
+
+
+def resolve_app_name(app_name: str, required_module: str) -> str | None:
+    """Resolve app name to a valid python module path."""
+    app_root = settings.apps_folder
+    app_path = app_root / app_name
+    if is_valid_package(app_path, module_name=required_module):
+        return path_utils.linux_path_to_module_path(app_path)
+    return None

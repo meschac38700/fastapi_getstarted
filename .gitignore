@@ -18,9 +18,8 @@ db.sqlite3-journal
 media
 static
 !**/static
-src/static
-statics/*
-!statics/.gitkeep
+src/statics/*
+!src/statics/.gitkeep
 
 node_modules
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/

@@ -40,11 +40,10 @@ Instrumentator().instrument(app).expose(
 add_pagination(app)
 app.celery = celery
 static_packages = file_apps.static_packages()
+static_directory = settings.BASE_DIR / settings.STATIC_ROOT
 app.mount(
     settings.STATIC_URL,
-    StaticFiles(
-        check_dir=False, packages=static_packages, directory=settings.STATIC_ROOT
-    ),
+    StaticFiles(check_dir=False, packages=static_packages, directory=static_directory),
     name="static",
 )
 

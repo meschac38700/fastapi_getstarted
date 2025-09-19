@@ -61,6 +61,14 @@ class Settings(AppConstants, CSRFSettings, SecretSettings):
     def health_check_endpoint(self):
         return f"{self.server_address}:{self.app_port}/default/healthcheck/"
 
+    @property
+    def static_path(self):
+        return self.BASE_DIR / self.STATIC_ROOT
+
+    @property
+    def apps_folder(self):
+        return self.BASE_DIR / "apps"
+
 
 @lru_cache
 def get_settings():
