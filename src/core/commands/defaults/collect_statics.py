@@ -31,4 +31,4 @@ def collect_statics(
     _logger.info("Collecting static files...")
 
     collect_static_runner = CollectStaticFiles(p_logger=_logger)
-    collect_static_runner(clear=clear, app_names=app_names)
+    return collect_static_runner(clear=clear, app_names=app_names)

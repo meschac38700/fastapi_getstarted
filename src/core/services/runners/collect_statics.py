@@ -62,20 +62,21 @@ class CollectStaticFiles:
 
     def _clear_static_files(self):
         self.logger.info("Clearing previous collected static files...")
-        count = 0
+        file_count = 0
         for child in settings.static_path.iterdir():
             # skipp hidden files
             if child.name.startswith("."):
                 continue
 
-            count += 1
             if child.is_dir():
+                file_count += self._count_files(child)
                 shutil.rmtree(child)
                 continue
 
+            file_count += 1
             child.unlink()
 
-        self.logger.info(f"{count} folders of static files were deleted.")
+        self.logger.info(f"{file_count} staticfiles cleared.")
 
     def _get_app_static_paths(self, app_names: list[str]) -> list[str]:
         static_folders = []
