@@ -16,7 +16,7 @@ class AppCommandRegisterManager[T = typer.Typer]:  # noqa: E251
 
     def __init__(self, main_command: T):
         self.main_command = main_command
-        self._app_dir = settings.BASE_DIR / "apps"
+        self._app_dir = settings.apps_folder
         self._command_module_name = "commands"
         self._registers_mapping = {
             "typer": self._register_typer_sub_commands,

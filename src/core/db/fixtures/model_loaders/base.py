@@ -13,7 +13,7 @@ _logger = get_logger(__name__)
 
 class ModelBaseLoader[T]:
     def __init__(self, p_logger: logging.Logger | None = None):
-        self.app_dir = settings.BASE_DIR / "apps"
+        self.app_dir = settings.apps_folder
         self.logger = p_logger or _logger
 
     def _fill_primary_key(self, model_data: ModelDataType, properties: dict[str, Any]):

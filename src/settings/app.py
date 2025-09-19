@@ -65,6 +65,10 @@ class Settings(AppConstants, CSRFSettings, SecretSettings):
     def static_path(self):
         return self.BASE_DIR / self.STATIC_ROOT
 
+    @property
+    def apps_folder(self):
+        return self.BASE_DIR / "apps"
+
 
 @lru_cache
 def get_settings():

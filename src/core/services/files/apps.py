@@ -57,7 +57,7 @@ def get_application_paths(
     required_module: str = "routers",
 ) -> Generator[Path, Any, None]:
     """Retrieve all create applications from apps package."""
-    app_packages = glob.glob(str(settings.BASE_DIR / "apps" / "*"))
+    app_packages = glob.glob(str(settings.apps_folder / "*"))
 
     for app_package_str in app_packages:
         app_package = Path(app_package_str)
@@ -111,7 +111,7 @@ def retrieve_all_app_models():
 
 def extract_app_name_from_path(file_path: Path):
     """Extract app name from the given fixture path."""
-    app_dir = settings.BASE_DIR / "apps/"
+    app_dir = settings.apps_folder
     try:
         relative_path = file_path.relative_to(app_dir)
         app_name = str(relative_path).split("/")[0]
@@ -161,7 +161,7 @@ def retrieve_template_tags():
 
 def resolve_app_name(app_name: str, required_module: str) -> str | None:
     """Resolve app name to a valid python module path."""
-    app_root = settings.BASE_DIR / "apps"
+    app_root = settings.apps_folder
     app_path = app_root / app_name
     if is_valid_package(app_path, module_name=required_module):
         return path_utils.linux_path_to_module_path(app_path)

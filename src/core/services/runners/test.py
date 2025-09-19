@@ -63,7 +63,7 @@ class AppTestRunner:
         _test_paths = test_paths or []
         if target_apps:
             _test_paths = [
-                f"{settings.BASE_DIR / "apps" / app_name}" for app_name in target_apps
+                f"{settings.apps_folder / app_name}" for app_name in target_apps
             ]
 
         self._run_tests(_test_paths, *pytest_args)
