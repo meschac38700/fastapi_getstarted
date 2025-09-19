@@ -42,12 +42,18 @@ class CollectStaticFiles:
         total_file_collected = 0
         for static_folder_path in static_folder_paths:
             for static_subfolder in static_folder_path.iterdir():
-                shutil.copytree(
-                    static_subfolder,
-                    settings.static_path / static_subfolder.name,
-                    dirs_exist_ok=True,
-                )
-                file_count = self._count_files(static_subfolder)
+                if static_subfolder.is_file():
+                    shutil.copy(
+                        static_subfolder, settings.static_path / static_subfolder.name
+                    )
+                    file_count = 1
+                else:
+                    shutil.copytree(
+                        static_subfolder,
+                        settings.static_path / static_subfolder.name,
+                        dirs_exist_ok=True,
+                    )
+                    file_count = self._count_files(static_subfolder)
                 self.logger.info(
                     f"{file_count} Staticfiles collected from: {static_subfolder.relative_to(settings.BASE_DIR)}"
                 )
