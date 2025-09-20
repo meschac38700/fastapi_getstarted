@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# collect static files
+python manage.py collectstatic --clear
+
 # shellcheck disable=SC1009
 until alembic upgrade head 2> /dev/null;
 do
