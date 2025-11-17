@@ -22,6 +22,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.7.14 /uv /uvx /bin/
 
 COPY ./pyproject.toml uv.lock ./
 
+# Add required system packages for psycopg2-binary
+RUN apt-get update && apt-get install -y build-essential libpq-dev
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
