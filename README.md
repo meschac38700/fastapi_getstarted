@@ -83,7 +83,7 @@ $ docker compose up
 ##### Run development server
 
 ```console
-$ python src/manage.py server
+$ python src/manage.py serve
 ```
 
 ##### Using docker compose

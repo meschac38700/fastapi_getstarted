@@ -9,7 +9,7 @@ from settings import settings
 app = typer.Typer(rich_markup_mode="rich")
 
 
-@app.command(help="Run development server.")
+@app.command(name="serve", help="Run development server.")
 def server(
     port: Annotated[
         int, typer.Option("--port", "-p", help="The port of the server. Default 8000.")
