@@ -23,7 +23,7 @@ class ServerRunner:
         self.logger = p_logger or _logger
 
     @property
-    def _get_run_server_script_path(self) -> str:
+    def _get_runner_server_script_path(self) -> str:
         return str(settings.BASE_DIR / "scripts" / "local_server.sh")
 
     def _start_server(self):
@@ -32,7 +32,7 @@ class ServerRunner:
 
         _env = {"HOST": self.host, "PORT": str(self.port), "RELOAD": str(self.reload)}
         ps = subprocess.Popen(
-            ["sh", self._get_run_server_script_path],
+            ["sh", self._get_runner_server_script_path],
             stdin=subprocess.PIPE,
             env=dict(os.environ, **_env),
         )
